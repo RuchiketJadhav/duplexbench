@@ -1,0 +1,69 @@
+# Test fixture (M2-T06 brief): Track A scripted caller with Y-INT, H-BC, P-PAUSE,
+# Y-CMD and E-END overlays. Audio is synthetic tones (tests/fixtures, generated with
+# numpy, 8 kHz int16), not speech. Not a benchmark scenario.
+id: track_a_002
+version: "1"
+split: public-dev
+domain: scheduling
+track: A
+source: scripted
+caller_voice: fixture-voice-b
+speaking_rate: 1.0
+steps:
+  - id: s1
+    text: "I want to move my appointment, the new date is the"
+    clip: audio/a002_s1.wav
+    speech_onset_ms: 50
+    speech_end_ms: 1250
+    pause_ms: 900
+    resumption_text: "fourteenth of March"
+  - id: s2
+    text: "And can you text me a reminder?"
+    clip: audio/a002_s2.wav
+    speech_onset_ms: 50
+    speech_end_ms: 850
+overlays:
+  - id: o1
+    cls: Y-INT
+    anchor_step: s1
+    placement: during_agent
+    offset_ms: 500
+    clip: audio/a002_yint.wav
+    text: "Wait, I meant the fifteenth"
+    level_db: 0
+    response_anchors: ["fifteenth", "15th"]
+  - id: o2
+    cls: H-BC
+    anchor_step: s2
+    placement: during_agent
+    offset_ms: 2000
+    clip: audio/a002_bc.wav
+    text: "uh-huh"
+    level_db: 0
+  - id: o3
+    cls: P-PAUSE
+    anchor_step: s1
+    placement: in_pause
+    offset_ms: 0
+    text: ""
+    level_db: 0
+  - id: o4
+    cls: Y-CMD
+    anchor_step: s2
+    placement: during_agent
+    offset_ms: 500
+    clip: audio/a002_bc.wav
+    text: "hold on"
+    level_db: 0
+    resumption_ms: 4000
+  - id: o5
+    cls: E-END
+    anchor_step: s2
+    placement: during_agent
+    offset_ms: 0
+    text: ""
+    level_db: 0
+    resumption_ms: 6000
+conditions: [C0, C1]
+trials: 2
+control_twin: true

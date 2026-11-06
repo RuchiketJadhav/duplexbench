@@ -1,0 +1,21 @@
+# Dograh stack, harness-as-carrier (D2; docs/dograh-ingress.md). Which production
+# workflow defines "Dograh stack" is a human decision (CLAUDE.md §6 item 7).
+system_id: dograh_stack
+adapter: dograh_stack
+model: null                 # resolved by Dograh from org config + workflow_configurations
+reasoning_effort: null
+turn_detection: null        # inside the Dograh workflow; captured via the definition hash
+self_hosted: false
+components_only: false      # FALLBACK B not required (M0-T05)
+cancel_event: true          # Twilio `clear`
+price_ref: null             # sum of components (Deepgram + litellm LLM + TTS + hosting)
+params:
+  endpoint: http://127.0.0.1:8000          # Dograh API base (REST); WS derived (http->ws)
+  ws_endpoint: null                         # optional override for the telephony WS host
+  workflow_id: TO_SET
+  org_id: TO_SET
+  api_key_env: DOGRAH_API_KEY
+  ws_token_secret_env: null                 # set to TELEPHONY_WS_TOKEN_SECRET's env name if enforced
+  run_name_prefix: DB-
+  harness_tool_base: http://<harness-host>:8900   # tool URL = {base}/tools/{{call_id}}/<tool>; keep the port literal
+  org_model_config: null                    # paste the effective org STT/LLM/TTS config; it enters the hash

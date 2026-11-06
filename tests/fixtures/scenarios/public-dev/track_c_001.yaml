@@ -1,0 +1,59 @@
+# Test fixture (M2-T06 brief): Track C simulated caller with mock tools (injected
+# latency and a failure), expected end state, required spoken confirmations and
+# entities. No audio: the simulator speaks. Not a benchmark scenario.
+id: track_c_001
+version: "1"
+split: public-dev
+domain: scheduling
+track: C
+source: simulated
+caller_voice: fixture-voice-c
+speaking_rate: 1.0
+persona: "Busy parent, polite, answers briefly, corrects the agent once."
+goal: "Reschedule the 3 PM dental cleaning on 2026-11-12 to the first slot on 2026-11-13."
+facts:
+  patient_name: "Dana Ruiz"
+  date_of_birth: "1988-04-02"
+  booking_id: "BK-4471"
+  phone: "555-0142"
+steps:
+  - id: s1
+    text: "Hi, I need to move my cleaning appointment."
+  - id: s2
+    text: "My booking number is B K four four seven one."
+  - id: s3
+    text: "The first slot on Friday the thirteenth, please."
+tools:
+  - name: find_booking
+    kind: read
+    latency_ms: 0
+    failure: none
+    result_anchors: ["BK-4471", "november 12"]
+  - name: check_availability
+    kind: read
+    latency_ms: 2000
+    failure: none
+    result_anchors: ["9:00", "nine"]
+  - name: reschedule_booking
+    kind: write
+    latency_ms: 5000
+    failure: timeout
+    result_anchors: ["confirmed"]
+expected_state:
+  bookings:
+    BK-4471: {date: "2026-11-13", time: "09:00", status: confirmed}
+required_spoken:
+  - id: rs1
+    after_tool: reschedule_booking
+    content: "Friday November 13 at 9 AM"
+    anchors: ["13", "9"]
+entities:
+  - id: e1
+    type: booking_id
+    value: "BK-4471"
+    step: s2
+policy:
+  verify_identity: [date_of_birth]
+conditions: [C0]
+trials: 3
+control_twin: false

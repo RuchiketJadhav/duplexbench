@@ -1,0 +1,242 @@
+# Every [Proposed] number of the spec (BUILD_PLAN 2.6). Loaded by duplexbench.thresholds.Thresholds.load().
+# Each entry: value, source (Proposed | Fact), spec section. Source and spec are fixed by the model;
+# a relabel is refused. Never change a value without a decision recorded in docs/decisions.md
+# and a new pre-registration (CLAUDE.md 6 item 4). The hash of this file's values goes into every run.
+rms_active_dbfs:
+  value: -45.0
+  source: Proposed
+  spec: '1.2'
+inactivity_run_ms:
+  value: 500
+  source: Proposed
+  spec: '1.2'
+jitter_buffer_ms:
+  value: 60
+  source: Proposed
+  spec: '1.3'
+frame_ms:
+  value: 20
+  source: Proposed
+  spec: '1.3'
+calib_event_tol_ms:
+  value: 5
+  source: Proposed
+  spec: '1.4'
+calib_audio_tol_ms:
+  value: 20
+  source: Proposed
+  spec: '1.4'
+loop_lag_p99_ms:
+  value: 5
+  source: Fact
+  spec: '1.4'
+pacing_slip_p99_ms:
+  value: 10
+  source: Fact
+  spec: '1.4'
+silero_disagree_ms:
+  value: 40
+  source: Proposed
+  spec: '1.4'
+yield_budgets_ms:
+  value:
+  - 500
+  - 1000
+  - 2000
+  source: Proposed
+  spec: '4.1'
+yield_headline_ms:
+  value: 1000
+  source: Proposed
+  spec: '4.1'
+hold_window_ms:
+  value: 2000
+  source: Proposed
+  spec: '4.1'
+hold_also_ms:
+  value: 1000
+  source: Proposed
+  spec: '4.1'
+response_windows_ms:
+  value:
+  - 2000
+  - 5000
+  source: Proposed
+  spec: '4.1'
+respond_jaccard:
+  value: 0.5
+  source: Proposed
+  spec: '4.1'
+leakage_window_ms:
+  value: 10000
+  source: Proposed
+  spec: '4.1'
+contested_offset_ms:
+  value: 300
+  source: Proposed
+  spec: '3.3'
+contested_pause_ms:
+  value: 1500
+  source: Proposed
+  spec: '3.3'
+overlay_offsets_ms:
+  value:
+  - 500
+  - 2000
+  source: Proposed
+  spec: '3.2'
+wait_resume_ms:
+  value:
+  - 3000
+  - 6000
+  source: Proposed
+  spec: '3.2'
+pause_ms:
+  value:
+  - 600
+  - 1500
+  source: Proposed
+  spec: '3.2'
+eend_silence_ms:
+  value: 6000
+  source: Proposed
+  spec: '3.2'
+dead_air_gap_ms:
+  value: 2000
+  source: Proposed
+  spec: '1.5'
+call_timeout_ms:
+  value: 480000
+  source: Proposed
+  spec: '4.2'
+stall_ms:
+  value: 20000
+  source: Proposed
+  spec: '4.2'
+tool_latency_buckets_ms:
+  value:
+  - 0
+  - 2000
+  - 5000
+  source: Proposed
+  spec: '4.2'
+repeat_prompt_words:
+  value: 4
+  source: Proposed
+  spec: '4.2'
+sim_eot_ms:
+  value: 700
+  source: Proposed
+  spec: '7'
+sim_speculate_ms:
+  value: 300
+  source: Proposed
+  spec: '7'
+sim_floor_delay_ms:
+  value:
+  - 300
+  - 800
+  source: Proposed
+  spec: '7'
+sim_patience_ms:
+  value: 1500
+  source: Proposed
+  spec: '7'
+sim_slow_caller_p90_ms:
+  value: 1500
+  source: Proposed
+  spec: '7'
+sim_regen_max:
+  value: 2
+  source: Proposed
+  spec: 7, D-review
+sim_regen_review_rate:
+  value: 0.1
+  source: Proposed
+  spec: '7'
+refasr_partial_p90_ms:
+  value: 300
+  source: Proposed
+  spec: 1.4, D4
+refasr_rtf_max:
+  value: 0.5
+  source: Proposed
+  spec: 1.4, D4
+kappa_min:
+  value: 0.7
+  source: Proposed
+  spec: '8'
+flip_rate_max:
+  value: 0.02
+  source: Proposed
+  spec: '8'
+bootstrap_resamples:
+  value: 1000
+  source: Proposed
+  spec: '9.1'
+p99_min_n:
+  value: 1000
+  source: Proposed
+  spec: '4.4'
+holm_max_comparisons:
+  value: 6
+  source: Proposed
+  spec: '9.1'
+harness_invalid_max:
+  value: 0.02
+  source: Proposed
+  spec: M8
+ge_p:
+  value: 0.0034
+  source: Proposed
+  spec: '5'
+ge_r:
+  value: 0.1667
+  source: Proposed
+  spec: '5'
+ge_loss_in_bad:
+  value: 1.0
+  source: Proposed
+  spec: '5'
+noise_snr_db:
+  value: 15.0
+  source: Proposed
+  spec: '5'
+noise_drift_db:
+  value: 3.0
+  source: Proposed
+  spec: '5'
+burst_per_min:
+  value: 1.0
+  source: Proposed
+  spec: '5'
+burst_len_ms:
+  value:
+  - 150
+  - 400
+  source: Proposed
+  spec: '5'
+burst_level_db:
+  value: -10.0
+  source: Proposed
+  spec: '5'
+muffle_share:
+  value: 0.2
+  source: Proposed
+  spec: '5'
+muffle_cutoff_hz:
+  value: 1200
+  source: Proposed
+  spec: '5'
+side_level_db:
+  value: -6.0
+  source: Proposed
+  spec: '3.2'
+bg_level_db:
+  value: -12.0
+  source: Proposed
+  spec: '3.2'
+tuning_iterations:
+  value: 10
+  source: Proposed
+  spec: '2.3'

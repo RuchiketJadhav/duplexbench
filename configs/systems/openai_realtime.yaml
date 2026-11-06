@@ -1,0 +1,25 @@
+# OpenAI Realtime API, turn-based S2S (spec §2.1 row 2). Facts from docs/providers.md §3, checked 2026-11-04.
+# Model pinned to gpt-realtime-2.1: `gpt-realtime` is deprecated and shuts down 2027-01-20 (docs/providers.md 2026-11-04).
+# turn_detection is sent verbatim as session.audio.input.turn_detection; the values are the
+# documented provider defaults (not tuned; tuning is a human decision, CLAUDE.md §6 item 10).
+system_id: openai_realtime
+adapter: openai_realtime
+model: gpt-realtime-2.1
+reasoning_effort: null          # field name for gpt-realtime-2.1 not confirmed -> not sent
+turn_detection:
+  type: server_vad
+  threshold: 0.5
+  prefix_padding_ms: 300
+  silence_duration_ms: 500
+  create_response: true
+  interrupt_response: true
+self_hosted: false
+components_only: false
+cancel_event: true              # input_audio_buffer.speech_started / response.done{status: cancelled}
+price_ref: openai_realtime
+params:
+  url: wss://api.openai.com/v1/realtime
+  api_key_env: OPENAI_API_KEY
+  voice: null                   # provider default voice
+  instructions: "You are a helpful phone agent. Keep replies short."
+  open_timeout_s: 15

@@ -1,0 +1,18 @@
+# M3-T05 live smoke (approve-first, ~$5 cap): 5 Track A public-dev scripted calls, C0, gpt-realtime-2.1.
+#   uv run duplexbench run configs/runs/smoke_openai.yaml                 # prints the projection only
+#   uv run duplexbench run configs/runs/smoke_openai.yaml --allow-unregistered --yes   # after approval
+# Needs 5 Track A scenarios with audio in scenarios/public-dev (human deliverable, M2b).
+name: smoke_openai
+pack: scenarios/public-dev
+scenarios: null
+track: A
+limit: 5
+systems: [openai_realtime]
+conditions: [C0]
+trials: 1
+concurrency: 1
+max_usd: 5.0
+seed: 1
+comparisons: []
+baseline_condition: C0
+require_calibration: false

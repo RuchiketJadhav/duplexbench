@@ -1,0 +1,14 @@
+system_id: grok_voice
+adapter: grok_voice
+model: grok-voice-3.0
+reasoning_effort: high      # xAI default; "none" is the other value
+turn_detection: {type: server_vad, idle_timeout_ms: null}
+self_hosted: false
+components_only: false
+cancel_event: true          # input_audio_buffer.speech_started
+price_ref: grok_voice
+params:
+  endpoint: wss://api.x.ai/v1/realtime
+  api_key_env: XAI_API_KEY
+  voice: null
+  instructions: null

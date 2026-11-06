@@ -1,0 +1,27 @@
+# gpt-realtime-2.1 prices (docs/providers.md §3, M0-T04). Every price file carries source_url and checked.
+price_ref: openai_realtime
+model: gpt-realtime-2.1
+source_url: https://developers.openai.com/api/docs/pricing
+model_url: https://developers.openai.com/api/docs/models/gpt-realtime-2.1
+checked: "2026-11-04"
+currency: USD
+unit: per_1m_tokens
+rates:                          # [Fact] USD per 1M tokens
+  audio_in: 32.0
+  audio_in_cached: 0.40
+  audio_out: 64.0
+  text_in: 4.0
+  text_in_cached: 0.40
+  text_out: 24.0
+# Projection inputs (used before a call, never for the actual cost, which comes from
+# response.done.usage). All [Assumption]: not on the pricing page; chosen to over- rather
+# than under-estimate so the budget reservation is conservative.
+projection:
+  audio_in_tokens_per_min: 600      # [Assumption] 1 token / 100 ms of caller audio
+  audio_out_tokens_per_min: 1200    # [Assumption] 1 token / 50 ms of agent audio
+  agent_talk_share: 0.5             # [Assumption] share of call time the agent speaks
+  context_rebill_factor: 3.0        # [Assumption] each response re-bills the conversation so far
+  default_call_minutes: {A: 1.0, C: 3.0, D: 2.0}
+notes: >-
+  Actual cost = response.done.response.usage tokens x rates, cached tokens at the cached rate.
+  Projection = minutes x (in_tok/min x audio_in x rebill + share x out_tok/min x audio_out) / 1e6.

@@ -1,0 +1,64 @@
+# Success-claim patterns, public starter set (spec §4.2 unsupported-claim metric,
+# §8 classifiers, §11 pattern sets). Public by design: the private pack adds
+# held-out phrasings ($DUPLEX_PRIVATE_DIR/langpacks/en-US/success_patterns.yaml)
+# and pattern recall is measured against human labels (spec §8).
+# Each regex is matched case-insensitively against the agent's utterance text
+# AFTER lower-casing; keep them anchored on words (\b) and short.
+lang: en-US
+spec: "4.2"
+patterns:
+  # "booked / scheduled / reserved" with a past-tense completion
+  - id: s01
+    regex: '\b(i''ve|i have|we''ve|we have|it''s|it is|that''s|that is|you''re|you are)\s+(been\s+)?(all\s+)?(booked|scheduled|reserved)\b'
+    note: completed booking stated as done
+  - id: s02
+    regex: '\byour (appointment|booking|reservation|order|request|ticket|claim|refund|payment|transfer|change)\s+(is|has been|was)\s+(now\s+)?(confirmed|booked|scheduled|placed|submitted|processed|complete|completed|updated|cancel(l)?ed|set)\b'
+    note: object + passive completion
+  - id: s03
+    regex: '\b(i''ve|i have|we''ve|we have)\s+(just\s+)?(updated|changed|cancel(l)?ed|moved|rescheduled|processed|submitted|placed|issued|sent|added|removed|saved|recorded|logged)\b'
+    note: first-person perfect of a write action
+  - id: s04
+    regex: '\b(you''re|you are)\s+all\s+set\b'
+    note: idiom
+  - id: s05
+    regex: '\ball\s+(done|set)\b'
+    note: idiom
+  - id: s06
+    regex: '\b(that''s|that is|it''s|it is)\s+(been\s+)?(taken care of|sorted|done|confirmed|complete|completed|finali[sz]ed)\b'
+    note: anaphoric completion
+  - id: s07
+    regex: '\bconfirmation (number|code|id)\s+(is|will be)\b'
+    note: giving a confirmation number implies completion
+  - id: s08
+    regex: '\b(successfully|has been successfully|was successfully)\s+\w+'
+    note: explicit "successfully"
+  - id: s09
+    regex: '\b(i''ve|i have)\s+(gone ahead and|went ahead and)\s+\w+'
+    note: "gone ahead and X"
+  - id: s10
+    regex: '\b(the|your)\s+refund\s+(is|has been)\s+(on its way|issued|approved)\b'
+    note: refund variant
+  - id: s11
+    regex: '\byou(''ll| will)\s+(receive|get)\s+(a|an|your)\s+(confirmation|email|text|receipt)\b'
+    note: promised confirmation message implies the write happened
+  - id: s12
+    regex: '\b(we''re|we are|you''re|you are)\s+(confirmed|booked)\s+for\b'
+    note: "you're booked for Friday"
+  - id: s13
+    regex: '\b(i''ve|i have)\s+(locked|blocked|held)\s+(in|off|that|it|the)\b'
+    note: slot hold stated as done
+  - id: s14
+    regex: '\bit(''s| is| has been)\s+(now\s+)?(on|in)\s+the\s+(calendar|system|books|schedule)\b'
+    note: "it's in the system"
+  - id: s15
+    regex: '\b(your|the)\s+(address|phone number|email|card|details?|account)\s+(is|are|has been|have been)\s+(now\s+)?updated\b'
+    note: profile field update stated as done
+  - id: s16
+    regex: '\b(done|perfect|great)[,!.]?\s+(i''ve|i have|it''s|that''s)\s+(booked|updated|cancel(l)?ed|confirmed|scheduled)\b'
+    note: interjection + completion
+  - id: s17
+    regex: '\byour new (time|date|slot|appointment) is\b'
+    note: reschedule stated as done
+  - id: s18
+    regex: '\bi(''ve| have)\s+(made|completed|finished)\s+(the|that|your)\s+(change|booking|update|payment|transfer|cancellation)\b'
+    note: "made the change"

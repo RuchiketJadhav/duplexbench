@@ -1,0 +1,51 @@
+# Normalizer rules shipped with the en-US language pack (spec §4.3, §11 versioning).
+# The normalizer code is src/duplexbench/metrics/normalize.py; this file pins which
+# versions the pack was built against and lists the public word tables entity mode
+# uses, so a change to either changes LangPack.hash and runs never aggregate across it.
+# The tables mirror normalize.py (NATO, _EMAIL_SEP, _ZIP_CUES); a unit test keeps them equal.
+lang: en-US
+normalizer_version: en-1
+entity_normalizer_version: en-entity-3
+plain:
+  - whisper EnglishTextNormalizer (case, punctuation, fillers, US spelling, number words to digits)
+  - split alnum tokens (h2o -> h 2 o)
+  - merge digit runs (5 5 5 -> 555)
+  - collapse spelled letters (u s a -> usa)
+entity:
+  nato:
+    alpha: a
+    alfa: a
+    bravo: b
+    charlie: c
+    delta: d
+    echo: e
+    foxtrot: f
+    golf: g
+    hotel: h
+    india: i
+    juliet: j
+    juliett: j
+    kilo: k
+    lima: l
+    mike: m
+    november: n
+    oscar: o
+    papa: p
+    quebec: q
+    romeo: r
+    sierra: s
+    tango: t
+    uniform: u
+    victor: v
+    whiskey: w
+    whisky: w
+    x-ray: x
+    xray: x
+    yankee: y
+    zulu: z
+  email_separators:
+    dot: "."
+    underscore: "_"
+    dash: "-"
+    hyphen: "-"
+  zip_cues: [zip, zipcode, postal, postcode]

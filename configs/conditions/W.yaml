@@ -1,0 +1,5 @@
+# W Wideband diagnostic (spec §5): 16 kHz PCM, no codec, no effects. Track D codec-penalty subset only.
+name: W
+rate: 16000
+codec: none
+effects: []

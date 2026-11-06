@@ -1,0 +1,23 @@
+# Harness calibration (spec §1.4; BUILD_PLAN M1-T14). Mock agent with known behaviour;
+# every gate threshold comes from configs/thresholds.yaml (calib_event_tol_ms, calib_audio_tol_ms,
+# jitter_buffer_ms, loop_lag_p99_ms, pacing_slip_p99_ms, silero_disagree_ms).
+calls: 20
+condition: C0
+seed_fwd: 11
+seed_back: 12
+call_ms: 4000            # length of each scripted call
+turn_ms: 1000            # one caller turn 0 .. turn_ms
+interrupt_at_ms: 2160    # one scripted interruption (call time), 0.72 s into the agent's reply.
+                         # Not 2000 (BUILD_PLAN M1-T14): at 2000 the stop cuts the babble voice
+                         # 70 ms after a syllable trough and Silero, rightly, does not call that
+                         # fragment speech (84 ms disagreement). 2100-2220 all give <= 12 ms.
+interrupt_ms: 300        # interruption burst length (caller tone)
+caller_level_dbfs: -20
+mock:
+  first_audio_ms: 400
+  stop_after_interrupt_ms: 250
+  tool_at_ms: 1200
+  reply_len_ms: 3000
+  behaviour: stops
+  rate: 24000            # provider-side rate: exercises the return resampler
+  voice: babble          # Silero scores a pure tone as non-speech; babble is speech-like

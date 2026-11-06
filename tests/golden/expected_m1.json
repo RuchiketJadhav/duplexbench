@@ -1,0 +1,136 @@
+{
+ "config": {
+  "condition": "C1",
+  "seed_fwd": 11,
+  "seed_back": 12,
+  "behaviour": "stops",
+  "thresholds_hash": "394923c1104b32dd13b94068cc42f8f51f94dc7c87cd433be89c1555abd5a73b"
+ },
+ "outcome": "completed",
+ "wav_sha256": "633bd36af8f37b3b02ed5a58c6ba31b41550627aaa7c287194e94d35ee856744",
+ "events": [
+  [
+   0,
+   0,
+   "call_start",
+   "harness",
+   "{\"condition\":\"C1\",\"delivery\":\"mulaw\"}"
+  ],
+  [
+   0,
+   1,
+   "session_open",
+   "agent",
+   "{\"provider_event\":\"mock.session_open\"}"
+  ],
+  [
+   40000000,
+   2,
+   "caller_turn_onset",
+   "caller",
+   "{\"step_id\":\"s1\"}"
+  ],
+  [
+   1020000000,
+   3,
+   "caller_turn_end",
+   "caller",
+   "{\"step_id\":\"s1\"}"
+  ],
+  [
+   1420000000,
+   4,
+   "first_audio_byte",
+   "agent",
+   "{\"provider_event\":\"\",\"turn_end_ns\":1020000000}"
+  ],
+  [
+   1480000000,
+   9,
+   "agent_onset",
+   "playout",
+   "{\"frame_idx\":74}"
+  ],
+  [
+   2200000000,
+   46,
+   "overlay_onset",
+   "caller",
+   "{\"overlay_id\":\"inj-0\"}"
+  ],
+  [
+   2220000000,
+   47,
+   "tool_call",
+   "agent",
+   "{\"arguments\":{},\"id\":\"call_0\",\"name\":\"mock_tool\",\"provider_event\":\"mock.tool_call\"}"
+  ],
+  [
+   2220000000,
+   49,
+   "tool_result",
+   "harness",
+   "{\"id\":\"call_0\",\"name\":\"mock_tool\"}"
+  ],
+  [
+   2480000000,
+   64,
+   "overlay_end",
+   "caller",
+   "{\"overlay_id\":\"inj-0\"}"
+  ],
+  [
+   2530000000,
+   66,
+   "cancel_or_truncate",
+   "agent",
+   "{\"provider_event\":\"mock.cancel\"}"
+  ],
+  [
+   2530000000,
+   67,
+   "playout_flush",
+   "playout",
+   "{\"dropped_frames\":2,\"reason\":\"cancel_or_truncate\"}"
+  ],
+  [
+   2540000000,
+   68,
+   "playout_underrun",
+   "playout",
+   "{\"frame_idx\":127}"
+  ],
+  [
+   2540000000,
+   69,
+   "agent_stop",
+   "playout",
+   "{\"frame_idx\":127}"
+  ],
+  [
+   5000000000,
+   70,
+   "closed",
+   "harness",
+   "{\"by\":\"harness\"}"
+  ],
+  [
+   5000000000,
+   71,
+   "call_end",
+   "harness",
+   "{\"outcome\":\"completed\"}"
+  ]
+ ],
+ "audio_events": 56,
+ "events_sha256": "120c57753e8a7a60f2682c83c326e46aa1662aae5c96d65359c1c4fc617f7dd0",
+ "playout_rows": 250,
+ "playout_sha256": "c414c6f462244ab3dddb14d0c863f656106954fc0f697bae2a1c06b0e4f5347d",
+ "overlays": [
+  [
+   "inj-0",
+   2200000000,
+   2480000000
+  ]
+ ]
+}

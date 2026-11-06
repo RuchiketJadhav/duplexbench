@@ -1,0 +1,21 @@
+# Y-CMD short commands, public list (spec §3.2, closed list; CLAUDE.md §6 item 5:
+# never add, remove or relabel a token without a recorded decision).
+# Held-out private variants live in $DUPLEX_PRIVATE_DIR/langpacks/en-US/ycmd_tokens.yaml
+# (spec §11) and are merged by LangPack.load only when DUPLEX_PRIVATE_DIR is set.
+lang: en-US
+spec: "3.2"
+tokens:
+  - "no"
+  - stop
+  - wait
+  - hold on
+  - hang on
+  - one second
+  - sorry?
+# Wait-class items also require silence until the scripted resumption 3-6 s
+# later, with no idle prompt (spec §3.2). Must be a subset of `tokens`.
+wait_class:
+  - wait
+  - hold on
+  - hang on
+  - one second

@@ -1,0 +1,62 @@
+# Recovery-request patterns, public starter set (spec §4.3 Track D entities,
+# BUILD_PLAN M5 classifiers/recovery_request.py, §11 pattern sets). The agent asks
+# the caller to repeat, spell, confirm or clarify something it did not get.
+# Public by design; held-out phrasings live in the private pack and pattern
+# recall is measured against human labels (spec §8). Matched case-insensitively.
+lang: en-US
+spec: "4.3"
+patterns:
+  - id: r01
+    regex: '\b(could|can|would)\s+you\s+(please\s+)?(repeat|say)\s+(that|it|this|the\s+\w+)(\s+again)?\b'
+    note: repeat request
+  - id: r02
+    regex: '\b(sorry|apologies|pardon)[,.]?\s+(i|we)\s+(didn''t|did not|couldn''t|could not)\s+(catch|hear|get|understand)\b'
+    note: apology + missed
+  - id: r03
+    regex: '\b(i|we)\s+(didn''t|did not|couldn''t|could not)\s+(quite\s+)?(catch|hear|get|understand)\s+(that|it|you|the|your)\b'
+    note: missed, no apology
+  - id: r04
+    regex: '\bsay\s+(that|it)\s+again\b'
+    note: idiom
+  - id: r05
+    regex: '\b(could|can|would)\s+you\s+(please\s+)?spell\b'
+    note: spelling request
+  - id: r06
+    regex: '\bhow\s+(do|would)\s+you\s+spell\b'
+    note: spelling request, question form
+  - id: r07
+    regex: '\b(one|a)\s+more\s+time\b'
+    note: "one more time"
+  - id: r08
+    regex: '\b(could|can|would)\s+you\s+(please\s+)?(confirm|verify)\s+(that|the|your|it)\b'
+    note: confirmation request
+  - id: r09
+    regex: '\bdid\s+you\s+say\b'
+    note: checking a heard value
+  - id: r10
+    regex: '\bis\s+that\s+\w+\s+as\s+in\b'
+    note: "is that B as in bravo"
+  - id: r11
+    regex: '\b(you\s+)?(cut|broke)\s+(out|up)\b'
+    note: line-quality complaint
+  - id: r12
+    regex: '\bthe\s+line\s+(is|was)\s+(bad|breaking|choppy|unclear)\b'
+    note: line-quality complaint
+  - id: r13
+    regex: '\b(could|can|would)\s+you\s+(please\s+)?(speak|talk)\s+(up|louder|more slowly|slower)\b'
+    note: delivery request
+  - id: r14
+    regex: '\b(could|can|would)\s+you\s+(please\s+)?(read|give)\s+(me\s+)?(that|it|the\s+\w+)\s+(again|once more)\b'
+    note: re-read request
+  - id: r15
+    regex: '\b(i''m|i am)\s+(sorry|not sure)[,.]?\s+(i|did you|what)\b'
+    note: hedge opening a clarification
+  - id: r16
+    regex: '\bwhat\s+was\s+(that|the|your)\b'
+    note: "what was that number"
+  - id: r17
+    regex: '^\s*(sorry|pardon|excuse me)\s*\?\s*$'
+    note: bare "sorry?"
+  - id: r18
+    regex: '\b(digit|letter|number)\s+by\s+(digit|letter|number)\b'
+    note: "digit by digit"

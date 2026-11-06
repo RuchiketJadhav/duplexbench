@@ -1,0 +1,15 @@
+system_id: gpt_live
+adapter: gpt_live
+model: gpt-live-1
+reasoning_effort: null      # belongs to the Responses backend (providers.md §1), not the Live session
+turn_detection: null        # none to configure [Fact]
+self_hosted: false
+components_only: false
+cancel_event: false         # no cancel/truncate event documented -> report caveat, nothing faked
+price_ref: gpt_live
+params:
+  endpoint: wss://api.openai.com/v1/live/sessions
+  api_key_env: OPENAI_API_KEY
+  delegation: client
+  voice: null
+  instructions: null

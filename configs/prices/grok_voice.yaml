@@ -1,0 +1,11 @@
+# grok-voice-3.0 Speech to Speech (docs/providers.md §5, M0-T04).
+price_ref: grok_voice
+model: grok-voice-3.0
+source_url: https://docs.x.ai/developers/pricing
+checked: "2026-11-04"
+currency: USD
+unit: per_minute_session
+rates:
+  session_per_min: 0.08          # [Fact] $4.80 / hr
+  text_input_each: 0.004         # [Fact] "$0.004 / text input"; unit of "text input" [Assumption]
+notes: No usage fields documented on response.done; cost = session duration x rate.

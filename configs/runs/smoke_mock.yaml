@@ -1,0 +1,17 @@
+# $0 smoke of `duplexbench run` against the mock agent (M3). Two scripted Track A calls, C0.
+#   uv run duplexbench preregister --pack-dir tests/fixtures/scenarios/smoke   # once, then:
+#   uv run duplexbench run configs/runs/smoke_mock.yaml --yes
+# (or, without a matching pre-registration: add --allow-unregistered; public-dev only)
+name: smoke_mock
+pack: tests/fixtures/scenarios/smoke
+scenarios: null
+track: A
+limit: 2
+systems: [mock_stops]
+conditions: [C0]
+trials: 1
+concurrency: 1
+max_usd: 0.0
+seed: 1
+comparisons: []
+baseline_condition: C0

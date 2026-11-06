@@ -1,0 +1,57 @@
+# Test fixture for tests/unit/test_scenario_schema.py (M2-T01). Not a benchmark scenario.
+id: sched_001
+version: "1"
+split: public-dev
+domain: scheduling
+track: A
+source: scripted
+caller_voice: fixture-voice-a
+speaking_rate: 1.0
+steps:
+  - id: s1
+    text: "Hi, I need to book a cleaning for next week, my number is five five five, one two three four."
+    clip: audio/silence_100ms.wav
+    speech_onset_ms: 0
+    speech_end_ms: 100
+    pause_ms: 900
+    resumption_text: "one two three four"
+  - id: s2
+    text: "Thursday afternoon works best."
+    clip: audio/silence_100ms.wav
+    speech_onset_ms: 0
+    speech_end_ms: 100
+overlays:
+  - id: o1
+    cls: Y-INT
+    anchor_step: s1
+    placement: during_agent
+    offset_ms: 500
+    text: "Actually make it Friday instead"
+    level_db: 0
+    response_anchors: ["friday"]
+  - id: o2
+    cls: H-BC
+    anchor_step: s1
+    placement: during_agent
+    offset_ms: 2000
+    clip: audio/silence_100ms.wav
+    text: "mm-hm"
+    level_db: 0
+  - id: o3
+    cls: P-PAUSE
+    anchor_step: s1
+    placement: in_pause
+    offset_ms: 0
+    text: ""
+    level_db: 0
+  - id: o4
+    cls: E-END
+    anchor_step: s2
+    placement: during_agent
+    offset_ms: 0
+    text: ""
+    level_db: 0
+    resumption_ms: 6000
+conditions: [C0]
+trials: 1
+control_twin: true

@@ -1,0 +1,7 @@
+# C1 Phone-realistic (spec §5): noise bed (noise_snr_db +/- noise_drift_db), Poisson bursts
+# (burst_per_min, burst_len_ms, burst_level_db), muffling (muffle_share, muffle_cutoff_hz),
+# Gilbert-Elliott loss (ge_p, ge_r, ge_loss_in_bad), G.712 band-limit. Values: thresholds.yaml.
+name: C1
+rate: 8000
+codec: mulaw
+effects: [noise, bursts, muffle, band_limit, loss]

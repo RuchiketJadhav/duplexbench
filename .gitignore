@@ -1,0 +1,8 @@
+results/
+reference/
+.env
+.venv/
+__pycache__/
+*.pyc
+scenarios/private-test/
+configs/langpacks/*/private/

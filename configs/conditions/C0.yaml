@@ -1,0 +1,6 @@
+# C0 Phone-clean (spec §5): G.711 μ-law 8 kHz, no noise, no loss. Default for all tracks.
+# Stages only; every numeric parameter comes from configs/thresholds.yaml (channel.chain.load_condition).
+name: C0
+rate: 8000
+codec: mulaw
+effects: []

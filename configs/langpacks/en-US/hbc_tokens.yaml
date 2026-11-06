@@ -1,0 +1,14 @@
+# H-BC backchannel tokens, public list (spec §3.2, each <= 1 s; closed list;
+# CLAUDE.md §6 item 5). This file is the source of truth for the H-BC check in
+# scenarios.loader.validate (pass `hbc_tokens=LangPack.load(...).hbc_tokens`).
+# Held-out private variants: $DUPLEX_PRIVATE_DIR/langpacks/en-US/hbc_tokens.yaml (spec §11).
+lang: en-US
+spec: "3.2"
+tokens:
+  - mm-hm
+  - uh-huh
+  - yeah
+  - right
+  - okay
+  - got it
+  - sure

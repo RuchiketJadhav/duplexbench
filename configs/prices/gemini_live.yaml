@@ -1,0 +1,15 @@
+# gemini-3.8-live family, paid tier (docs/providers.md §4, M0-T04).
+price_ref: gemini_live
+model: gemini-3.8-live
+source_url: https://ai.google.dev/gemini-api/docs/pricing
+checked: "2026-11-04"
+currency: USD
+unit: per_minute_audio          # [Assumption] per-minute rates chosen over the per-1M-token rates also published
+rates:                          # [Fact]
+  audio_in_per_min: 0.005
+  audio_out_per_min: 0.018
+  audio_in_per_1m_tokens: 3.00
+  audio_out_per_1m_tokens: 12.00
+  text_in_per_1m_tokens: 0.75
+  text_out_per_1m_tokens: 4.50   # includes thinking
+notes: Free tier is free of charge; runs use the paid tier [Assumption].

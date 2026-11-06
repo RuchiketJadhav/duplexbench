@@ -1,0 +1,174 @@
+{#- Duplex Bench report (spec §10). Every table shows n and the classifier / judged /
+    diagnostic markers. No composite score anywhere (decision D7). -#}
+{% macro markers(s) %}{% for m in s.markers %}<span class="marker m-{{ m }}">{{ m }}</span> {% endfor %}{% endmacro %}
+{% macro flags(sid) %}{% if agg.systems[sid].self_hosted %}<span class="flag">self-hosted</span> {% endif %}{% if agg.systems[sid].components_only %}<span class="flag">components-only</span>{% endif %}{% endmacro %}
+{% set EXCL = ["ambiguous_end", "not_injected", "unmatched_control", "contested", "slow_caller", "unscripted_overlap"] %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Duplex Bench report {{ agg.run_ids | join(", ") }}{% if public %} (public){% endif %}</title>
+<style>
+:root { --fg:#111827; --muted:#6b7280; --bg:#ffffff; --line:#e5e7eb; }
+body { font: 14px/1.45 system-ui, sans-serif; color: var(--fg); background: var(--bg); margin: 0 auto; max-width: 1100px; padding: 16px; }
+h1 { font-size: 22px; } h2 { font-size: 18px; margin-top: 32px; border-bottom: 1px solid var(--line); }
+table { border-collapse: collapse; width: 100%; margin: 8px 0 16px; font-variant-numeric: tabular-nums; }
+th, td { border-bottom: 1px solid var(--line); padding: 3px 6px; text-align: left; vertical-align: top; }
+th { background: #f9fafb; font-weight: 600; }
+.marker { font-size: 11px; padding: 0 4px; border-radius: 3px; background: #fef3c7; }
+.m-diagnostic { background: #e0e7ff; } .m-judged { background: #fee2e2; }
+.flag { font-size: 11px; padding: 0 4px; border-radius: 3px; background: #dcfce7; }
+.chart { width: 100%; max-width: 640px; height: auto; display: block; }
+.chart .plot { fill: none; stroke: #d1d5db; } .chart .title { font-size: 13px; font-weight: 600; }
+.chart .axis { font-size: 12px; } .chart .tick, .chart .pt { font-size: 11px; fill: #374151; }
+.scroll { overflow-x: auto; } .muted { color: var(--muted); }
+pre { white-space: pre-wrap; font-size: 12px; background: #f9fafb; padding: 8px; margin: 0; }
+</style>
+</head>
+<body>
+<h1>Duplex Bench report</h1>
+<p class="muted">Runs: {{ agg.run_ids | join(", ") }} · schema {{ agg.schema }} · thresholds {{ agg.thresholds_hash[:16] }}{% if public %} · public edition (no clips, no scenario ids){% endif %}</p>
+<nav><a href="#run-card">Run card</a> · <a href="#profile">Profile</a> · <a href="#comparisons">Comparisons</a> · <a href="#floor-control">Floor control</a> · <a href="#latency">Latency tails</a> · <a href="#tasks">Tasks</a> · <a href="#entities">Entities</a> · <a href="#frontier">Frontier</a> · <a href="#deltas">Condition deltas</a> · <a href="#exclusions">Exclusions</a>{% if not public %} · <a href="#clips">Failure clips</a>{% endif %} · <a href="#caveats">Caveats</a></nav>
+
+<section id="run-card">
+<h2>1. Run card</h2>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>date</td><td>{{ card.date | num }}</td></tr>
+<tr><td>harness version</td><td>{{ card.harness_version | num }}</td></tr>
+<tr><td>scenario-pack hash</td><td>{{ card.scenario_pack_hash | num }}</td></tr>
+<tr><td>hashes</td><td><pre>{{ card.hashes | pretty }}</pre></td></tr>
+<tr><td>systems (config hash, pre-registration, reasoning effort, turn detection)</td><td><pre>{{ card.systems | pretty }}</pre></td></tr>
+<tr><td>reference ASR (version, floors)</td><td><pre>{{ card.refasr | pretty }}</pre></td></tr>
+<tr><td>simulator (versions, prompt hash)</td><td><pre>{{ card.simulator | pretty }}</pre></td></tr>
+<tr><td>simulator patience rule</td><td>{{ card.simulator_patience_rule }}</td></tr>
+<tr><td>calibration</td><td><pre>{{ card.calibration | pretty }}</pre></td></tr>
+<tr><td>network baseline</td><td><pre>{{ card.network_baseline | pretty }}</pre></td></tr>
+<tr><td>instance type</td><td>{{ card.instance_type | num }}</td></tr>
+<tr><td>iteration counts</td><td><pre>{{ card.iteration_counts | pretty }}</pre></td></tr>
+<tr><td>vendors that received audio</td><td><pre>{{ card.vendors_audio | pretty }}</pre></td></tr>
+<tr><td>classifier validation</td><td><pre>{{ card.classifier_validation | pretty }}</pre></td></tr>
+<tr><td>missing fields</td><td>{{ card.missing | join(", ") if card.missing else "none" }}</td></tr>
+</table>
+<details><summary>Thresholds ({{ card.thresholds | length }}; thresholds hash {{ card.thresholds_hash[:16] }})</summary>
+<table><tr><th>name</th><th>value</th><th>source</th><th>spec</th></tr>
+{% for name, t in card.thresholds.items() %}<tr><td>{{ name }}</td><td>{{ t.value }}</td><td>{{ t.source }}</td><td>§{{ t.spec }}</td></tr>
+{% endfor %}</table></details>
+</section>
+
+<section id="profile">
+<h2>2. Profile table</h2>
+<p class="muted">Rates: Wilson 95% CI. Percentiles (value = p50): bootstrap, {{ th.bootstrap_resamples }} resamples clustered by scenario; p99 only at n &ge; {{ th.p99_min_n }}.</p>
+<div class="scroll"><table>
+<tr><th>metric</th><th>system</th><th>cond</th><th>value</th><th>95% CI</th><th>n</th><th>completion</th><th>p90</th><th>p95</th><th>p99</th><th>markers</th><th>flags</th></tr>
+{% for r in profile %}{% set s = r.s %}<tr><td>{{ r.key }}{% if s.headline %} <b>H</b>{% endif %}</td><td>{{ r.sid }}</td><td>{{ r.cond }}</td><td>{{ s.value | num }}</td><td>{{ s.ci | ci }}</td><td>{{ s.n }}</td><td>{{ s.completion_rate | num if s.completion_rate is defined else "—" }}</td>
+<td>{{ s.percentiles.p90.value | num if s.percentiles is defined else "—" }}</td><td>{{ s.percentiles.p95.value | num if s.percentiles is defined else "—" }}</td>
+<td>{% if s.percentiles is defined %}{% if s.percentiles.p99 is string %}{{ s.percentiles.p99 }}{% else %}{{ s.percentiles.p99.value | num }}{% endif %}{% else %}—{% endif %}</td>
+<td>{{ markers(s) }}</td><td>{{ flags(r.sid) }}</td></tr>
+{% endfor %}</table></div>
+<p class="muted"><b>H</b> = headline metric (spec §0). Classifier, judged and diagnostic rows never count as headline.</p>
+</section>
+
+<section id="comparisons">
+<h2>Pre-registered comparisons (paired, Holm)</h2>
+<table><tr><th>metric</th><th>A</th><th>B</th><th>cond</th><th>stat</th><th>A − B</th><th>95% CI</th><th>n pairs</th><th>dropped (A / B)</th><th>p</th><th>Holm</th><th>verdict</th><th>markers</th></tr>
+{% for c in agg.comparisons %}{% set s = agg.metrics.get(c.metric, {}).get(c.a, {}).get(c.condition) %}<tr><td>{{ c.metric }}</td><td>{{ c.a }}</td><td>{{ c.b }}</td><td>{{ c.condition }}</td><td>{{ c.stat }}</td><td>{{ c.diff | num }}</td><td>{{ c.ci | ci }}</td><td>{{ c.n }}</td><td>{{ c.dropped_a }} / {{ c.dropped_b }}</td><td>{{ c.p | num }}</td><td>{{ "reject" if c.holm_reject else "keep" }}</td><td>{{ "distinguishable" if c.distinguishable else "not distinguishable" }}</td><td>{{ markers(s) if s else "" }}</td></tr>
+{% else %}<tr><td colspan="13" class="muted">No pre-registered comparisons in this run.</td></tr>
+{% endfor %}</table>
+</section>
+
+<section id="floor-control">
+<h2>3. Floor-control charts</h2>
+{{ chart1 }}
+{{ chart2 }}
+</section>
+
+<section id="latency">
+<h2>4. Latency tails</h2>
+{% for L in latency %}<h3>{{ L.metric }}{% if L.twin %} <span class="muted">(model-level twin: {{ L.twin }})</span>{% endif %}</h3>
+{% if L.bars %}{{ L.bars }}{% endif %}
+<table><tr><th>system</th><th>cond</th><th>p50 [CI]</th><th>p90</th><th>p95</th><th>n</th><th>completion</th><th>model-level twin p50 (n)</th>{% if L.metric == "t_stop_ear" %}<th>playout penalty p50 (n)</th><th>backlog_ms p50 (n)</th>{% endif %}<th>markers</th></tr>
+{% for r in L.rows %}{% set s = r.s %}<tr><td>{{ r.sid }}</td><td>{{ r.cond }}</td>
+{% if s.percentiles is defined %}<td>{{ s.percentiles.p50.value | num }} {{ s.percentiles.p50.ci | ci }}</td><td>{{ s.percentiles.p90.value | num }}</td><td>{{ s.percentiles.p95.value | num }}</td>{% else %}<td>{{ s.value | num }}</td><td>—</td><td>—</td>{% endif %}
+<td>{{ s.n }}</td><td>{{ s.completion_rate | num if s.completion_rate is defined else "—" }}</td>
+<td>{% if r.twin %}{{ r.twin.value | num }} ({{ r.twin.n }}){% else %}—{% endif %}</td>
+{% if L.metric == "t_stop_ear" %}<td>{% if r.penalty %}{{ r.penalty.value | num }} ({{ r.penalty.n }}){% else %}—{% endif %}</td><td>{% if r.backlog %}{{ r.backlog.value | num }} ({{ r.backlog.n }}){% else %}—{% endif %}</td>{% endif %}
+<td>{{ markers(s) }}</td></tr>
+{% else %}<tr><td colspan="11" class="muted">no observations</td></tr>
+{% endfor %}</table>
+{% endfor %}
+</section>
+
+<section id="tasks">
+<h2>5. Task table</h2>
+<div class="scroll"><table><tr><th>metric</th><th>system</th><th>cond</th><th>value</th><th>95% CI</th><th>n</th><th>markers</th><th>by domain / tool-latency bucket</th></tr>
+{% for r in tasks %}{% set s = r.s %}<tr><td>{{ r.key }}</td><td>{{ r.sid }}</td><td>{{ r.cond }}</td><td>{{ s.value | num }}{% if s.share_over_1s is defined %} <span class="muted">(share &gt; 1 s: {{ s.share_over_1s | num }})</span>{% endif %}</td><td>{{ s.ci | ci }}</td><td>{{ s.n }}</td><td>{{ markers(s) }}</td>
+<td>{% for d in task_dims %}{% if s.breakdowns and d in s.breakdowns %}{{ d }}: {% for v, b in s.breakdowns[d].items() %}{{ v }}={{ b.value | num }} (n={{ b.n }}){% if not loop.last %}, {% endif %}{% endfor %}<br>{% endif %}{% endfor %}</td></tr>
+{% endfor %}</table></div>
+<h3>Interrupted vs clean (control twins)</h3>
+<table><tr><th>metric</th><th>system</th><th>cond</th><th>interrupted</th><th>clean</th><th>diff</th><th>95% CI</th><th>n pairs</th><th>markers</th></tr>
+{% for m, bys in agg.interrupted_vs_clean.items() %}{% for sid, byc in bys.items() %}{% for cond, d in byc.items() %}{% set s = agg.metrics.get(m, {}).get(sid, {}).get(cond) %}<tr><td>{{ m }}</td><td>{{ sid }}</td><td>{{ cond }}</td><td>{{ d.interrupted | num }}</td><td>{{ d.clean | num }}</td><td>{{ d.diff | num }}</td><td>{{ d.ci | ci }}</td><td>{{ d.n }}</td><td>{{ markers(s) if s else "" }}</td></tr>
+{% endfor %}{% endfor %}{% else %}<tr><td colspan="9" class="muted">no control-twin task observations</td></tr>
+{% endfor %}</table>
+{% if not public %}<h3>Pass^3 by scenario</h3>
+<table><tr><th>system</th><th>cond</th><th>scenario</th><th>all trials pass</th><th>n trials needed</th></tr>
+{% for sid, byc in agg.metrics.get("pass_pow_3", {}).items() %}{% for cond, s in byc.items() %}{% for sc, ok in (s.by_scenario or {}).items() %}<tr><td>{{ sid }}</td><td>{{ cond }}</td><td>{{ sc }}</td><td>{{ ok | num }}</td><td>3</td></tr>
+{% endfor %}{% endfor %}{% endfor %}</table>{% endif %}
+</section>
+
+<section id="entities">
+<h2>6. Entity table</h2>
+<div class="scroll"><table><tr><th>metric</th><th>system</th><th>cond</th><th>type</th><th>value</th><th>95% CI</th><th>n</th><th>reference-ASR floor</th><th>markers</th></tr>
+{% for r in entities %}{% set s = r.s %}<tr><td>{{ r.key }}</td><td>{{ r.sid }}</td><td>{{ r.cond }}</td><td>all</td><td>{{ s.value | num }}</td><td>{{ s.ci | ci }}</td><td>{{ s.n }}</td><td>{% if r.key == "readback_error_rate" and floors.get("confirmation") is not none %}confirmations {{ floors.get("confirmation") | num }}{% else %}—{% endif %}</td><td>{{ markers(s) }}</td></tr>
+{% if s.breakdowns and entity_dim in s.breakdowns %}{% for t, b in s.breakdowns[entity_dim].items() %}<tr><td></td><td>{{ r.sid }}</td><td>{{ r.cond }}</td><td>{{ t }}</td><td>{{ b.value | num }}</td><td>{{ b.ci | ci }}</td><td>{{ b.n }}</td><td>{% if floors.get(t) is not none %}{{ floors.get(t) | num }}{% if r.key == "readback_error_rate" and b.value is not none and b.value <= floors.get(t) %} <span class="marker">within floor: indistinguishable</span>{% endif %}{% else %}—{% endif %}</td><td>{{ markers(s) }}</td></tr>
+{% endfor %}{% endif %}{% endfor %}</table></div>
+</section>
+
+<section id="frontier">
+<h2>7. Frontier charts</h2>
+{{ fr_cost }}
+<p>Frontier systems (cost vs Pass@1): {{ front_cost | join(", ") if front_cost else "—" }}</p>
+{{ fr_gap }}
+<p>Frontier systems (T_turn_gap_ear p50 vs Pass@1): {{ front_gap | join(", ") if front_gap else "—" }}</p>
+<p class="muted">Gray dashed lines mark the best value on each axis; condition {{ agg.baseline_condition }}.</p>
+</section>
+
+<section id="deltas">
+<h2>8. Condition deltas</h2>
+<div class="scroll"><table><tr><th>metric</th><th>system</th><th>delta</th><th>stat</th><th>value</th><th>95% CI</th><th>n pairs</th><th>dropped (cond / base)</th><th>markers</th></tr>
+{% for key, bys in agg.condition_deltas.items() %}{% for sid, byc in bys.items() %}{% for cond, d in byc.items() %}{% set s = agg.metrics.get(key, {}).get(sid, {}).get(cond) %}<tr><td>{{ key }}</td><td>{{ sid }}</td><td>{{ cond }} − {{ d.minus }}</td><td>{{ d.stat }}</td><td>{{ d.diff | num }}</td><td>{{ d.ci | ci }}</td><td>{{ d.n }}</td><td>{{ d.dropped_a }} / {{ d.dropped_b }}</td><td>{{ markers(s) if s else "" }}</td></tr>
+{% endfor %}{% endfor %}{% else %}<tr><td colspan="9" class="muted">only one condition in this run</td></tr>
+{% endfor %}</table></div>
+</section>
+
+<section id="exclusions">
+<h2>Exclusions per system</h2>
+<table><tr><th>system</th><th>n scored units</th>{% for t in EXCL %}<th>{{ t }}</th>{% endfor %}<th>markers</th></tr>
+{% for sid, e in agg.exclusions.items() %}<tr><td>{{ sid }} {{ flags(sid) }}</td><td>{{ e.units }}</td>{% for t in EXCL %}<td>{{ e.counts.get(t, 0) }}</td>{% endfor %}<td>—</td></tr>
+{% endfor %}</table>
+</section>
+
+{% if not public %}
+<section id="clips">
+<h2>9. Failure clip browser</h2>
+<label>Failure class <select id="clip-filter" onchange="for (const r of document.querySelectorAll('.clip')) r.hidden = this.value &amp;&amp; r.dataset.cls !== this.value;"><option value="">all</option>{% for c in clip_classes %}<option>{{ c }}</option>{% endfor %}</select></label>
+{% for c in clips %}<div class="clip" data-cls="{{ c.failure_class }}">
+<h3>{{ c.failure_class }} · {{ c.system_id }} {{ c.condition }} · {{ c.scenario_id }} · {{ c.call_id }}{% if c.event_id %} · {{ c.event_id }}{% endif %}</h3>
+<audio controls preload="none" src="{{ c.src }}"></audio>
+<pre>{{ c.timeline | pretty }}</pre>
+</div>
+{% else %}<p class="muted">No failure clips.</p>
+{% endfor %}
+</section>
+{% endif %}
+
+<section id="caveats">
+<h2>10. Caveats (auto-generated)</h2>
+<ul>
+{% for kind, text in caveats %}<li data-kind="{{ kind }}">{{ text }}</li>
+{% else %}<li>none</li>
+{% endfor %}</ul>
+</section>
+</body>
+</html>

@@ -1,0 +1,20 @@
+# Pipecat cascade baseline (spec §2.2). Components are placeholders until the human
+# picks vendors (CLAUDE.md §6 item 2); every component and version is recorded.
+system_id: pipecat_cascade
+adapter: pipecat_cascade
+model: null
+reasoning_effort: null
+turn_detection: {vad: silero, confidence: null, start_secs: null, stop_secs: null, end_of_turn: smart_turn_v3}   # pipecat defaults recorded at live smoke
+self_hosted: false          # pipeline runs locally, its STT/LLM/TTS vendors are hosted
+components_only: false
+cancel_event: true          # Twilio `clear` on InterruptionFrame (serializer source)
+price_ref: null             # sum of components; priced once vendors are chosen
+params:
+  endpoint: ws://127.0.0.1:8765/ws
+  components:
+    stt: {vendor: TO_CHOOSE, model: TO_CHOOSE, version: TO_CHOOSE, interim_results: true}
+    llm: {vendor: TO_CHOOSE, model: TO_CHOOSE, version: TO_CHOOSE, temperature: null}
+    tts: {vendor: TO_CHOOSE, model: TO_CHOOSE, version: TO_CHOOSE, streaming: true}
+  barge_in: cancel_llm_and_tts
+  filler_policy: none
+  tool_url_template: "http://127.0.0.1:8900/tools/{call_token}/<tool>"

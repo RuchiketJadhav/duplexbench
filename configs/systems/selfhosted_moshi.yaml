@@ -1,0 +1,14 @@
+# Moshi behind the harness shim protocol (adapters/selfhosted_fd.py). GPU hours need approval.
+system_id: selfhosted_moshi
+adapter: selfhosted_fd
+model: kyutai/moshiko-pytorch-bf16
+reasoning_effort: null
+turn_detection: null        # full-duplex, none
+self_hosted: true
+components_only: false
+cancel_event: false         # Moshi emits no cancel event (providers.md §2)
+price_ref: null             # GPU time; priced per instance-hour at run time
+params:
+  endpoint: ws://127.0.0.1:8998/duplex
+  input_rate: 24000
+  output_rate: 24000

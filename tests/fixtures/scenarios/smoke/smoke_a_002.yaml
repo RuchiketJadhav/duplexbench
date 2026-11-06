@@ -1,0 +1,20 @@
+# Test fixture for cli run (M3: tests/integration/test_run_mock.py, configs/runs/smoke_mock.yaml).
+# Synthetic tone clip (copied from public-dev fixtures), one caller turn, no overlays. Not a benchmark scenario.
+id: smoke_a_002
+version: "1"
+split: public-dev
+domain: scheduling
+track: A
+source: scripted
+caller_voice: fixture-voice-a
+speaking_rate: 1.0
+steps:
+  - id: s1
+    text: "Hi, I would like to book an appointment please."
+    clip: audio/smoke_s2.wav
+    speech_onset_ms: 50
+    speech_end_ms: 1250
+overlays: []
+conditions: [C0]
+trials: 1
+control_twin: false

@@ -1,0 +1,11 @@
+# gpt-live-1 (docs/providers.md §1, M0-T04).
+price_ref: gpt_live
+model: gpt-live-1
+source_url: https://developers.openai.com/api/docs/models/gpt-live-1
+checked: "2026-11-04"
+currency: USD
+unit: per_minute_session         # [Fact] billed per second, not rounded up
+rates:
+  session_per_min: 0.05
+  backend_tokens: null           # [Fact] billed separately; [Assumption] priced from the backend model's own price file
+notes: usage.seconds in session.usage.updated is cumulative; do not sum snapshots.

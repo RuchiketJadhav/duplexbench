@@ -1,0 +1,19 @@
+system_id: gemini_live
+adapter: gemini_live
+model: gemini-3.8-live
+reasoning_effort: null
+turn_detection:             # realtimeInputConfig; numeric defaults not stated by Google, so left unset
+  automaticActivityDetection: {disabled: false}
+  activityHandling: START_OF_ACTIVITY_INTERRUPTS
+self_hosted: false
+components_only: false
+cancel_event: true          # serverContent.interrupted
+price_ref: gemini_live
+params:
+  endpoint: null            # default BidiGenerateContent URL (host UNCONFIRMED)
+  api_key_env: GEMINI_API_KEY
+  input_rate: 16000
+  output_rate: 24000
+  voice: null
+  instructions: null
+  input_transcription: true

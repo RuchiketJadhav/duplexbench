@@ -1,0 +1,2028 @@
+{
+ "aggregate": {
+  "baseline_condition": "C0",
+  "calls": {
+   "sysA": {
+    "C0": {
+     "n_calls": 13,
+     "n_controls": 1,
+     "outcomes": {
+      "completed": 13
+     }
+    },
+    "C1": {
+     "n_calls": 12,
+     "n_controls": 0,
+     "outcomes": {
+      "completed": 12
+     }
+    }
+   },
+   "sysB": {
+    "C0": {
+     "n_calls": 12,
+     "n_controls": 0,
+     "outcomes": {
+      "completed": 12
+     }
+    }
+   }
+  },
+  "classifiers": {
+   "unsupported_claim_rate": {
+    "kappa": null,
+    "validated": false
+   }
+  },
+  "comparisons": [
+   {
+    "a": "sysA",
+    "b": "sysB",
+    "ci": [
+     0.0,
+     0.333333
+    ],
+    "condition": "C0",
+    "diff": 0.166667,
+    "distinguishable": false,
+    "dropped": 0,
+    "dropped_a": 0,
+    "dropped_b": 0,
+    "holm_reject": false,
+    "metric": "pass_at_1",
+    "n": 12,
+    "p": 0.128,
+    "stat": "mean",
+    "verdict": "not distinguishable"
+   }
+  ],
+  "condition_deltas": {
+   "pass_at_1": {
+    "sysA": {
+     "C1": {
+      "ci": [
+       0.0,
+       0.25
+      ],
+      "diff": 0.083333,
+      "dropped": 0,
+      "dropped_a": 0,
+      "dropped_b": 0,
+      "minus": "C0",
+      "n": 12,
+      "p": 0.64,
+      "stat": "mean",
+      "verdict": "not distinguishable"
+     }
+    }
+   }
+  },
+  "conditions": [
+   "C0",
+   "C1"
+  ],
+  "exclusions": {
+   "sysA": {
+    "counts": {
+     "ambiguous_end": 2,
+     "contested": 1,
+     "not_injected": 1,
+     "slow_caller": 1,
+     "unmatched_control": 1,
+     "unscripted_overlap": 1
+    },
+    "units": 66
+   },
+   "sysB": {
+    "counts": {
+     "ambiguous_end": 1,
+     "contested": 1,
+     "not_injected": 1,
+     "slow_caller": 0,
+     "unmatched_control": 1,
+     "unscripted_overlap": 0
+    },
+    "units": 50
+   }
+  },
+  "hashes": {
+   "harness": "h1",
+   "langpack": "l1",
+   "normalizer": "n1",
+   "pack": "p1",
+   "refasr": "a1",
+   "simulator": "s1",
+   "thresholds": "t1"
+  },
+  "interrupted_vs_clean": {
+   "pass_at_1": {
+    "sysA": {
+     "C0": {
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "clean": 1.0,
+      "diff": 0.0,
+      "dropped": 0,
+      "dropped_a": 0,
+      "dropped_b": 0,
+      "interrupted": 1.0,
+      "n": 1,
+      "n_scenarios": 1,
+      "p": 1.0,
+      "stat": "mean",
+      "verdict": "not distinguishable"
+     }
+    }
+   }
+  },
+  "metrics": {
+   "anchor_offset_in_utt_ms": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       600.0,
+       2400.0
+      ],
+      "completion_rate": 1.0,
+      "components_only": false,
+      "headline": false,
+      "kind": "percentile",
+      "low_n": [
+       "p50",
+       "p90",
+       "p95"
+      ],
+      "markers": [
+       "diagnostic"
+      ],
+      "n": 4,
+      "n_rows": 4,
+      "percentiles": {
+       "p50": {
+        "ci": [
+         600.0,
+         2400.0
+        ],
+        "value": 1500.0
+       },
+       "p90": {
+        "ci": [
+         1200.0,
+         2400.0
+        ],
+        "value": 2220.0
+       },
+       "p95": {
+        "ci": [
+         1200.0,
+         2400.0
+        ],
+        "value": 2310.0
+       },
+       "p99": "insufficient n"
+      },
+      "self_hosted": false,
+      "share_negative": 0.0,
+      "share_over_1s": 0.75,
+      "spec": "4.2 (D6)",
+      "tags": {
+       "diagnostic": 4
+      },
+      "value": 1500.0
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       600.0,
+       2400.0
+      ],
+      "completion_rate": 1.0,
+      "components_only": false,
+      "headline": false,
+      "kind": "percentile",
+      "low_n": [
+       "p50",
+       "p90",
+       "p95"
+      ],
+      "markers": [
+       "diagnostic"
+      ],
+      "n": 4,
+      "n_rows": 4,
+      "percentiles": {
+       "p50": {
+        "ci": [
+         600.0,
+         2400.0
+        ],
+        "value": 1500.0
+       },
+       "p90": {
+        "ci": [
+         1200.0,
+         2400.0
+        ],
+        "value": 2220.0
+       },
+       "p95": {
+        "ci": [
+         1200.0,
+         2400.0
+        ],
+        "value": 2310.0
+       },
+       "p99": "insufficient n"
+      },
+      "self_hosted": true,
+      "share_negative": 0.0,
+      "share_over_1s": 0.75,
+      "spec": "4.2 (D6)",
+      "tags": {
+       "diagnostic": 4
+      },
+      "value": 1500.0
+     }
+    }
+   },
+   "backlog_ms": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       60.0,
+       60.0
+      ],
+      "completion_rate": 1.0,
+      "components_only": false,
+      "headline": false,
+      "kind": "percentile",
+      "low_n": [
+       "p50",
+       "p90",
+       "p95"
+      ],
+      "markers": [
+       "diagnostic"
+      ],
+      "n": 4,
+      "n_rows": 4,
+      "percentiles": {
+       "p50": {
+        "ci": [
+         60.0,
+         60.0
+        ],
+        "value": 60.0
+       },
+       "p90": {
+        "ci": [
+         60.0,
+         60.0
+        ],
+        "value": 60.0
+       },
+       "p95": {
+        "ci": [
+         60.0,
+         60.0
+        ],
+        "value": 60.0
+       },
+       "p99": "insufficient n"
+      },
+      "self_hosted": false,
+      "share_negative": 0.0,
+      "spec": "1.3, 4.5",
+      "tags": {},
+      "value": 60.0
+     }
+    }
+   },
+   "call_outcome": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.757499,
+       1.0
+      ],
+      "components_only": false,
+      "distribution": {
+       "completed": 12
+      },
+      "headline": false,
+      "k": 12,
+      "kind": "rate",
+      "markers": [],
+      "n": 12,
+      "n_rows": 12,
+      "self_hosted": false,
+      "spec": "4.2",
+      "tags": {},
+      "value": 1.0
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.757499,
+       1.0
+      ],
+      "components_only": false,
+      "distribution": {
+       "completed": 12
+      },
+      "headline": false,
+      "k": 12,
+      "kind": "rate",
+      "markers": [],
+      "n": 12,
+      "n_rows": 12,
+      "self_hosted": true,
+      "spec": "4.2",
+      "tags": {},
+      "value": 1.0
+     }
+    }
+   },
+   "capture_first": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {
+       "type": {
+        "phone": {
+         "ci": [
+          0.150036,
+          0.849964
+         ],
+         "k": 2,
+         "kind": "rate",
+         "n": 4,
+         "n_rows": 4,
+         "tags": {},
+         "value": 0.5
+        }
+       }
+      },
+      "ci": [
+       0.150036,
+       0.849964
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 2,
+      "kind": "rate",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": false,
+      "spec": "4.3",
+      "tags": {},
+      "value": 0.5
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {
+       "type": {
+        "phone": {
+         "ci": [
+          0.150036,
+          0.849964
+         ],
+         "k": 2,
+         "kind": "rate",
+         "n": 4,
+         "n_rows": 4,
+         "tags": {},
+         "value": 0.5
+        }
+       }
+      },
+      "ci": [
+       0.150036,
+       0.849964
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 2,
+      "kind": "rate",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": true,
+      "spec": "4.3",
+      "tags": {},
+      "value": 0.5
+     }
+    }
+   },
+   "cost_per_min": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.1,
+       0.1
+      ],
+      "components_only": false,
+      "headline": true,
+      "kind": "mean",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "p90": 0.1,
+      "self_hosted": false,
+      "spec": "4.4",
+      "tags": {},
+      "value": 0.1
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.3,
+       0.3
+      ],
+      "components_only": false,
+      "headline": true,
+      "kind": "mean",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "p90": 0.3,
+      "self_hosted": true,
+      "spec": "4.4",
+      "tags": {},
+      "value": 0.3
+     }
+    }
+   },
+   "hold_listening_rate": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.5101,
+       1.0
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 4,
+      "kind": "rate",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": false,
+      "spec": "4.1",
+      "tags": {},
+      "value": 1.0
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.5101,
+       1.0
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 4,
+      "kind": "rate",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": true,
+      "spec": "4.1",
+      "tags": {},
+      "value": 1.0
+     }
+    }
+   },
+   "hold_speaking_rate@2000": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.5101,
+       1.0
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 4,
+      "kind": "rate",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": false,
+      "spec": "4.1",
+      "tags": {},
+      "value": 1.0
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.5101,
+       1.0
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 4,
+      "kind": "rate",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": true,
+      "spec": "4.1",
+      "tags": {},
+      "value": 1.0
+     }
+    }
+   },
+   "mishearing_rate": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.045586,
+       0.699364
+      ],
+      "components_only": false,
+      "headline": false,
+      "k": 1,
+      "kind": "rate",
+      "markers": [
+       "diagnostic"
+      ],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": false,
+      "spec": "7, 4.5",
+      "tags": {},
+      "value": 0.25
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.045586,
+       0.699364
+      ],
+      "components_only": false,
+      "headline": false,
+      "k": 1,
+      "kind": "rate",
+      "markers": [
+       "diagnostic"
+      ],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": true,
+      "spec": "7, 4.5",
+      "tags": {},
+      "value": 0.25
+     }
+    }
+   },
+   "pass_at_1": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {
+       "domain": {
+        "billing": {
+         "ci": [
+          0.436491,
+          0.969947
+         ],
+         "k": 5,
+         "kind": "rate",
+         "n": 6,
+         "n_rows": 6,
+         "tags": {},
+         "value": 0.833333
+        },
+        "orders": {
+         "ci": [
+          0.096769,
+          0.700012
+         ],
+         "k": 2,
+         "kind": "rate",
+         "n": 6,
+         "n_rows": 6,
+         "tags": {},
+         "value": 0.333333
+        }
+       }
+      },
+      "ci": [
+       0.319507,
+       0.806743
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 7,
+      "kind": "rate",
+      "markers": [],
+      "n": 12,
+      "n_rows": 12,
+      "self_hosted": false,
+      "spec": "4.2",
+      "tags": {},
+      "value": 0.583333
+     },
+     "C1": {
+      "breakdowns": {},
+      "ci": [
+       0.390618,
+       0.861882
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 8,
+      "kind": "rate",
+      "markers": [],
+      "n": 12,
+      "n_rows": 12,
+      "self_hosted": false,
+      "spec": "4.2",
+      "tags": {},
+      "value": 0.666667
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {
+       "domain": {
+        "billing": {
+         "ci": [
+          0.299988,
+          0.903231
+         ],
+         "k": 4,
+         "kind": "rate",
+         "n": 6,
+         "n_rows": 6,
+         "tags": {},
+         "value": 0.666667
+        },
+        "orders": {
+         "ci": [
+          0.030053,
+          0.563509
+         ],
+         "k": 1,
+         "kind": "rate",
+         "n": 6,
+         "n_rows": 6,
+         "tags": {},
+         "value": 0.166667
+        }
+       }
+      },
+      "ci": [
+       0.193257,
+       0.680493
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 5,
+      "kind": "rate",
+      "markers": [],
+      "n": 12,
+      "n_rows": 12,
+      "self_hosted": true,
+      "spec": "4.2",
+      "tags": {},
+      "value": 0.416667
+     }
+    }
+   },
+   "pass_pow_3": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "by_scenario": {
+       "s1": true,
+       "s2": false,
+       "s3": false,
+       "s4": false
+      },
+      "ci": [
+       0.0,
+       0.75
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 1,
+      "kind": "rate_by_scenario",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "scenarios_short": 0,
+      "self_hosted": false,
+      "spec": "4.2",
+      "tags": {},
+      "value": 0.25
+     },
+     "C1": {
+      "breakdowns": {},
+      "by_scenario": {
+       "s1": true,
+       "s2": true,
+       "s3": false,
+       "s4": false
+      },
+      "ci": [
+       0.0,
+       1.0
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 2,
+      "kind": "rate_by_scenario",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "scenarios_short": 0,
+      "self_hosted": false,
+      "spec": "4.2",
+      "tags": {},
+      "value": 0.5
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {},
+      "by_scenario": {
+       "s1": true,
+       "s2": false,
+       "s3": false,
+       "s4": false
+      },
+      "ci": [
+       0.0,
+       0.75
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 1,
+      "kind": "rate_by_scenario",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "scenarios_short": 0,
+      "self_hosted": true,
+      "spec": "4.2",
+      "tags": {},
+      "value": 0.25
+     }
+    }
+   },
+   "playout_penalty": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       100.0,
+       100.0
+      ],
+      "completion_rate": 1.0,
+      "components_only": false,
+      "headline": false,
+      "kind": "percentile",
+      "low_n": [
+       "p50",
+       "p90",
+       "p95"
+      ],
+      "markers": [
+       "diagnostic"
+      ],
+      "n": 4,
+      "n_rows": 4,
+      "percentiles": {
+       "p50": {
+        "ci": [
+         100.0,
+         100.0
+        ],
+        "value": 100.0
+       },
+       "p90": {
+        "ci": [
+         100.0,
+         100.0
+        ],
+        "value": 100.0
+       },
+       "p95": {
+        "ci": [
+         100.0,
+         100.0
+        ],
+        "value": 100.0
+       },
+       "p99": "insufficient n"
+      },
+      "self_hosted": false,
+      "share_negative": 0.0,
+      "spec": "4.5",
+      "tags": {},
+      "value": 100.0
+     }
+    }
+   },
+   "readback_error_rate": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {
+       "type": {
+        "phone": {
+         "ci": [
+          0.045586,
+          0.699364
+         ],
+         "k": 1,
+         "kind": "rate",
+         "n": 4,
+         "n_rows": 4,
+         "tags": {},
+         "value": 0.25
+        }
+       }
+      },
+      "ci": [
+       0.045586,
+       0.699364
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 1,
+      "kind": "rate",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": false,
+      "spec": "4.3",
+      "tags": {},
+      "value": 0.25
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {
+       "type": {
+        "phone": {
+         "ci": [
+          0.0,
+          0.4899
+         ],
+         "k": 0,
+         "kind": "rate",
+         "n": 4,
+         "n_rows": 4,
+         "tags": {},
+         "value": 0.0
+        }
+       }
+      },
+      "ci": [
+       0.0,
+       0.4899
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 0,
+      "kind": "rate",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": true,
+      "spec": "4.3",
+      "tags": {},
+      "value": 0.0
+     }
+    }
+   },
+   "regeneration_rate": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.045586,
+       0.699364
+      ],
+      "components_only": false,
+      "headline": false,
+      "k": 1,
+      "kind": "rate",
+      "markers": [
+       "diagnostic"
+      ],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": false,
+      "spec": "7, 4.5",
+      "tags": {},
+      "value": 0.25
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.045586,
+       0.699364
+      ],
+      "components_only": false,
+      "headline": false,
+      "k": 1,
+      "kind": "rate",
+      "markers": [
+       "diagnostic"
+      ],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": true,
+      "spec": "7, 4.5",
+      "tags": {},
+      "value": 0.25
+     }
+    }
+   },
+   "response_rate@5000": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.300636,
+       0.954414
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 3,
+      "kind": "rate",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": false,
+      "spec": "4.1",
+      "tags": {},
+      "value": 0.75
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.300636,
+       0.954414
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 3,
+      "kind": "rate",
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": true,
+      "spec": "4.1",
+      "tags": {},
+      "value": 0.75
+     }
+    }
+   },
+   "t_stop_ear": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       200.0,
+       500.0
+      ],
+      "completion_rate": 0.8,
+      "components_only": false,
+      "headline": true,
+      "kind": "percentile",
+      "low_n": [
+       "p50",
+       "p90",
+       "p95"
+      ],
+      "markers": [],
+      "n": 4,
+      "n_rows": 6,
+      "percentiles": {
+       "p50": {
+        "ci": [
+         200.0,
+         500.0
+        ],
+        "value": 350.0
+       },
+       "p90": {
+        "ci": [
+         300.0,
+         500.0
+        ],
+        "value": 470.0
+       },
+       "p95": {
+        "ci": [
+         300.0,
+         500.0
+        ],
+        "value": 485.0
+       },
+       "p99": "insufficient n"
+      },
+      "self_hosted": false,
+      "share_negative": 0.0,
+      "spec": "1.5, 4.1",
+      "tags": {
+       "ambiguous_end": 1,
+       "not_stopped": 1
+      },
+      "value": 350.0
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       600.0,
+       900.0
+      ],
+      "completion_rate": 1.0,
+      "components_only": false,
+      "headline": true,
+      "kind": "percentile",
+      "low_n": [
+       "p50",
+       "p90",
+       "p95"
+      ],
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "percentiles": {
+       "p50": {
+        "ci": [
+         600.0,
+         900.0
+        ],
+        "value": 750.0
+       },
+       "p90": {
+        "ci": [
+         700.0,
+         900.0
+        ],
+        "value": 870.0
+       },
+       "p95": {
+        "ci": [
+         700.0,
+         900.0
+        ],
+        "value": 885.0
+       },
+       "p99": "insufficient n"
+      },
+      "self_hosted": true,
+      "share_negative": 0.0,
+      "spec": "1.5, 4.1",
+      "tags": {},
+      "value": 750.0
+     }
+    }
+   },
+   "t_stop_model": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       100.0,
+       400.0
+      ],
+      "completion_rate": 1.0,
+      "components_only": false,
+      "headline": false,
+      "kind": "percentile",
+      "low_n": [
+       "p50",
+       "p90",
+       "p95"
+      ],
+      "markers": [
+       "diagnostic"
+      ],
+      "n": 4,
+      "n_rows": 4,
+      "percentiles": {
+       "p50": {
+        "ci": [
+         100.0,
+         400.0
+        ],
+        "value": 250.0
+       },
+       "p90": {
+        "ci": [
+         200.0,
+         400.0
+        ],
+        "value": 370.0
+       },
+       "p95": {
+        "ci": [
+         200.0,
+         400.0
+        ],
+        "value": 385.0
+       },
+       "p99": "insufficient n"
+      },
+      "self_hosted": false,
+      "share_negative": 0.0,
+      "spec": "1.5, 4.5",
+      "tags": {},
+      "value": 250.0
+     }
+    }
+   },
+   "t_tool_to_info_ear": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {
+       "bucket": {
+        "2000": {
+         "ci": null,
+         "completion_rate": 1.0,
+         "kind": "percentile",
+         "low_n": [
+          "p50",
+          "p90",
+          "p95"
+         ],
+         "n": 4,
+         "n_rows": 4,
+         "percentiles": {
+          "p50": {
+           "ci": null,
+           "value": 950.0
+          },
+          "p90": {
+           "ci": null,
+           "value": 1070.0
+          },
+          "p95": {
+           "ci": null,
+           "value": 1085.0
+          },
+          "p99": "insufficient n"
+         },
+         "share_negative": 0.0,
+         "tags": {},
+         "value": 950.0
+        }
+       }
+      },
+      "ci": [
+       800.0,
+       1100.0
+      ],
+      "completion_rate": 1.0,
+      "components_only": false,
+      "headline": true,
+      "kind": "percentile",
+      "low_n": [
+       "p50",
+       "p90",
+       "p95"
+      ],
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "percentiles": {
+       "p50": {
+        "ci": [
+         800.0,
+         1100.0
+        ],
+        "value": 950.0
+       },
+       "p90": {
+        "ci": [
+         900.0,
+         1100.0
+        ],
+        "value": 1070.0
+       },
+       "p95": {
+        "ci": [
+         900.0,
+         1100.0
+        ],
+        "value": 1085.0
+       },
+       "p99": "insufficient n"
+      },
+      "self_hosted": false,
+      "share_negative": 0.0,
+      "spec": "1.5, 4.2",
+      "tags": {},
+      "value": 950.0
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {
+       "bucket": {
+        "2000": {
+         "ci": null,
+         "completion_rate": 1.0,
+         "kind": "percentile",
+         "low_n": [
+          "p50",
+          "p90",
+          "p95"
+         ],
+         "n": 4,
+         "n_rows": 4,
+         "percentiles": {
+          "p50": {
+           "ci": null,
+           "value": 950.0
+          },
+          "p90": {
+           "ci": null,
+           "value": 1070.0
+          },
+          "p95": {
+           "ci": null,
+           "value": 1085.0
+          },
+          "p99": "insufficient n"
+         },
+         "share_negative": 0.0,
+         "tags": {},
+         "value": 950.0
+        }
+       }
+      },
+      "ci": [
+       800.0,
+       1100.0
+      ],
+      "completion_rate": 1.0,
+      "components_only": false,
+      "headline": true,
+      "kind": "percentile",
+      "low_n": [
+       "p50",
+       "p90",
+       "p95"
+      ],
+      "markers": [],
+      "n": 4,
+      "n_rows": 4,
+      "percentiles": {
+       "p50": {
+        "ci": [
+         800.0,
+         1100.0
+        ],
+        "value": 950.0
+       },
+       "p90": {
+        "ci": [
+         900.0,
+         1100.0
+        ],
+        "value": 1070.0
+       },
+       "p95": {
+        "ci": [
+         900.0,
+         1100.0
+        ],
+        "value": 1085.0
+       },
+       "p99": "insufficient n"
+      },
+      "self_hosted": true,
+      "share_negative": 0.0,
+      "spec": "1.5, 4.2",
+      "tags": {},
+      "value": 950.0
+     }
+    }
+   },
+   "t_ttfa_recv": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       250.0,
+       300.0
+      ],
+      "completion_rate": 1.0,
+      "components_only": false,
+      "headline": false,
+      "kind": "percentile",
+      "low_n": [
+       "p50",
+       "p90",
+       "p95"
+      ],
+      "markers": [
+       "diagnostic"
+      ],
+      "n": 10,
+      "n_rows": 10,
+      "percentiles": {
+       "p50": {
+        "ci": [
+         250.0,
+         300.0
+        ],
+        "value": 275.0
+       },
+       "p90": {
+        "ci": [
+         370.0,
+         500.0
+        ],
+        "value": 455.0
+       },
+       "p95": {
+        "ci": [
+         400.0,
+         500.0
+        ],
+        "value": 477.5
+       },
+       "p99": "insufficient n"
+      },
+      "self_hosted": false,
+      "share_negative": 0.0,
+      "spec": "1.5, 4.5",
+      "tags": {},
+      "value": 275.0
+     }
+    }
+   },
+   "t_turn_gap_ear": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       500.0,
+       600.0
+      ],
+      "completion_rate": 1.0,
+      "components_only": false,
+      "headline": true,
+      "kind": "percentile",
+      "low_n": [
+       "p50",
+       "p90",
+       "p95"
+      ],
+      "markers": [],
+      "n": 10,
+      "n_rows": 12,
+      "percentiles": {
+       "p50": {
+        "ci": [
+         500.0,
+         600.0
+        ],
+        "value": 550.0
+       },
+       "p90": {
+        "ci": [
+         740.0,
+         1000.0
+        ],
+        "value": 910.0
+       },
+       "p95": {
+        "ci": [
+         800.0,
+         1000.0
+        ],
+        "value": 955.0
+       },
+       "p99": "insufficient n"
+      },
+      "self_hosted": false,
+      "share_negative": 0.0,
+      "spec": "1.5, 4.1",
+      "tags": {
+       "slow_caller": 1,
+       "unscripted_overlap": 1
+      },
+      "value": 550.0
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       1000.0,
+       1200.0
+      ],
+      "completion_rate": 1.0,
+      "components_only": false,
+      "headline": true,
+      "kind": "percentile",
+      "low_n": [
+       "p50",
+       "p90",
+       "p95"
+      ],
+      "markers": [],
+      "n": 10,
+      "n_rows": 10,
+      "percentiles": {
+       "p50": {
+        "ci": [
+         1000.0,
+         1200.0
+        ],
+        "value": 1100.0
+       },
+       "p90": {
+        "ci": [
+         1480.0,
+         2000.0
+        ],
+        "value": 1820.0
+       },
+       "p95": {
+        "ci": [
+         1600.0,
+         2000.0
+        ],
+        "value": 1910.0
+       },
+       "p99": "insufficient n"
+      },
+      "self_hosted": true,
+      "share_negative": 0.0,
+      "spec": "1.5, 4.1",
+      "tags": {},
+      "value": 1100.0
+     }
+    }
+   },
+   "unsupported_claim_rate": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.045586,
+       0.699364
+      ],
+      "components_only": false,
+      "headline": false,
+      "k": 1,
+      "kind": "rate",
+      "markers": [
+       "classifier"
+      ],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": false,
+      "spec": "4.2, 8",
+      "tags": {
+       "classifier": 4
+      },
+      "value": 0.25
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.045586,
+       0.699364
+      ],
+      "components_only": false,
+      "headline": false,
+      "k": 1,
+      "kind": "rate",
+      "markers": [
+       "classifier"
+      ],
+      "n": 4,
+      "n_rows": 4,
+      "self_hosted": true,
+      "spec": "4.2, 8",
+      "tags": {
+       "classifier": 4
+      },
+      "value": 0.25
+     }
+    }
+   },
+   "yield_rate@1000": {
+    "sysA": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.300636,
+       0.954414
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 3,
+      "kind": "rate",
+      "markers": [],
+      "n": 4,
+      "n_rows": 8,
+      "self_hosted": false,
+      "spec": "4.1",
+      "tags": {
+       "ambiguous_end": 1,
+       "contested": 1,
+       "not_injected": 1,
+       "unmatched_control": 1
+      },
+      "value": 0.75
+     }
+    },
+    "sysB": {
+     "C0": {
+      "breakdowns": {},
+      "ci": [
+       0.045586,
+       0.699364
+      ],
+      "components_only": false,
+      "headline": true,
+      "k": 1,
+      "kind": "rate",
+      "markers": [],
+      "n": 4,
+      "n_rows": 8,
+      "self_hosted": true,
+      "spec": "4.1",
+      "tags": {
+       "ambiguous_end": 1,
+       "contested": 1,
+       "not_injected": 1,
+       "unmatched_control": 1
+      },
+      "value": 0.25
+     }
+    }
+   }
+  },
+  "n_observations": 219,
+  "phone_path": {
+   "disagreements": [
+    "yield_rate"
+   ]
+  },
+  "run_ids": [
+   "r1"
+  ],
+  "schema": "duplexbench.aggregate/1",
+  "systems": {
+   "sysA": {
+    "cancel_event": true,
+    "components_only": false,
+    "config_id": "cfgA",
+    "self_hosted": false
+   },
+   "sysB": {
+    "cancel_event": false,
+    "components_only": false,
+    "config_id": "cfgB",
+    "self_hosted": true
+   }
+  },
+  "thresholds_hash": "394923c1104b32dd13b94068cc42f8f51f94dc7c87cd433be89c1555abd5a73b"
+ },
+ "aggregate_sha256": "64f3f684ee18fe2889635e692cb6bb8f79c7ba5dcb595ca32cece35127be9457",
+ "caveats": [
+  "Low n: anchor_offset_in_utt_ms [sysA, C0] n=4; p50, p90, p95 below the minimum (p50 30, p90 100, p95 200); read these percentiles as indicative only.",
+  "Low n: anchor_offset_in_utt_ms [sysB, C0] n=4; p50, p90, p95 below the minimum (p50 30, p90 100, p95 200); read these percentiles as indicative only.",
+  "Low n: backlog_ms [sysA, C0] n=4; p50, p90, p95 below the minimum (p50 30, p90 100, p95 200); read these percentiles as indicative only.",
+  "Low n: playout_penalty [sysA, C0] n=4; p50, p90, p95 below the minimum (p50 30, p90 100, p95 200); read these percentiles as indicative only.",
+  "Low n: t_stop_ear [sysA, C0] n=4; p50, p90, p95 below the minimum (p50 30, p90 100, p95 200); read these percentiles as indicative only.",
+  "Low n: t_stop_ear [sysB, C0] n=4; p50, p90, p95 below the minimum (p50 30, p90 100, p95 200); read these percentiles as indicative only.",
+  "Low n: t_stop_model [sysA, C0] n=4; p50, p90, p95 below the minimum (p50 30, p90 100, p95 200); read these percentiles as indicative only.",
+  "Low n: t_tool_to_info_ear [sysA, C0] n=4; p50, p90, p95 below the minimum (p50 30, p90 100, p95 200); read these percentiles as indicative only.",
+  "Low n: t_tool_to_info_ear [sysB, C0] n=4; p50, p90, p95 below the minimum (p50 30, p90 100, p95 200); read these percentiles as indicative only.",
+  "Low n: t_ttfa_recv [sysA, C0] n=10; p50, p90, p95 below the minimum (p50 30, p90 100, p95 200); read these percentiles as indicative only.",
+  "Low n: t_turn_gap_ear [sysA, C0] n=10; p50, p90, p95 below the minimum (p50 30, p90 100, p95 200); read these percentiles as indicative only.",
+  "Low n: t_turn_gap_ear [sysB, C0] n=10; p50, p90, p95 below the minimum (p50 30, p90 100, p95 200); read these percentiles as indicative only.",
+  "sysA: 2 of 66 scored events tagged ambiguous_end; excluded from the metrics they are invalid for (an expected outcome, reported per system).",
+  "sysA: 1 of 66 scored events tagged not_injected; excluded from the metrics they are invalid for (an expected outcome, reported per system).",
+  "sysA: 1 of 66 scored events tagged unmatched_control; excluded from the metrics they are invalid for (an expected outcome, reported per system).",
+  "sysA: 1 of 66 scored events tagged contested; excluded from the metrics they are invalid for (an expected outcome, reported per system).",
+  "sysA: 1 of 66 scored events tagged slow_caller (simulated-caller artefact; excluded from latency / Track A metrics).",
+  "sysA: 1 of 66 scored events tagged unscripted_overlap (simulated-caller artefact; excluded from latency / Track A metrics).",
+  "sysB: 1 of 50 scored events tagged ambiguous_end; excluded from the metrics they are invalid for (an expected outcome, reported per system).",
+  "sysB: 1 of 50 scored events tagged not_injected; excluded from the metrics they are invalid for (an expected outcome, reported per system).",
+  "sysB: 1 of 50 scored events tagged unmatched_control; excluded from the metrics they are invalid for (an expected outcome, reported per system).",
+  "sysB: 1 of 50 scored events tagged contested; excluded from the metrics they are invalid for (an expected outcome, reported per system).",
+  "sysA [C0]: simulator mishearing rate 0.250 (n=4).",
+  "sysB [C0]: simulator mishearing rate 0.250 (n=4).",
+  "sysA [C0]: simulator regeneration rate 0.250 (n=4); above the review rate 0.1, scenarios need review.",
+  "sysB [C0]: simulator regeneration rate 0.250 (n=4); above the review rate 0.1, scenarios need review.",
+  "Phone path disagrees with live stream on the sign of the paired difference for yield_rate.",
+  "unsupported_claim_rate: classifier not validated (kappa not measured, needs >= 0.7); carries the classifier marker and stays out of headline rows.",
+  "sysB: no provider cancel event; T_stop_model is absent and the ear hears the full backlog (no flush is invented; see playout penalty)."
+ ],
+ "index_html_sha256": "6a63a718af65c41cdcfd477b0fc4a9f447760b6af3f2fc56a010cd8059160200",
+ "run_card": {
+  "calibration": {
+   "loop_lag_p99_ms": 1.1,
+   "passed": true,
+   "rtf": 0.2
+  },
+  "classifier_validation": null,
+  "date": "2026-11-04",
+  "harness_version": "0.1.0",
+  "hashes": {
+   "harness": "h1",
+   "langpack": "l1",
+   "normalizer": "n1",
+   "pack": "p1",
+   "refasr": "a1",
+   "simulator": "s1",
+   "thresholds": "t1"
+  },
+  "instance_type": "c6i.xlarge",
+  "iteration_counts": {
+   "sysA": 0,
+   "sysB": 0
+  },
+  "missing": [],
+  "network_baseline": {
+   "api.example": {
+    "tcp_connect_ms": 12.0
+   }
+  },
+  "refasr": {
+   "floors": {
+    "confirmation": 0.02,
+    "phone": 0.05
+   },
+   "version": "ref-1"
+  },
+  "run_id": "r1",
+  "scenario_pack_hash": "p1",
+  "simulator": {
+   "llm": "sim-llm",
+   "prompt_hash": "ph1",
+   "tts": "sim-tts"
+  },
+  "simulator_patience_rule": "While a tool is pending, and for 1500 ms after its result, the simulated caller does not take the floor on silence; outside tool waits, agent end of turn = ear inactivity >= 700 ms, floor delay U[300, 800] ms.",
+  "systems": {
+   "sysA": {
+    "config_id": "cfgA",
+    "preregistered_at": "2026-11-01T00:00:00Z",
+    "reasoning_effort": "low",
+    "turn_detection": {
+     "type": "server_vad"
+    }
+   },
+   "sysB": {
+    "config_id": "cfgB",
+    "preregistered_at": "2026-11-01T00:00:00Z",
+    "reasoning_effort": "n/a",
+    "turn_detection": {
+     "type": "semantic"
+    }
+   }
+  },
+  "thresholds": {
+   "bg_level_db": {
+    "source": "Proposed",
+    "spec": "3.2",
+    "value": -12.0
+   },
+   "bootstrap_resamples": {
+    "source": "Proposed",
+    "spec": "9.1",
+    "value": 1000
+   },
+   "burst_len_ms": {
+    "source": "Proposed",
+    "spec": "5",
+    "value": [
+     150,
+     400
+    ]
+   },
+   "burst_level_db": {
+    "source": "Proposed",
+    "spec": "5",
+    "value": -10.0
+   },
+   "burst_per_min": {
+    "source": "Proposed",
+    "spec": "5",
+    "value": 1.0
+   },
+   "calib_audio_tol_ms": {
+    "source": "Proposed",
+    "spec": "1.4",
+    "value": 20
+   },
+   "calib_event_tol_ms": {
+    "source": "Proposed",
+    "spec": "1.4",
+    "value": 5
+   },
+   "call_timeout_ms": {
+    "source": "Proposed",
+    "spec": "4.2",
+    "value": 480000
+   },
+   "contested_offset_ms": {
+    "source": "Proposed",
+    "spec": "3.3",
+    "value": 300
+   },
+   "contested_pause_ms": {
+    "source": "Proposed",
+    "spec": "3.3",
+    "value": 1500
+   },
+   "dead_air_gap_ms": {
+    "source": "Proposed",
+    "spec": "1.5",
+    "value": 2000
+   },
+   "eend_silence_ms": {
+    "source": "Proposed",
+    "spec": "3.2",
+    "value": 6000
+   },
+   "flip_rate_max": {
+    "source": "Proposed",
+    "spec": "8",
+    "value": 0.02
+   },
+   "frame_ms": {
+    "source": "Proposed",
+    "spec": "1.3",
+    "value": 20
+   },
+   "ge_loss_in_bad": {
+    "source": "Proposed",
+    "spec": "5",
+    "value": 1.0
+   },
+   "ge_p": {
+    "source": "Proposed",
+    "spec": "5",
+    "value": 0.0034
+   },
+   "ge_r": {
+    "source": "Proposed",
+    "spec": "5",
+    "value": 0.1667
+   },
+   "harness_invalid_max": {
+    "source": "Proposed",
+    "spec": "M8",
+    "value": 0.02
+   },
+   "hold_also_ms": {
+    "source": "Proposed",
+    "spec": "4.1",
+    "value": 1000
+   },
+   "hold_window_ms": {
+    "source": "Proposed",
+    "spec": "4.1",
+    "value": 2000
+   },
+   "holm_max_comparisons": {
+    "source": "Proposed",
+    "spec": "9.1",
+    "value": 6
+   },
+   "inactivity_run_ms": {
+    "source": "Proposed",
+    "spec": "1.2",
+    "value": 500
+   },
+   "jitter_buffer_ms": {
+    "source": "Proposed",
+    "spec": "1.3",
+    "value": 60
+   },
+   "kappa_min": {
+    "source": "Proposed",
+    "spec": "8",
+    "value": 0.7
+   },
+   "leakage_window_ms": {
+    "source": "Proposed",
+    "spec": "4.1",
+    "value": 10000
+   },
+   "loop_lag_p99_ms": {
+    "source": "Fact",
+    "spec": "1.4",
+    "value": 5
+   },
+   "muffle_cutoff_hz": {
+    "source": "Proposed",
+    "spec": "5",
+    "value": 1200
+   },
+   "muffle_share": {
+    "source": "Proposed",
+    "spec": "5",
+    "value": 0.2
+   },
+   "noise_drift_db": {
+    "source": "Proposed",
+    "spec": "5",
+    "value": 3.0
+   },
+   "noise_snr_db": {
+    "source": "Proposed",
+    "spec": "5",
+    "value": 15.0
+   },
+   "overlay_offsets_ms": {
+    "source": "Proposed",
+    "spec": "3.2",
+    "value": [
+     500,
+     2000
+    ]
+   },
+   "p99_min_n": {
+    "source": "Proposed",
+    "spec": "4.4",
+    "value": 1000
+   },
+   "pacing_slip_p99_ms": {
+    "source": "Fact",
+    "spec": "1.4",
+    "value": 10
+   },
+   "pause_ms": {
+    "source": "Proposed",
+    "spec": "3.2",
+    "value": [
+     600,
+     1500
+    ]
+   },
+   "refasr_partial_p90_ms": {
+    "source": "Proposed",
+    "spec": "1.4, D4",
+    "value": 300
+   },
+   "refasr_rtf_max": {
+    "source": "Proposed",
+    "spec": "1.4, D4",
+    "value": 0.5
+   },
+   "repeat_prompt_words": {
+    "source": "Proposed",
+    "spec": "4.2",
+    "value": 4
+   },
+   "respond_jaccard": {
+    "source": "Proposed",
+    "spec": "4.1",
+    "value": 0.5
+   },
+   "response_windows_ms": {
+    "source": "Proposed",
+    "spec": "4.1",
+    "value": [
+     2000,
+     5000
+    ]
+   },
+   "rms_active_dbfs": {
+    "source": "Proposed",
+    "spec": "1.2",
+    "value": -45.0
+   },
+   "side_level_db": {
+    "source": "Proposed",
+    "spec": "3.2",
+    "value": -6.0
+   },
+   "silero_disagree_ms": {
+    "source": "Proposed",
+    "spec": "1.4",
+    "value": 40
+   },
+   "sim_eot_ms": {
+    "source": "Proposed",
+    "spec": "7",
+    "value": 700
+   },
+   "sim_floor_delay_ms": {
+    "source": "Proposed",
+    "spec": "7",
+    "value": [
+     300,
+     800
+    ]
+   },
+   "sim_patience_ms": {
+    "source": "Proposed",
+    "spec": "7",
+    "value": 1500
+   },
+   "sim_regen_max": {
+    "source": "Proposed",
+    "spec": "7, D-review",
+    "value": 2
+   },
+   "sim_regen_review_rate": {
+    "source": "Proposed",
+    "spec": "7",
+    "value": 0.1
+   },
+   "sim_slow_caller_p90_ms": {
+    "source": "Proposed",
+    "spec": "7",
+    "value": 1500
+   },
+   "sim_speculate_ms": {
+    "source": "Proposed",
+    "spec": "7",
+    "value": 300
+   },
+   "stall_ms": {
+    "source": "Proposed",
+    "spec": "4.2",
+    "value": 20000
+   },
+   "tool_latency_buckets_ms": {
+    "source": "Proposed",
+    "spec": "4.2",
+    "value": [
+     0,
+     2000,
+     5000
+    ]
+   },
+   "tuning_iterations": {
+    "source": "Proposed",
+    "spec": "2.3",
+    "value": 10
+   },
+   "wait_resume_ms": {
+    "source": "Proposed",
+    "spec": "3.2",
+    "value": [
+     3000,
+     6000
+    ]
+   },
+   "yield_budgets_ms": {
+    "source": "Proposed",
+    "spec": "4.1",
+    "value": [
+     500,
+     1000,
+     2000
+    ]
+   },
+   "yield_headline_ms": {
+    "source": "Proposed",
+    "spec": "4.1",
+    "value": 1000
+   }
+  },
+  "thresholds_hash": "394923c1104b32dd13b94068cc42f8f51f94dc7c87cd433be89c1555abd5a73b",
+  "vendors_audio": [
+   "vendorA",
+   "vendorB"
+  ]
+ },
+ "verify": []
+}
