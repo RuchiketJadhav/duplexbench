@@ -43,7 +43,9 @@ FALLBACK B not required, so `components_only=False`):
    harness tool token, so Dograh's org-level `http_api` tools whose URL is
    `http://<harness>:<port>/tools/{{call_id}}/<tool>` reach this call's ToolServer
    binding. Tool calls therefore arrive at the ToolServer, never on this socket
-   (`tool_events` hook = ToolServer.subscribe).
+   (`tool_events` hook = ToolServer.subscribe). `needs_http_tools = True`: `cli run`
+   serves the ToolServer app on 0.0.0.0:<port of harness_tool_base> for the whole run
+   (tools/http.py, fix-44); the hosted app must reach that port (security group / tunnel).
 5. Inbound `media` -> audio, `clear` -> cancel_or_truncate, everything else logged.
    Dograh never sends `mark`.
 
@@ -441,6 +443,7 @@ class DograhClient:
 
 class DograhStack(TwilioAgentAdapter):
     name = "dograh_stack"
+    needs_http_tools = True     # step 4: Dograh POSTs to {harness_tool_base}/tools/... (fix-44)
 
     def __init__(self, clock: "Clock", config: dict, *, connector: Connector | None = None,
                  tool_events: ToolEvents | None = None, client: DograhClient | None = None,

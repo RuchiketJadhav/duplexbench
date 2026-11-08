@@ -2,6 +2,16 @@
 
     uv run duplexbench run configs/runs/smoke_mock.yaml --yes
     uv run duplexbench run configs/runs/smoke_openai.yaml [--yes] [--max-usd 5] [--allow-unregistered]
+    uv run duplexbench run configs/runs/<dograh>.yaml [--tool-host 0.0.0.0] [--tool-port 8900]
+
+HTTP tool server (fix-44): when a system's adapter sets `needs_http_tools` (dograh_stack),
+`run_command` binds 0.0.0.0:<port of params.harness_tool_base> (8900 when the URL has no
+port; 80/443 and non-http refused, exit 2; a port in use is refused, exit 2, naming the
+port) before the projection and prints `tool server: listening on ...`. `execute` serves
+`create_app(tool_server)` with uvicorn as a task on the run's asyncio loop from before the
+first call until after the last (tools/http.py); the socket is closed on every exit path
+(refusal, --yes missing, exception, Ctrl-C). The run card records `tool_server` {host,
+port, bind} at the top level and beside each such system's `harness_tool_base`.
 
 Order of work (nothing is sent to any provider before the last step):
 
@@ -309,6 +319,7 @@ class RunPlan:
     sim_tts: Any = None                 # Track C TTS client (None -> FakeTTS)
     sim_refasr: Any = None              # Track C reference ASR (RefASR; see build_refasr)
     sim_cost: dict | None = None        # Track C simulator pricing (simulator_costs, fix-28)
+    tool_http: dict | None = None       # fix-44: {host, port, bind, bases: {sid: base}} or None
 
     @property
     def total_usd(self) -> float:
@@ -498,6 +509,48 @@ def check_plan(plan: RunPlan, *, max_usd: float, yes: bool, allow_unregistered: 
                          "projected amount")
 
 
+def http_tool_systems(plan: RunPlan) -> dict[str, str | None]:
+    """{system_id: params.harness_tool_base} of the systems whose adapter calls the harness
+    tools over HTTP (`Adapter.needs_http_tools`, fix-44)."""
+    from duplexbench.systems import adapter_class
+    out: dict[str, str | None] = {}
+    for sid, s in plan.systems.items():
+        if getattr(adapter_class(s.adapter), "needs_http_tools", False):
+            out[sid] = (s.params or {}).get("harness_tool_base")
+    return out
+
+
+def plan_tool_http(plan: RunPlan, *, tool_host: str | None = None,
+                   tool_port: int | None = None) -> dict | None:
+    """Where the tool server listens, or None when no system needs HTTP tools.
+
+    Port: `tool_port`, else the port of every such system's harness_tool_base (they must
+    agree). Host: `tool_host`, else 0.0.0.0. Raises RunRefused(EXIT_CONFIG)."""
+    from duplexbench.tools.http import (DEFAULT_TOOL_HOST, ToolPortError, check_port,
+                                        port_from_base)
+    bases = http_tool_systems(plan)
+    if not bases:
+        return None
+    try:
+        if tool_port is not None:
+            port = check_port(int(tool_port), "--tool-port")
+        else:
+            ports = {sid: port_from_base(b) for sid, b in bases.items()}
+            if len(set(ports.values())) > 1:
+                raise ToolPortError(f"systems disagree on the harness_tool_base port {ports}; "
+                                    "pass --tool-port")
+            port = next(iter(ports.values()))
+    except ToolPortError as e:
+        raise RunRefused(EXIT_CONFIG, f"config error: {e}") from e
+    host = tool_host or DEFAULT_TOOL_HOST
+    return {"host": host, "port": port, "bind": f"{host}:{port}", "bases": bases}
+
+
+def tool_server_card(plan: RunPlan) -> dict | None:
+    th = plan.tool_http
+    return None if th is None else {k: th[k] for k in ("host", "port", "bind")}
+
+
 # -- execution ------------------------------------------------------------------------
 def config_json(plan: RunPlan) -> dict:
     return {"systems": {sid: s.report_entry(plan.preregistered_at)
@@ -518,15 +571,21 @@ def run_card(plan: RunPlan, run_id: str, summary: dict | None = None) -> dict:
         ver = "unknown"
     vendors = sorted({s.adapter for s in plan.systems.values()
                       if not s.self_hosted and s.adapter != "mock_agent"})
+    ts_card = tool_server_card(plan)
+    http_bases = (plan.tool_http or {}).get("bases") or {}
+    systems = {sid: {"adapter": s.adapter, "model": s.model, "price_ref": s.price_ref,
+                     "price_source_url": (plan.prices[sid] or {}).get("source_url"),
+                     "price_checked": (plan.prices[sid] or {}).get("checked"),
+                     "projection": plan.projection.get(sid)}
+               for sid, s in plan.systems.items()}
+    for sid, base in http_bases.items():        # fix-44: where Dograh calls, where we listen
+        systems[sid].update(harness_tool_base=base, tool_server=ts_card)
     return {
         "date": _dt.datetime.now(_dt.timezone.utc).isoformat().replace("+00:00", "Z"),
         "harness_version": ver,
         "run_id": run_id,
-        "systems": {sid: {"adapter": s.adapter, "model": s.model, "price_ref": s.price_ref,
-                          "price_source_url": (plan.prices[sid] or {}).get("source_url"),
-                          "price_checked": (plan.prices[sid] or {}).get("checked"),
-                          "projection": plan.projection.get(sid)}
-                    for sid, s in plan.systems.items()},
+        "systems": systems,
+        "tool_server": ts_card,                  # fix-44: null when no HTTP tool server ran
         "vendors_audio": vendors,
         "instance_type": f"{platform.node()} {platform.platform()}",
         "clock": clock_info(),
@@ -971,8 +1030,13 @@ def _is_version_mismatch(err: BaseException | None) -> bool:
     return isinstance(err, RefASRVersionMismatch)
 
 
-async def execute(plan: RunPlan, *, max_usd: float, echo=typer.echo) -> dict:
-    """Run every planned call sequentially; returns the run summary."""
+async def execute(plan: RunPlan, *, max_usd: float, echo=typer.echo,
+                  tool_sock: Any = None) -> dict:
+    """Run every planned call sequentially; returns the run summary.
+
+    `tool_sock` (fix-44): the bound socket from `run_command` when a system needs HTTP
+    tools; uvicorn serves the ToolServer app on it from before the first call until the
+    `finally` below (also on an exception or cancellation)."""
     import dataclasses
 
     from duplexbench.budget import Budget, BudgetExceeded
@@ -995,9 +1059,10 @@ async def execute(plan: RunPlan, *, max_usd: float, echo=typer.echo) -> dict:
     store.put("runs", runs_row)
     await store.flush()
     tool_server = None
-    if any(s.tools for s in plan.scenarios):
+    if any(s.tools for s in plan.scenarios) or tool_sock is not None:
         from duplexbench.tools.server import ToolServer
         tool_server = ToolServer()
+    tool_http = None
     budget = Budget(max_usd)
     outcomes: dict[str, int] = {}
     usd_total, results = 0.0, []
@@ -1147,6 +1212,14 @@ async def execute(plan: RunPlan, *, max_usd: float, echo=typer.echo) -> dict:
         await store.flush()
 
     try:
+        if tool_sock is not None:
+            from duplexbench.tools.http import ToolHttp, ToolPortError
+            tool_http = ToolHttp(tool_server.app, tool_sock)
+            try:
+                await tool_http.start()
+            except ToolPortError as e:
+                tool_http = None
+                raise RunRefused(EXIT_CONFIG, str(e)) from e
         for cp in plan.calls:
             if is_simulated(cp.scenario):
                 await simulated_trial(cp)
@@ -1170,6 +1243,9 @@ async def execute(plan: RunPlan, *, max_usd: float, echo=typer.echo) -> dict:
         store.put("runs", runs_row)
         await store.flush()
     finally:
+        if tool_http is not None:
+            await tool_http.stop()
+            echo(f"tool server: stopped ({tool_http.host}:{tool_http.port})")
         store.close()
     echo(f"done: {outcomes}  actual {usd_total:.4f} USD"
          + (f"  (stopped: {stopped})" if stopped else ""))
@@ -1215,10 +1291,12 @@ def _resolve_sim_tts(cfg: RunConfig) -> Any:
 
 def run_command(config: Path, *, yes: bool, max_usd: float | None, allow_unregistered: bool,
                 results_dir: Path | None = None, echo=typer.echo, sim_llm: Any = None,
-                sim_tts: Any = None, sim_refasr: Any = None) -> dict:
+                sim_tts: Any = None, sim_refasr: Any = None, tool_host: str | None = None,
+                tool_port: int | None = None) -> dict:
     """`sim_llm` / `sim_tts` / `sim_refasr`: Track C simulator clients (tests inject fakes;
-    otherwise simulator.llm / FakeTTS / simulator.refasr)."""
-    from duplexbench import _loop
+    otherwise simulator.llm / FakeTTS / simulator.refasr). `tool_host` / `tool_port`:
+    override the HTTP tool server bind (fix-44; default 0.0.0.0 and the port of
+    harness_tool_base)."""
     from duplexbench.scenarios.loader import PackError
     from duplexbench.systems import SystemError_
     try:
@@ -1238,6 +1316,33 @@ def run_command(config: Path, *, yes: bool, max_usd: float | None, allow_unregis
             apply_simulator_costs(plan, sim_refasr)
         except (ValueError, _SysErr) as e:
             raise RunRefused(EXIT_CONFIG, f"config error: simulator cost: {e}") from e
+    plan.tool_http = plan_tool_http(plan, tool_host=tool_host, tool_port=tool_port)
+    sock = None
+    if plan.tool_http is not None:       # fix-44: bind first, so a busy port fails fast
+        from duplexbench.tools.http import ToolPortError, bind_socket
+        try:
+            sock = bind_socket(plan.tool_http["host"], plan.tool_http["port"])
+        except ToolPortError as e:
+            raise RunRefused(EXIT_CONFIG, str(e)) from e
+        th_ = plan.tool_http
+        th_["port"] = sock.getsockname()[1]              # --tool-port 0: the ephemeral port
+        th_["bind"] = f"{th_['host']}:{th_['port']}"
+        reach = sorted({b for b in th_["bases"].values() if b}) or [
+            f"http://<public-host>:{th_['port']}"]
+        echo(f"tool server: listening on {th_['bind']} (Dograh must reach "
+             f"{' and '.join(r.rstrip('/') + '/tools/...' for r in reach)})")
+    try:
+        return _run_planned(plan, cfg, yes=yes, max_usd=max_usd,
+                            allow_unregistered=allow_unregistered, echo=echo,
+                            sim_refasr=sim_refasr, tool_sock=sock)
+    finally:
+        if sock is not None:
+            sock.close()                 # no-op when uvicorn already closed it
+
+
+def _run_planned(plan: RunPlan, cfg: RunConfig, *, yes: bool, max_usd: float | None,
+                 allow_unregistered: bool, echo, sim_refasr: Any, tool_sock: Any) -> dict:
+    from duplexbench import _loop
     print_plan(plan, echo)
     limit = cfg.max_usd if max_usd is None else max_usd
     check_plan(plan, max_usd=limit, yes=yes, allow_unregistered=allow_unregistered)
@@ -1251,7 +1356,7 @@ def run_command(config: Path, *, yes: bool, max_usd: float | None, allow_unregis
                     "any other model)") if rid.endswith("/unpinned") else ""
             echo(f"warning: simulator reference ASR {rid} differs from the calibrated one "
                  f"{cal}{hint}")
-    return _loop.run(execute(plan, max_usd=limit, echo=echo))
+    return _loop.run(execute(plan, max_usd=limit, echo=echo, tool_sock=tool_sock))
 
 
 def register(app: typer.Typer) -> None:
@@ -1264,11 +1369,17 @@ def register(app: typer.Typer) -> None:
             False, "--allow-unregistered", help="public-dev only: run without a matching "
                                                 "pre-registration"),
         results_dir: Path = typer.Option(None, "--results-dir", help="default: config or results/"),
+        tool_host: str = typer.Option(None, "--tool-host",
+                                      help="HTTP tool server bind host (default 0.0.0.0); only "
+                                           "for systems that call tools over HTTP (dograh_stack)"),
+        tool_port: int = typer.Option(None, "--tool-port",
+                                      help="HTTP tool server port (default: the port of "
+                                           "params.harness_tool_base, else 8900)"),
     ) -> None:
         """Run calls against systems under test (prints the projection; needs --yes)."""
         try:
             run_command(config, yes=yes, max_usd=max_usd, allow_unregistered=allow_unregistered,
-                        results_dir=results_dir)
+                        results_dir=results_dir, tool_host=tool_host, tool_port=tool_port)
         except RunRefused as e:
             typer.echo(str(e), err=True)
             raise typer.Exit(code=e.code)

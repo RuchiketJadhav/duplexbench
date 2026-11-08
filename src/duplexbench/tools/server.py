@@ -20,8 +20,13 @@ header), else `<token>-<n>` counting calls per token.
 Routes:
     POST /tools/{token}/{tool}   -> 200 result | 400 bad args | 403 policy | 404 unknown
                                     token or tool | 500 injected error | 504 injected timeout
-    GET  /tools/{token}          -> the tool schemas exposed for this call
+    GET  /tools/{token}          -> the tool schemas exposed for this call (each has "name");
+                                    404 unknown_call_token
     GET  /state/{token}          -> {"state": canonical state, "hash": sha256}
+    GET  /healthz                -> {"ok": true}, no token (tunnel / security-group checks, fix-44)
+
+Nothing here listens on a port: `tools/http.py` serves `create_app(server)` with
+uvicorn, inside `cli run` for adapters with `needs_http_tools` and in `tools serve`.
 
 Listeners (`subscribe(token, cb)`) get `cb("start" | "result", info)` so the
 simulator can track `tool_pending` (spec §7) without polling.
@@ -174,6 +179,10 @@ def _not_found(what: str, err: KeyError) -> JSONResponse:
 
 def create_app(server: ToolServer) -> FastAPI:
     app = FastAPI(title="duplexbench tool server")
+
+    @app.get("/healthz")
+    async def healthz() -> JSONResponse:
+        return JSONResponse({"ok": True})
 
     @app.post("/tools/{token}/{tool}")
     async def call_tool(token: str, tool: str, request: Request) -> JSONResponse:

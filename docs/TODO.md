@@ -180,8 +180,16 @@ Decision records live in docs/decisions.md. Item numbers refer to the 22-item li
       response shape, `GET /api/v1/tools/` on hosted, the provider connection itself is outside the
       hash (only `model_names` on the run card shows a swap). Spec note: the override sets
       `language: en` for OpenAI where §5.4 said to leave it unset. Harmless for English.
+- [x] **fix-44 serve the tool app** (found and built 2026-11-08, 21 tests). `tools/server.create_app`
+      exists and nothing starts uvicorn, so during a Dograh run nothing listens on 8900. `cli run` must
+      serve it on 0.0.0.0:<port from harness_tool_base> for the run, plus `tools serve` for a standalone
+      reachability check and `GET /healthz`. Built: `cli run` binds the port before the projection and serves
+      uvicorn on the run's own loop, `--tool-host/--tool-port`, run card `tool_server`, `tools serve
+      --port 8900` with the TEST token. Open: `pipecat_cascade` is not flagged `needs_http_tools` yet.
 - [ ] **Flaky timing test under load.** `test_refasr_deepgram_provisional::test_partial_p90_with_interims_under_the_gate`
       reported a 64 s partial p90 once while three suites ran at the same time, and passes alone.
+      `test_refasr_log::test_pass_writes_no_log_unless_keep_log` also failed once under load (the
+      calibration stage returned fail). Both are real-clock calibration tests.
       Real-clock test. Mark it `timing` or bound it with the fake server's own clock.
 - [ ] **Dograh model override** (decision B21). The workflow must run a full-duplex model, not
       the org's cascade. Pick the first model for the test run (recommendation: OpenAI

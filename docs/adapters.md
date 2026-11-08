@@ -35,6 +35,8 @@ override), `workflow_id`, `org_id` (required), `api_key_env` (default `DOGRAH_AP
 `ws_token_secret_env` (optional), `run_name_prefix` (default `DB-`), `harness_tool_base`,
 `org_model_config` (optional pasted fallback, fix-36), `custom_parameters`, `headers`.
 
+HTTP tool server (fix-44): `DograhStack.needs_http_tools = True`, so `cli run` serves the ToolServer app with uvicorn for the whole run on `0.0.0.0:<port of harness_tool_base>` (8900 when the URL has none; 80/443 and https refused; a busy port refused with exit 2; `--tool-host` / `--tool-port` override) and prints `tool server: listening on 0.0.0.0:8900 (Dograh must reach http://<harness-host>:8900/tools/...)` before the projection. The harness machine must be reachable from the Dograh app on that port: on EC2 open the port in the instance's security group (inbound TCP 8900 from the Dograh app's egress, not 0.0.0.0/0 if avoidable), or put a tunnel in front whose public URL keeps the port literal (the tool URLs are `http://<host>:8900/tools/{{call_id}}/<tool>`). Check reachability before a run with `duplexbench tools serve --port 8900` (one test token `TEST`, billing mock backend): from the Dograh side `GET http://<host>:8900/healthz` -> `{"ok": true}`, `GET /tools/TEST` -> 200 with the tool schemas, `POST /tools/TEST/get_balance` `{"account_id": "AC-77"}` -> 200. The run card records `tool_server: {host, port, bind}` beside `harness_tool_base`.
+
 Run card (`run_card_fields()`): workflow_id, org_id, pinned definition_id, run definition_id,
 `definition_matches_pinned`, config_hash and its scope, `model_source`, `model_names` (provider/model only),
 `tool_definitions_hashed`, `tool_uuids_referenced`, ws_token used, disclosures (no concurrency

@@ -49,6 +49,11 @@ class Adapter(ABC):
     name: str
     caps: AdapterCaps
     config: dict              # hashed to config_id (storage.config_id)
+    # True when the system under test calls the harness tools over HTTP (Dograh's http_api
+    # tools POST to `params.harness_tool_base`): `cli run` then serves the ToolServer app
+    # with uvicorn for the whole run (tools/http.py, fix-44). Hosted S2S adapters get tools
+    # in-process (ToolClient) and leave it False.
+    needs_http_tools: bool = False
 
     @abstractmethod
     async def open(self, call: "CallContext") -> None: ...

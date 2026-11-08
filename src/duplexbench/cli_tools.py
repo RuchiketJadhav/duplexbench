@@ -3,7 +3,8 @@
     from duplexbench.cli_tools import register
     register(app)        # in cli.py
 
-adds `scenario new`, `scenario validate`, `preregister`, `label`, `report-text`.
+adds `scenario new`, `scenario validate`, `preregister`, `label`, `report-text`,
+`tools serve` (fix-44: the HTTP tool server with one test binding, no run).
 Imports happen inside each command so a broken optional module cannot break the CLI.
 """
 from __future__ import annotations
@@ -98,6 +99,33 @@ def register(app: typer.Typer) -> None:
         from duplexbench.labeling import LABELS_DIR, run_session
 
         run_session(manifest, set_name, labeler, out_dir=out_dir or LABELS_DIR)
+
+    tools = typer.Typer(no_args_is_help=True, help="Harness HTTP tool server (fix-44).")
+    app.add_typer(tools, name="tools")
+
+    @tools.command("serve")
+    def tools_serve(port: int = typer.Option(8900, help="TCP port (80/443 refused)"),
+                    host: str = typer.Option("0.0.0.0", help="bind address"),
+                    token: str = typer.Option("TEST", help="call token of the test binding"),
+                    domain: str = typer.Option("billing", help="mock backend domain")) -> None:
+        """Serve the tool server with one test binding (no run) for reachability checks.
+
+        GET /healthz, GET /tools/<token>, POST /tools/<token>/<tool>; Ctrl-C stops."""
+        from duplexbench import _loop
+        from duplexbench.tools.http import (ToolPortError, bind_socket, build_test_server,
+                                            serve_test)
+        try:
+            server = build_test_server(token, domain)
+            sock = bind_socket(host, port)
+        except (ToolPortError, KeyError) as e:
+            typer.echo(str(e).strip("'\""), err=True)
+            raise typer.Exit(2)
+        try:
+            _loop.run(serve_test(server, sock, token=token, domain=domain, echo=typer.echo))
+        except KeyboardInterrupt:
+            typer.echo("tool server: stopped")
+        finally:
+            sock.close()
 
     @app.command("report-text")
     def report_text(run_id: str,
