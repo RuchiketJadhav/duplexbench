@@ -22,6 +22,14 @@ uv run pytest -q
 
 Secrets go in `.env` only (copy `.env.example`). Nothing else reads credentials.
 
+The calibration stage needs the Silero VAD model, which is not in the repo. A fresh clone gets it with:
+
+```
+curl -sL -o tests/fixtures/silero_vad.onnx https://github.com/snakers4/silero-vad/raw/master/src/silero_vad/data/silero_vad.onnx
+```
+
+(On the development machine it is read from `reference/silero-vad/` instead. The file is git-ignored.)
+
 ## Private files: `DUPLEX_PRIVATE_DIR`
 
 The `private-test` scenarios, their audio, the floor-set audio and the held-out

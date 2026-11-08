@@ -6,3 +6,4 @@ __pycache__/
 *.pyc
 scenarios/private-test/
 configs/langpacks/*/private/
+tests/fixtures/silero_vad.onnx
