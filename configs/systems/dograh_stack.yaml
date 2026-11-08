@@ -24,7 +24,7 @@ price_ref: openai_realtime  # the realtime minutes are billed to the OpenAI key 
                             # connection (B23), at gpt-realtime-2.1 prices. Dograh hosting itself is not priced.
 params:
   endpoint: https://app.dograh.com         # Dograh host, without /api/v1 (the adapter adds it); WS derived (https->wss)
-  ws_endpoint: null                         # optional override for the telephony WS host
+  ws_endpoint: https://api.dograh.com      # hosted: WS lives on api.dograh.com; app.dograh.com returns 404 on upgrade (found 2026-11-08)
   workflow_id: 14735
   org_id: 6993
   api_key_env: DOGRAH_API_KEY
