@@ -180,6 +180,15 @@ Decision records live in docs/decisions.md. Item numbers refer to the 22-item li
       response shape, `GET /api/v1/tools/` on hosted, the provider connection itself is outside the
       hash (only `model_names` on the run card shows a swap). Spec note: the override sets
       `language: en` for OpenAI where §5.4 said to leave it unset. Harmless for English.
+- [ ] **Hosted WS token (blocker for the smoke, found 2026-11-08).** Hosted Dograh has
+      `TELEPHONY_WS_TOKEN_SECRET` set and `TELEPHONY_WS_TOKEN_ENFORCE` on: the media socket on
+      `api.dograh.com` accepts the upgrade and closes 4401 without the HMAC token. Dograh mints the
+      token only inside its carrier webhooks (TwiML), never through a REST route. Two ways out, the
+      user's and the Dograh team's call: (a) the team shares the secret and we set
+      `ws_token_secret_env: TELEPHONY_WS_TOKEN_SECRET` (the adapter already mints the same HMAC over
+      `wf:org:run`); (b) Dograh adds an org-scoped `POST /api/v1/workflow/{wf}/runs/{id}/ws-token`
+      and the adapter fetches it per run (small adapter change). Two hosted runs (772933, one more)
+      sit in `initialized` from the failed dials.
 - [x] **fix-44 serve the tool app** (found and built 2026-11-08, 21 tests). `tools/server.create_app`
       exists and nothing starts uvicorn, so during a Dograh run nothing listens on 8900. `cli run` must
       serve it on 0.0.0.0:<port from harness_tool_base> for the run, plus `tools serve` for a standalone

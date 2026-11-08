@@ -237,3 +237,12 @@ fix-41 | Why: the first live calibration on the 60 s clip (13 utterances) failed
 - Open: pipecat_cascade's pipeline also POSTs to `tool_url_template` (127.0.0.1:8900) but is not flagged `needs_http_tools` (left as is; flag it when that pipeline is built). A dry run (no --yes) of a Dograh config also binds 0.0.0.0:8900 briefly (fail fast); on Windows the first bind may raise a firewall prompt. The EC2 security group / tunnel for 8900 and the real `<harness-host>` in harness_tool_base and the 21 Dograh tool URLs are still human steps (G13).
 
 - 2026-11-08 smoke, first attempt: `server rejected WebSocket connection: HTTP 404`. Hosted Dograh answers WebSocket upgrades on `api.dograh.com` (101 on the telephony route), not on `app.dograh.com` (404). Fixed by `ws_endpoint: https://api.dograh.com` in `configs/systems/dograh_stack.yaml`. The run (772933) was created on Dograh before the dial, so a 404 leaves an uncompleted run behind; no cost.
+
+## 2026-11-08 smoke on EC2 (98.84.60.36): blocked at the media socket
+
+- Box: repo restored from a git bundle after the directory vanished (14:03-17:35 UTC, same key); Silero model
+  download documented in the README. Calibration PASS twice on the box (TTFS p90 320 then 380 ms, loop lag p99 2 ms).
+- Check 4 confirmed from the box log: 21 Dograh probe requests from three Dograh addresses, 404 unknown_call_token as expected.
+- Live run attempt 1: HTTP 404 on the WebSocket (app.dograh.com does not forward upgrades). `ws_endpoint: https://api.dograh.com`.
+- Live run attempt 2: upgrade accepted, then close 4401 Unauthorized: token enforcement is on for hosted. See TODO.
+- Spend: 0.05 USD (two calibrations). Both run attempts stopped before any agent minute was billed.
