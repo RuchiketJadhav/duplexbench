@@ -31,9 +31,9 @@ params:
   ws_token_secret_env: null                 # set to TELEPHONY_WS_TOKEN_SECRET's env name if enforced
                                             # (whether the hosted app enforces the WS token is unknown)
   run_name_prefix: DB-
-  harness_tool_base: http://<harness-host>:8900   # tool URL = {base}/tools/{{call_id}}/<tool>; keep the port literal
-  # Placeholder: the tunnel hostname replaces <harness-host> at run time. The 21 tool URLs on
-  # Dograh's side are updated by the workflow session, not by this harness.
+  harness_tool_base: http://98.84.60.36:8900   # tool URL = {base}/tools/{{call_id}}/<tool>; keep the port literal
+  # 98.84.60.36 = the EC2 box's Elastic IP (us-east-1, c7i.xlarge, 2026-11-08). The 21 tool URLs on
+  # Dograh's side must carry the same host and port; the workflow session updates them.
   # Optional manual fallback (fix-36). The adapter fetches the model source itself: the workflow's
   # model_configuration_override (v3, B23) or model_configuration_v2_override (B21) if set,
   # else GET /api/v1/user/configurations/user. Workflow 14735 carries the v3 override.
