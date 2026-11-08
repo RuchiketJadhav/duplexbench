@@ -1,0 +1,36 @@
+# Test run, not Core: 5 Track C simulated calls against hosted Dograh workflow 14735, C0.
+#   uv run duplexbench preregister --run-config configs/runs/test_dograh.yaml
+#   uv run duplexbench calibrate --refasr-config configs/runs/test_dograh.yaml --yes   # about 0.025 USD
+#   uv run duplexbench run configs/runs/test_dograh.yaml          # projection only
+#   uv run duplexbench run configs/runs/test_dograh.yaml --yes    # after approval
+name: test_dograh
+pack: scenarios/public-dev
+scenarios: null
+track: C
+limit: 5
+systems: [dograh_stack]
+conditions: [C0]
+trials: 1
+concurrency: 1
+max_usd: 20.0
+seed: 1
+comparisons: []
+baseline_condition: C0
+require_calibration: true
+simulator:
+  caller_first: false                      # the agent greets first, handoff 2026-11-08
+  refasr:
+    candidate: deepgram
+    kwargs: {pinned_model_uuid: 40bd3654-e622-47c4-a111-63a61b23bfe8}
+  llm:
+    kind: openai_compat
+    base_url: https://api.openai.com/v1
+    api_key_env: OPENAI_API_KEY
+    model: gpt-5.4-mini-2026-03-17
+    price_ref: openai_chat
+  tts:
+    vendor: fish
+    model: s2.1-pro-free
+    voices_file: configs/voices/fish.yaml
+    default_voice: delia
+    api_key_env: FISH_API_KEY

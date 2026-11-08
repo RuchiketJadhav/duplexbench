@@ -34,6 +34,8 @@ CAVEAT_TAGS = {
     "not_injected": "agent utterance ended before the overlay offset (spec §3.2)",
     "unmatched_control": "control twin diverged by caller step (spec §3.4)",
     "contested": "contested bucket, never headline (spec §3.3)",
+    "no_refasr": "no reference-ASR words for the ear audio; excluded from n (fix-23)",
+    "step_not_reached": "entity's caller step never ended; excluded from n (fix-32)",
 }
 
 

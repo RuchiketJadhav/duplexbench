@@ -34,6 +34,15 @@ ground truth the runner logs: `speech` (a scripted speech/resumption frame with
 non-zero samples, or an injected clip sounding), `step_id` (the scripted step
 speaking) and `overlay_id` (the injected clip sounding).
 
+Lead-in (fix-34, WORKFLOW_SPEC gap G1): `ScriptedCaller(..., lead_in=LeadIn(th))`
+holds step 1 until the agent's first end of turn (run config
+`scripted: {lead_in: agent_first}`; the default `caller_first` passes no LeadIn and
+plays step 1 from the first frame, as before). While it waits, the caller sends
+silence frames on the same 20 ms grid (`speech=False`, no step); `start_ns`, the
+origin of every script time (turn ends, injections, P-PAUSE geometry), is set to
+the tick at which step 1's first frame goes out, so the script itself is unchanged.
+See `LeadIn` for the end-of-turn rule and the no-greeting guard.
+
 Implements the `CallerSource` protocol of `stimuli/caller_source.py` (M1) by
 structure; `CallerSourceLike` below mirrors it so this module does not depend on
 that file's creation order.
@@ -77,6 +86,69 @@ class Segment:
     n_frames: int
 
 
+class LeadIn:
+    """agent_first gate (fix-34): wait for the agent's first end of turn before step 1.
+
+    Fed by `Playout.subscribe(lead_in.on_activity)` (the live ear segmenter: an
+    utterance stop is the start of an `inactivity_run_ms` run). The agent's first end of
+    turn is reached when at least one utterance has started and the ear has been
+    inactive for `th.eend_silence_ms` since the last utterance's stop (the same
+    silence the script leaves after every caller step; no new threshold). An agent
+    that resumes inside that silence (a two-part greeting) restarts the wait.
+    `greeting_end_ns` = that last stop (ear time).
+
+    Guard: no agent onset within `th.stall_ms` of the lead-in start -> `no_greeting`
+    and step 1 starts anyway. The harness has no first-audio timeout; `stall_ms` is
+    the existing "neither channel active" call timeout (`call_timeout_ms`, 480 s,
+    could never fire first, because `stall_ms`, 20 s, ends a silent call before it).
+    The runner does not apply its stall rule while the caller is `waiting_lead_in`.
+    Nothing is cut: the greeting plays to the ear like any agent audio."""
+
+    mode = "agent_first"
+
+    def __init__(self, th: Thresholds):
+        self.wait_ns = th.eend_silence_ms * _NS_PER_MS
+        self.guard_ns = th.stall_ms * _NS_PER_MS
+        self.utts: list[list[int | None]] = []        # [onset_ns, stop_ns | None]
+        self.start_ns: int | None = None              # first lead-in tick
+        self.end_ns: int | None = None                # tick at which step 1 started
+        self.greeting_end_ns: int | None = None
+        self.no_greeting = False
+
+    def on_activity(self, kind: str, frame_idx: int, t_ns: int) -> None:
+        del frame_idx
+        if self.end_ns is not None:
+            return
+        if kind == "onset":
+            self.utts.append([t_ns, None])
+        elif kind == "stop" and self.utts and self.utts[-1][1] is None:
+            self.utts[-1][1] = t_ns
+
+    def ready(self, now: int) -> bool:
+        """True once step 1 may start at tick `now` (records the outcome)."""
+        if self.start_ns is None:
+            self.start_ns = now
+        if not self.utts:
+            if now - self.start_ns >= self.guard_ns:
+                self.no_greeting, self.end_ns = True, now
+                return True
+            return False
+        stop = self.utts[-1][1]
+        if stop is not None and now - stop >= self.wait_ns:
+            self.greeting_end_ns, self.end_ns = stop, now
+            return True
+        return False
+
+    def flags(self, call_start_ns: int) -> dict:
+        """Call flags (ms from the call start): lead_in, greeting_end_ms, step1_start_ms,
+        greeting_utterances, no_greeting."""
+        def ms(t: int | None) -> float | None:
+            return None if t is None else (t - call_start_ns) / _NS_PER_MS
+        return {"lead_in": self.mode, "greeting_end_ms": ms(self.greeting_end_ns),
+                "step1_start_ms": ms(self.end_ns), "greeting_utterances": len(self.utts),
+                "no_greeting": self.no_greeting}
+
+
 def resumption_key(step_id: str) -> str:
     """Key of a step's resumption clip in the `clips` mapping."""
     return f"{step_id}/resumption"
@@ -90,8 +162,10 @@ def dbfs(pcm: np.ndarray) -> float:
 
 class ScriptedCaller:
     def __init__(self, scenario: Scenario, clips: Mapping[str, np.ndarray], clock: Clock,
-                 th: Thresholds, rate: int = 8000):
+                 th: Thresholds, rate: int = 8000, lead_in: LeadIn | None = None):
         self.scenario = scenario
+        self.lead_in = lead_in
+        self.waiting_lead_in = False      # runner: no stall while the lead-in waits
         self.clock = clock
         self.th = th
         self.rate = rate
@@ -158,7 +232,22 @@ class ScriptedCaller:
 
     # -- CallerSource -------------------------------------------------------
     async def frames(self) -> AsyncIterator[Frame]:
-        self.start_ns = self.clock.now_ns()
+        t0 = self.clock.now_ns()
+        j = 0                                   # lead-in frames sent (agent_first)
+        if self.lead_in is not None:
+            self.waiting_lead_in = True
+            silence = np.zeros(self.spf, np.int16)
+            while True:
+                t = t0 + j * self.frame_ns
+                await self.clock.sleep_until_ns(t)
+                if self.lead_in.ready(self.clock.now_ns()):
+                    break
+                yield Frame(t_ns=t, seq=j, src="caller", pcm=silence.copy(),
+                            mulaw=mulaw.encode(silence), speech=False, step_id=None,
+                            overlay_id=None)
+                j += 1
+            self.waiting_lead_in = False
+        self.start_ns = t0 + j * self.frame_ns
         k = 0
         try:
             while k < self.n_frames or any(k0 + len(x) // self.spf > k for k0, x, _ in self._inj):
@@ -174,7 +263,7 @@ class ScriptedCaller:
                     if sg.kind in ("speech", "resumption") and \
                             np.any(self._script[k * self.spf:(k + 1) * self.spf]):
                         step = sg.step_id
-                yield Frame(t_ns=t, seq=k, src="caller", pcm=pcm, mulaw=mulaw.encode(pcm),
+                yield Frame(t_ns=t, seq=j + k, src="caller", pcm=pcm, mulaw=mulaw.encode(pcm),
                             speech=step is not None or ov is not None, step_id=step,
                             overlay_id=ov)
                 k += 1

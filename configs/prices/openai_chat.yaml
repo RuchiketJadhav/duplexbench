@@ -1,0 +1,23 @@
+# OpenAI chat-completions models used as the simulated caller's LLM (fix-28).
+# Read by cli_run (simulator.llm.price_ref: openai_chat) for the Track C cost projection
+# and the actual cost from each response's `usage`; not a system-under-test price file.
+# A self-hosted endpoint (PhoneLLM on vLLM/SGLang/Modal) has no price_ref: GPU time is
+# billed outside the harness (billing: external, 0 USD).
+price_ref: openai_chat
+source_url: https://platform.openai.com/docs/pricing
+checked: "2026-11-06"
+currency: USD
+unit: per_1m_tokens
+rates:                                   # [Fact] USD per 1M tokens, per model id
+  gpt-5.4-mini-2026-03-17: {input_per_1m: 0.75, output_per_1m: 4.50}
+# Projection inputs (before a call; never used for the actual cost, which sums the
+# responses' usage). All [Assumption] until measured on a live Track C run.
+projection:
+  input_tokens_per_turn: 1500            # [Assumption] prompt + transcript so far, per caller turn
+  output_tokens_per_turn: 60             # [Assumption] one short caller line
+  extra_turns_per_call: 2                # [Assumption] caller turns per call = scenario steps + 2
+notes: >-
+  Cached input is not modelled (input billed at the full rate; over-estimates). Re-sent
+  context grows with the transcript; the 1,500 tokens per turn is a flat average, not
+  modelled further. Actual = sum(usage.input_tokens) x input_per_1m + sum(usage.output_tokens)
+  x output_per_1m, / 1e6.

@@ -205,6 +205,106 @@ Docs:
 
 ---
 
+## 8. Deepgram Nova-3 streaming (reference ASR, decision B11)
+
+Checked 2026-11-06. Sources: developers.deepgram.com/reference/speech-to-text-api/listen-streaming (AsyncAPI
+reference served as markdown), deepgram.com/pricing.
+
+- Endpoint: `wss://api.deepgram.com/v1/listen` with query parameters. Header `Authorization: Token <DEEPGRAM_API_KEY>`.
+- Audio in: `encoding` enum includes `linear16` and `mulaw`; `sample_rate` free; `channels` (default 1). So 8 kHz
+  μ-law and 8 kHz PCM16 are both accepted natively. The harness sends `encoding=linear16&sample_rate=8000&channels=1`
+  (its ear frames are int16).
+- Parameters used: `model=nova-3`, `language=en`, `interim_results=true` (default false), `endpointing` (default 10,
+  ms of silence before a final), `utterance_end_ms` (optional UtteranceEnd message), `punctuate=false`,
+  `smart_format=false`, `numerals=false` (all default false, left so the normalizer sees spoken forms),
+  `version=latest` (default; no other value documented for Nova-3).
+- Client control messages (JSON text frames): `{"type":"Finalize"}` flushes pending audio into a final Results
+  message (`from_finalize: true`), `{"type":"CloseStream"}` ends the stream, `{"type":"KeepAlive"}` keeps it open.
+- Server messages: `Results` with `is_final`, `speech_final`, `start`, `duration` (seconds), `channel.alternatives[0]`
+  holding `transcript`, `confidence` and `words[]` of `{word, start, end, confidence, punctuated_word?}` (times in
+  seconds from stream start); `metadata.request_id`, `metadata.model_uuid`, `metadata.model_info{name, version, arch}`;
+  `Metadata` at close (`duration`, `channels`); `UtteranceEnd`; `SpeechStarted` (with `vad_events=true`).
+- Harness event mapping (fix-24, 2026-11-07): `stream()` releases a word when it arrives in an `is_final`
+  Results message (`final=True`, exactly once, never changed). `stream(provisional=True)` also releases
+  interim words (`final=False`) the first time they appear at their position in the chunk, and again only
+  when their text changes. Transcripts use final words only (`engine.settled`). Measured 2026-11-07 on
+  54.6 s of speech: finals arrive once per 3 to 5 s chunk (partial p90 3990 ms finals-only), interims
+  every few hundred ms. `finish()` sends Finalize then CloseStream and waits for the final Results and Metadata.
+- Finalize on stop (fix-40, 2026-11-08; Dograh parity): pipecat (services/deepgram/stt.py) sends `{"type":"Finalize"}`
+  when its local VAD reports the user stopped, and Dograh runs Deepgram with endpointing=100, interim_results=true,
+  punctuate=true, nova-3-general, language multi, turn-taking from Silero VAD (stop_secs 0.2). The harness now defaults
+  `endpointing=100`, sends Finalize mid-stream (`DeepgramStreamer.finalize()`, repeatable, stream stays open) on every
+  agent stop of the ear segmenter (500 ms hold), and gates calibration on TTFS (Time To Final Segment = final receipt
+  minus speech end, speech end = VAD stop minus stop_secs). Pipecat's stt-benchmark measured Deepgram nova-3-general
+  at TTFS p50 247 ms, p95 298 ms, p99 326 ms with that scheme (source: reference/stt-benchmark/README.md, results table;
+  definition in reference/stt-benchmark/docs/measuring-ttfs.md). punctuate stays false here (raw words for matching).
+- Measured live 2026-11-08 (calibration clip, 13 utterances, 800 ms pauses, this laptop; log in
+  results/dg_finalize_log-20261108.json): with endpointing=100 Deepgram's own `is_final` arrives 460 to 880 ms after
+  speech end, before the harness Finalize reply (sent at speech end + 500 ms hold, reply at about + 800 ms). The
+  Finalize round trip is about 300 ms, which is the network RTT from here. The Finalize reply is empty (0 words,
+  `from_finalize: true`) when the words were already flushed. First calibration run: TTFS p50 801 ms, p90 3893 ms,
+  wait after the stop p50 301 / p90 401 ms, with 2 of 13 utterances at 4.6 and 5.6 s (words came only with the next
+  chunk final). Second run: all 13 between 461 and 880 ms. `finish()` once hit its 5 s timeout while the test suite
+  loaded the CPU, and passed on the rerun.
+- Calibration clip and diagnostics log (fix-41, 2026-11-08): the default calibration clip is now
+  tests/fixtures/refasr_calib_speech_3min.wav (195 s, 42 sentences, 800 ms pauses; about 0.025 USD per calibration at
+  $0.0077 per audio minute, the projection follows the clip's duration), so one late final out of 42 no longer decides
+  the TTFS p90. A failed reference-ASR stage (gate or any `RefASRTransportError`, the `finish()` timeout included) writes
+  `calibration-<ts>.refasr_log.json` beside the calibration JSON: every server message with `_arrival_ms`, the stop and
+  Finalize send times, per-utterance onset, speech end, last final word and its return time, TTFS, and the reason
+  (API key scrubbed; `--keep-refasr-log` writes it on a pass too). The `finish()` timeout message now names the last
+  server message type (`Results interim|is_final|from_finalize`, `Metadata`) and the ms since it arrived, or says
+  that none arrived.
+- Version pinning: none offered by the API beyond `version=latest`. The harness records `model_uuid` and
+  `model_info.version` per stream and refuses a run whose uuid differs from the pinned one (B11).
+- Price (pay-as-you-go, 2026-11-06): Nova-3 monolingual streaming $0.0077 per audio minute; pre-recorded $0.0043.
+  Growth tier $0.0065 / $0.0036. Billed per second of audio.
+- Rate limits: pay-as-you-go allows 150 concurrent streaming connections (pricing FAQ); the harness uses one.
+
+## 9. Simulator LLM for the test run (decision B12)
+
+Checked 2026-11-06 at platform.openai.com/docs/models and /docs/pricing (served as markdown).
+- `gpt-4.1` and its snapshot `gpt-4.1-2025-04-14` are marked Deprecated. Not used.
+- `gpt-5.4-mini`: default snapshot `gpt-5.4-mini-2026-03-17`; Chat Completions supported; `reasoning_effort`
+  supports none (default), low, medium, high, xhigh; $0.75 input / $4.50 output per 1M tokens. Whether the model
+  accepts `temperature` is not stated on its page, so the harness does not send it (first smoke confirms).
+- Sent through `simulator.llm` as `kind: openai_compat`, `base_url: https://api.openai.com/v1`,
+  `extra_body: {reasoning_effort: none}`. Test run only (spec §7 family rule), see B12.
+
+## 10. Fish Audio text-to-speech (caller voice and stimuli, decision B13)
+
+Checked 2026-11-06 at docs.fish.audio (pages served as markdown: api-reference/endpoint/openapi-v1/text-to-speech,
+text-to-speech-stream-with-timestamps, text-to-speech-live-with-timestamps, features/text-to-speech,
+features/text-to-speech/drama-3, developer-guide/models-pricing/pricing-and-rate-limits, models-overview).
+
+- Endpoints: `POST https://api.fish.audio/v1/tts` (audio only), `POST /v1/tts/stream/with-timestamp`
+  (Server-Sent Events: each `data:` line is JSON with `audio_base64`, `content`, `chunk_seq`,
+  `chunk_audio_offset_sec`, `alignment` or null), `wss://api.fish.audio/v1/tts/live` and
+  `/v1/tts/live/with-timestamp` (MessagePack frames, text streamed in). Header `Authorization: Bearer <key>`.
+  The model is chosen by the HTTP header `model`; a missing or misspelled header falls back to `s2.1-pro`
+  without an error.
+- Models (header values): `s2.1-pro` (recommended for production, TTFA and DPA guarantees), `s2.1-pro-free`
+  (same model, $0, no guarantees), `drama-3` (directed delivery: `[bracket]` directions, sounds, pauses,
+  paired tags such as `<slow>`, multi-speaker), `s2-pro` (previous), `s1` (deprecated, retires 2026-12-31).
+- Word timestamps: `alignment.segments[] = {text, start, end}` in seconds from the start of that text chunk;
+  add `chunk_audio_offset_sec` for the whole-clip timeline. Snapshots are cumulative per `chunk_seq`:
+  replace, never append. A trailing event with empty audio may carry the final correction. Whether
+  `drama-3` serves the with-timestamp routes is not stated on its page [Assumption: yes, same request];
+  the first paid smoke confirms.
+- Request fields used by the harness: `text`, `reference_id` (voice id), `format: pcm` (raw 16-bit mono;
+  sample rates 8, 16, 24, 32 or 44.1 kHz; the harness asks for 16000), `sample_rate`, `latency`
+  (`balanced` default, about 300 ms to first audio; `normal` is more stable), `prosody.speed` (the
+  scenario's `speaking_rate`), `normalize: true`, `language: en`. `temperature` / `top_p` left at the
+  defaults (0.7) and recorded.
+- Public EN-US voices named on the Drama 3 page: Adrian `bf322df2096a46f18c579d0baa36f41d` (male),
+  Delia `c70cfb98867a4bfb9ae20d2401257b92` (female), Sheila `f3a2b90078d54a65af4b95f63bc7798e` (female).
+- Price (input text, per million UTF-8 bytes): `drama-3` $50.00 (launch price $10.00 until 2026-11-30),
+  `s2.1-pro` $15.00, `s2.1-pro-free` $0. One English character is one byte, so $15/M bytes = $0.015 per
+  1,000 characters. Billing errors (401, 402, 503) are not billed.
+- Rate limits: Starter tier (under $100 paid) 5 concurrent requests. The harness uses one at a time.
+- Latency claim: the models overview states 100 ms time-to-first-audio for the S2 family; no figure is
+  given for `drama-3`. The simulated caller measures `T_caller_think`, so the live smoke will show it.
+
 ## A. Artificial Analysis: speech-to-speech methodology
 
 Docs: https://artificialanalysis.ai/methodology/speech-to-speech-benchmarking (leaderboard: https://artificialanalysis.ai/speech-to-speech)

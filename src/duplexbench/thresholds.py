@@ -88,7 +88,7 @@ class Thresholds(BaseModel):
     sim_regen_max: int = 2
     sim_regen_review_rate: float = 0.10
     # §1.4 + eng review D4: reference-ASR calibration stage
-    refasr_partial_p90_ms: int = 300
+    refasr_partial_p90_ms: int = 700          # TTFS p90, = sim_eot_ms (B22)
     refasr_rtf_max: float = 0.5
     # §8 classifiers
     kappa_min: float = 0.7

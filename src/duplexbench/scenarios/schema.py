@@ -36,6 +36,10 @@ class Overlay(_Model):
 
     `resumption_ms`: scripted silence before the caller resumes; for wait-class
     Y-CMD it is the 3-6 s resumption, for E-END the post-turn silence (>= 6 s).
+    `resumption_text`: the line the caller speaks when resuming after a wait-class
+    Y-CMD (Y-CMD with `resumption_ms` only); its audio is the resumption clip
+    `<clip stem>_resumption.wav` (loader.resumption_clip_path), written by
+    `stimuli generate`.
     """
     id: str
     cls: OverlayClass
@@ -47,6 +51,7 @@ class Overlay(_Model):
     level_db: float = 0.0
     response_anchors: list[str] = Field(default_factory=list)
     resumption_ms: int | None = None
+    resumption_text: str | None = None
     voice_id: str | None = None
 
 
@@ -81,6 +86,12 @@ class Scenario(_Model):
     required_spoken: list[dict[str, Any]] = Field(default_factory=list)
     entities: list[dict[str, Any]] = Field(default_factory=list)
     policy: dict[str, Any] = Field(default_factory=dict)
+    # Per-scenario mock-database seed (WORKFLOW_SPEC §9 G2/G4): {table: {row_id: {field: v}}},
+    # merged onto the domain backend's SEED by `tools.state.merge_seed` (row fields replace
+    # or add; new rows are added). Checked by `loader.validate`. Applied at run time only
+    # where the backend is built with `seed_overlay=scenario.seed`
+    # (`tools.mock_backends.backend_for_scenario`).
+    seed: dict[str, Any] = Field(default_factory=dict)
     conditions: list[str] = Field(default_factory=list)
     trials: int = 1
     control_twin: bool = False

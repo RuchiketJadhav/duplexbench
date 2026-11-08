@@ -9,6 +9,11 @@ unmeasured: every wrapper buffers until a human picks a model.
 
 floor-mini layout [Assumption until M2-T04 lands]: `<id>.wav` (8 kHz int16 mono)
 beside `<id>.txt` (the reference text).
+
+Paid candidates (`Candidate.paid`, today only `deepgram`, decision B11): the listing
+prints the projected cost of the floor-mini set (audio seconds x the price per audio
+minute from configs/prices/deepgram_nova3.yaml) and nothing runs without --yes; with
+--yes the candidate is built without `allow_download` and measured like the others.
 """
 from __future__ import annotations
 
@@ -65,6 +70,22 @@ def measure(asr, items: list[tuple[Path, str]]) -> dict:
     return {"wer": errs / n if n else None, "rtf": proc_ns / audio_ns if audio_ns else None}
 
 
+def audio_seconds(items: list[tuple[Path, str]]) -> float:
+    import soundfile as sf
+    return sum(sf.info(str(w)).duration for w, _ in items)
+
+
+def paid_cost_line(c, items: list[tuple[Path, str]], fixtures: Path) -> str:
+    """`<name>: projected <usd> USD for <s> s of floor-mini audio (<price>/audio min)`."""
+    import importlib
+    mod = importlib.import_module(f"duplexbench.refasr.candidates.{c.module}")
+    secs = audio_seconds(items)
+    usd = mod.projected_usd(secs)
+    note = "" if items else f" (floor-mini fixture missing at {fixtures})"
+    return (f"  {c.name}: paid API, projected {usd:.4f} USD for {secs:.1f} s of floor-mini "
+            f"audio at {mod.usd_per_audio_min()} USD/audio min{note}")
+
+
 def register(app: typer.Typer) -> None:
     @app.command("refasr-bench")
     def refasr_bench(
@@ -79,22 +100,28 @@ def register(app: typer.Typer) -> None:
         from duplexbench.refasr.candidates import CandidateUnavailable
 
         avail = {c.name: ct.probe(c) for c in ct.CANDIDATES}
+        items = _items(fixtures) if fixtures.is_dir() else []
         if not yes:
-            typer.echo("refasr-bench downloads candidate models (bandwidth and disk); "
-                       "approval required. Would load:")
+            typer.echo("refasr-bench downloads candidate models (bandwidth and disk) and calls "
+                       "paid ASR APIs; approval required. Would load:")
             for c in ct.CANDIDATES:
                 state = "packages importable" if avail[c.name] is None else f"blocked: {avail[c.name]}"
                 typer.echo(f"  {c.name}: {c.model} ({c.size}) - {state}")
-            typer.echo("Re-run with --yes to approve. Nothing was downloaded.")
+            for c in ct.CANDIDATES:
+                if c.paid:
+                    typer.echo(paid_cost_line(c, items, fixtures))
+            typer.echo("Re-run with --yes to approve. Nothing was downloaded and no paid API "
+                       "was called.")
             raise typer.Exit(1)
-        items = _items(fixtures) if fixtures.is_dir() else []
         meas: dict[str, dict] = {}
         for c in ct.CANDIDATES:
             if avail[c.name] is not None:
                 continue
             mod = importlib.import_module(f"duplexbench.refasr.candidates.{c.module}")
+            if c.paid:
+                typer.echo(paid_cost_line(c, items, fixtures) + " (approved by --yes)")
             try:
-                asr = getattr(mod, c.cls)(allow_download=True)
+                asr = getattr(mod, c.cls)(**({} if c.paid else {"allow_download": True}))
             except CandidateUnavailable as exc:
                 avail[c.name] = str(exc)
                 continue

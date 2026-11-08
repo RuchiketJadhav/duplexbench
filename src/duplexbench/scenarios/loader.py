@@ -69,14 +69,18 @@ def _is_under(path: Path, root: Path) -> bool:
 
 def validate(scenario: Scenario, *, th: Thresholds | None = None,
              hbc_tokens: Collection[str] | None = None, path: Path | None = None,
-             repo_root: Path | None = None) -> list[str]:
+             repo_root: Path | None = None, check_tools: bool = True) -> list[str]:
     """Return every semantic error in `scenario` (empty list = valid). M2-T01 errors:
 
     overlay anchor not a step; Y-INT without >= 3 words or without
     `response_anchors`; H-BC token not in the langpack list; P-PAUSE `pause_ms`
     outside `th.pause_ms`; placement `in_pause` on a step without `pause_ms`;
     E-END without >= `th.eend_silence_ms` silence (`resumption_ms`); private
-    split loaded from inside the repo (only when `path` is given).
+    split loaded from inside the repo (only when `path` is given); overlay
+    `resumption_text` on anything but a Y-CMD with `resumption_ms`; (fix-33) a tool
+    name the domain's mock backend lacks, or an expectation naming an unknown tool or
+    tool parameter (`_tool_errors`). `check_tools=False` skips that check, for scoring
+    fixtures whose tool names are not backend tools (tests/fixtures track_c_001).
     """
     th = th or Thresholds.load()
     tokens = {_norm_token(t) for t in (hbc_tokens if hbc_tokens is not None else SPEC_HBC_TOKENS)}
@@ -108,14 +112,87 @@ def validate(scenario: Scenario, *, th: Thresholds | None = None,
                 errs.append(f"{where}: P-PAUSE pause_ms {step.pause_ms} outside [{lo},{hi}]")
         if o.placement == "in_pause" and step is not None and step.pause_ms is None:
             errs.append(f"{where}: placement in_pause on step {step.id!r} without pause_ms")
+        if o.resumption_text is not None and (o.cls != "Y-CMD" or o.resumption_ms is None):
+            errs.append(f"{where}: resumption_text needs a Y-CMD with resumption_ms")
         if o.cls == "E-END" and (o.resumption_ms is None or o.resumption_ms < th.eend_silence_ms):
             errs.append(f"{where}: E-END needs >= {th.eend_silence_ms} ms silence "
                         f"(resumption_ms={o.resumption_ms})")
+    errs.extend(_seed_errors(scenario))
+    if check_tools:
+        errs.extend(_tool_errors(scenario))
     if path is not None and scenario.split == "private-test":
         root = repo_root or REPO_ROOT
         if _is_under(path, root):
             errs.append(f"{sid}: private-test scenario loaded from inside the repo ({path}); "
                         f"private scenarios live under ${PRIVATE_ENV}")
+    return errs
+
+
+def _seed_errors(s: Scenario) -> list[str]:
+    """A `seed` block names only tables the domain backend has, and the merged seed is
+    consistent (`Backend.seed_errors`). Also run for billing policy checks without a seed."""
+    from duplexbench.tools.mock_backends import BACKENDS
+    cls = BACKENDS.get(s.domain)
+    if cls is None:
+        return [f"{s.id}: seed given for domain {s.domain!r} with no mock backend"] if s.seed else []
+    errs = [f"{s.id}/seed: unknown table {t!r} for {s.domain} (have {sorted(cls.SEED)})"
+            for t in s.seed if t not in cls.SEED]
+    errs += [f"{s.id}/seed: table {t!r} must map row ids to rows"
+             for t, rows in s.seed.items() if not isinstance(rows, dict)
+             or not all(isinstance(r, dict) for r in rows.values())]
+    if errs:
+        return errs
+    try:
+        b = cls(policy=s.policy, seed_overlay=s.seed or None)
+    except Exception as e:  # noqa: BLE001 - report, do not crash validate
+        return [f"{s.id}/seed: {e}"]
+    return [f"{s.id}/seed: {m}" for m in b.seed_errors()]
+
+
+def _tool_errors(s: Scenario) -> list[str]:
+    """fix-33: every `tools[].name` is a tool of the domain's mock backend (`Backend.tools()`),
+    so a misspelt name fails here instead of at run start (`ToolServer.register_call`).
+    Expectations that name a tool are checked too: `required_spoken[].after_tool` must be a
+    scenario tool, and an expectation dict that names a `tool` with `arg` / `args` must use
+    parameter names from that tool's schema."""
+    if not s.tools and not any(rs.get("after_tool") for rs in s.required_spoken):
+        return []
+    from duplexbench.tools.mock_backends import BACKENDS
+    cls = BACKENDS.get(s.domain)
+    if cls is None:
+        return [f"{s.id}/tool {t.name}: domain {s.domain!r} has no mock backend "
+                f"(have {sorted(BACKENDS)})" for t in s.tools]
+    try:
+        schemas = {t.name: t for t in cls().tools()}
+    except Exception as e:  # noqa: BLE001 - report, do not crash validate
+        return [f"{s.id}/tools: cannot list {s.domain} backend tools: {e}"]
+    errs = [f"{s.id}/tool {t.name}: not a tool of the {s.domain} mock backend "
+            f"(have {sorted(schemas)})" for t in s.tools if t.name not in schemas]
+    errs += [f"{s.id}/tool {t.name}: kind {t.kind!r} but the {s.domain} backend says "
+             f"{schemas[t.name].kind!r}" for t in s.tools
+             if t.name in schemas and t.kind != schemas[t.name].kind]
+    names = {t.name for t in s.tools}
+    for where, items in (("required_spoken", s.required_spoken), ("entities", s.entities)):
+        for i, item in enumerate(items):
+            if not isinstance(item, dict):
+                continue
+            label = f"{s.id}/{where} {item.get('id', i)}"
+            after = item.get("after_tool")
+            if after and after not in names:
+                errs.append(f"{label}: after_tool {after!r} is not in the scenario's tools "
+                            f"(have {sorted(names)})")
+            tool = item.get("tool")
+            if tool is None:
+                continue
+            if tool not in schemas:
+                errs.append(f"{label}: tool {tool!r} is not a tool of the {s.domain} mock "
+                            f"backend (have {sorted(schemas)})")
+                continue
+            arg = item.get("arg", item.get("args"))
+            args = [arg] if isinstance(arg, str) else list(arg or [])
+            known = set(schemas[tool].parameters.get("properties", {}))
+            errs += [f"{label}: tool {tool} has no parameter {a!r} (have {sorted(known)})"
+                     for a in args if a not in known]
     return errs
 
 
@@ -166,6 +243,18 @@ def clip_sources(s: Scenario, base: Path) -> tuple[dict[str, Path], dict[str, Pa
     return req, opt
 
 
+def _hash_dump(s: Scenario) -> dict:
+    """Scenario JSON for the pack hash. An unset overlay `resumption_text` (field added
+    by fix-31) is left out, so packs that do not use it hash exactly as before."""
+    d = s.model_dump(mode="json")
+    if not d.get("seed"):
+        d.pop("seed", None)         # field added for G2/G4; empty seed hashes as before
+    for o in d.get("overlays", []):
+        if o.get("resumption_text") is None:
+            o.pop("resumption_text", None)
+    return d
+
+
 def _sha256_file(p: Path) -> str:
     h = hashlib.sha256()
     with open(p, "rb") as f:
@@ -176,7 +265,7 @@ def _sha256_file(p: Path) -> str:
 
 def load_pack(dir: Path | str, *, th: Thresholds | None = None,
               hbc_tokens: Collection[str] | None = None,
-              repo_root: Path | None = None) -> Pack:
+              repo_root: Path | None = None, check_tools: bool = True) -> Pack:
     """Load and validate every `*.yaml` / `*.yml` under `dir`; raise `PackError` on any error.
 
     Clip paths are relative to the scenario file's directory. The hash covers
@@ -201,7 +290,8 @@ def load_pack(dir: Path | str, *, th: Thresholds | None = None,
         if s.id in scenarios:
             errs.append(f"{f}: duplicate scenario id {s.id!r} (also {paths[s.id]})")
             continue
-        errs += validate(s, th=th, hbc_tokens=hbc_tokens, path=f, repo_root=repo_root)
+        errs += validate(s, th=th, hbc_tokens=hbc_tokens, path=f, repo_root=repo_root,
+                         check_tools=check_tools)
         scenarios[s.id] = s
         paths[s.id] = f
         clips[s.id] = _clip_paths(s, f.parent)
@@ -212,7 +302,7 @@ def load_pack(dir: Path | str, *, th: Thresholds | None = None,
         raise PackError(errs)
     h = hashlib.sha256()
     ordered = [scenarios[k] for k in sorted(scenarios)]
-    h.update(canonical_json([s.model_dump(mode="json") for s in ordered]).encode())
+    h.update(canonical_json([_hash_dump(s) for s in ordered]).encode())
     for s in ordered:
         for name, p in sorted(clips[s.id]):
             h.update(f"\n{s.id}:{name}:{_sha256_file(p)}".encode())

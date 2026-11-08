@@ -1,0 +1,95 @@
+# Purpose: first-demo Track A floor-control call; a caller asks about a high bill and pays it.
+# Exercises: Y-INT question, H-BC "uh-huh", P-PAUSE before card digits, wait-class Y-CMD "one second", E-END.
+id: pd_a_002
+version: "1"
+split: public-dev
+domain: billing
+track: A
+source: scripted
+speaker_id: null
+caller_voice: "voice-m1"         # placeholder id: TTS vendor and voice list not chosen yet
+speaking_rate: 1.1
+persona: null
+goal: null
+facts: {}
+steps:
+  - id: s1
+    text: "Hi, I'm calling about my bill. It's way higher than last month."
+    clip: audio/tts/8f4250d0777ffd40a0a2f00997ab3b84fa0612fbbc545240220642af9f48b68f.wav
+    speech_onset_ms: 125
+    speech_end_ms: 3781
+  - id: s2
+    text: "Can you walk me through what the charges are for?"
+    clip: audio/tts/b2e661404f507ec509aa43a44ebad50f267215c186c62387a737869034354982.wav
+    speech_onset_ms: 117
+    speech_end_ms: 2100
+  - id: s3
+    text: "Okay, that makes sense. I'll just pay it today. The card ends in"
+    clip: audio/tts/8b1859f8f50e1b26326424627444abe098e7d11fde5ef6220ae7789371fcd1ee.wav
+    speech_onset_ms: 110
+    speech_end_ms: 4259
+    pause_ms: 1200
+    resumption_text: "four four one two."
+  - id: s4
+    text: "And will I get an email receipt for that?"
+    clip: audio/tts/891fd1c718d3127517415b2841c030f435a86ceeafcfa9980c62f41413aab3c7.wav
+    speech_onset_ms: 119
+    speech_end_ms: 1744
+  - id: s5
+    text: "Perfect. That's all I needed, thank you."
+    clip: audio/tts/56fe1239a52be63edc2ba00c48a922b0893e918293334a0265fb08e4a563bff2.wav
+    speech_onset_ms: 112
+    speech_end_ms: 2309
+overlays:
+  - id: o1
+    cls: Y-INT
+    anchor_step: s1
+    placement: during_agent
+    offset_ms: 500
+    clip: audio/tts/a846b89f242bf89062e3186f658577621e658939afcb432605a0b2b9d98442a3.wav
+    text: "Sorry, is there a late fee on it?"
+    level_db: 0.0
+    response_anchors: ["late", "fee", "fees"]
+  - id: o2
+    cls: H-BC
+    anchor_step: s2
+    placement: during_agent
+    offset_ms: 2000
+    clip: audio/tts/763d00376c3ad627ee7fb556269579621cdc8e6960bd76898d1913431198d6b7.wav
+    text: "uh-huh"
+    level_db: 0.0
+  - id: o3
+    cls: P-PAUSE
+    anchor_step: s3
+    placement: in_pause            # the one in_pause overlay: the pause on step s3
+    offset_ms: 0
+    clip: null
+    text: ""
+    level_db: 0.0
+  - id: o4
+    cls: Y-CMD
+    anchor_step: s4
+    placement: during_agent
+    offset_ms: 2000
+    clip: audio/tts/cbd2f39ba43e6f7cd9acf13fb63a530842c219a01ffc595e3213971dae709518.wav
+    text: "one second"
+    level_db: 0.0
+    resumption_ms: 5000
+    resumption_text: "Okay, sorry, I'm back."
+  - id: o5
+    cls: E-END
+    anchor_step: s5
+    placement: during_agent
+    offset_ms: 0
+    clip: null
+    text: ""
+    level_db: 0.0
+    resumption_ms: 7000
+tools: []
+expected_state: {}
+required_spoken: []
+entities: []
+policy: {}
+conditions: [C0]
+trials: 1
+control_twin: true

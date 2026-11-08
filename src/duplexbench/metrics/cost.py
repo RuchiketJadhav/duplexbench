@@ -6,6 +6,13 @@
     price_per_call(usage, prices)               actual USD from provider usage, None if unpriceable
     est_call_minutes(scenario, eend_silence_ms) script length estimate for a scripted caller
 
+Track C simulated-caller costs (fix-28), added to the agent's cost per call:
+
+    refasr_call_usd(minutes, usd_per_audio_min) reference ASR (one stream per call, every
+                                                played ear frame pushed: billed audio = call length)
+    caller_llm_projected_usd(n_steps, prices, model)  caller LLM, [Assumption] tokens per turn
+    caller_llm_actual_usd(usages, prices, model)      caller LLM, summed response `usage`
+
 Pricing inputs come only from the price file (`configs/prices/<ref>.yaml`), never
 from thresholds: `rates` are [Fact] (with `source_url` and `checked`), `projection`
 inputs are labelled [Assumption] in that file. Actual cost uses `usage` events
@@ -139,6 +146,74 @@ def price_per_call(usage: Iterable[Mapping[str, Any]] | Mapping[str, Any] | None
             return None
         usd += n * float(rates[k]) / _PER_M
     return usd
+
+
+# -- Track C simulated caller (fix-28) -------------------------------------------------
+def refasr_call_usd(minutes: float, usd_per_audio_min: float) -> float:
+    """Reference-ASR USD of one simulated call. The caller opens one stream per call and
+    pushes every played ear frame (silence included), so billed audio = call length."""
+    return max(0.0, float(minutes)) * float(usd_per_audio_min)
+
+
+def chat_rates(prices: Mapping[str, Any], model: str | None) -> Mapping[str, Any]:
+    """`rates[model]` of a chat price file (configs/prices/openai_chat.yaml); ValueError
+    when the model has no input_per_1m / output_per_1m."""
+    r = (prices.get("rates") or {}).get(model) if model else None
+    if not isinstance(r, Mapping) or "input_per_1m" not in r or "output_per_1m" not in r:
+        raise ValueError(f"price file {prices.get('price_ref')!r} has no input_per_1m/"
+                         f"output_per_1m rates for model {model!r}")
+    return r
+
+
+def _chat_projection(prices: Mapping[str, Any]) -> Mapping[str, Any]:
+    p = prices.get("projection") or {}
+    need = ("input_tokens_per_turn", "output_tokens_per_turn", "extra_turns_per_call")
+    missing = [k for k in need if k not in p]
+    if missing:
+        raise ValueError(f"price file {prices.get('price_ref')!r} projection lacks {missing}")
+    return p
+
+
+def caller_llm_turns(n_steps: int, prices: Mapping[str, Any]) -> int:
+    """[Assumption] caller turns per call = scenario steps + `extra_turns_per_call`."""
+    return int(n_steps) + int(_chat_projection(prices)["extra_turns_per_call"])
+
+
+def caller_llm_projected_usd(n_steps: int, prices: Mapping[str, Any] | None,
+                             model: str | None) -> float:
+    """Projected caller-LLM USD of one call: turns x (in tok x in rate + out tok x out rate)
+    / 1e6, token counts per turn from the price file's [Assumption] projection block.
+    No price file (self-hosted, billing external) -> 0.0."""
+    if prices is None:
+        return 0.0
+    r, p = chat_rates(prices, model), _chat_projection(prices)
+    per_turn = (float(p["input_tokens_per_turn"]) * float(r["input_per_1m"])
+                + float(p["output_tokens_per_turn"]) * float(r["output_per_1m"]))
+    return caller_llm_turns(n_steps, prices) * per_turn / _PER_M
+
+
+def sum_chat_usage(usages: Iterable[Mapping[str, Any]]) -> dict[str, int]:
+    """input/output tokens summed over chat responses (CallerLLM's Anthropic-shaped
+    `input_tokens`/`output_tokens`, or raw OpenAI `prompt_tokens`/`completion_tokens`)."""
+    tot = {"input_tokens": 0, "output_tokens": 0, "responses": 0}
+    for u in usages:
+        if not isinstance(u, Mapping):
+            continue
+        tot["input_tokens"] += int(u.get("input_tokens", u.get("prompt_tokens")) or 0)
+        tot["output_tokens"] += int(u.get("output_tokens", u.get("completion_tokens")) or 0)
+        tot["responses"] += 1
+    return tot
+
+
+def caller_llm_actual_usd(usages: Iterable[Mapping[str, Any]], prices: Mapping[str, Any] | None,
+                          model: str | None) -> float:
+    """Actual caller-LLM USD of one call from the summed response `usage`; 0.0 without a
+    price file (self-hosted endpoint, billing external)."""
+    if prices is None:
+        return 0.0
+    r, t = chat_rates(prices, model), sum_chat_usage(usages)
+    return (t["input_tokens"] * float(r["input_per_1m"])
+            + t["output_tokens"] * float(r["output_per_1m"])) / _PER_M
 
 
 # BUILD_PLAN M3-T01 names

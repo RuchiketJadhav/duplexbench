@@ -173,4 +173,4 @@ Stop and ask when any of these comes up. Record the answer in `docs/decisions.md
 9. Faking or inferring a provider event that the provider does not emit.
 10. Tuning any system's configuration (the iteration budget is a human decision; you log iterations, you do not choose them).
 11. Publishing or sharing any result outside the repo.
-12. Using Deepgram or any Dograh production component as the reference ASR.
+12. Using Deepgram or any Dograh production component as the reference ASR. (Overruled by the user on 2026-11-06, docs/decisions.md B11: Deepgram Nova-3 is the reference ASR, with the disclosures listed there. The rule still applies to every other production component.)

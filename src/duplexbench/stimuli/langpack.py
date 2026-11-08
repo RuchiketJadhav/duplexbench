@@ -12,7 +12,7 @@ separate private repo mounted at `$DUPLEX_PRIVATE_DIR`. They are merged ONLY whe
 that variable is set: `private_dir` defaults to `$DUPLEX_PRIVATE_DIR/langpacks/<lang>`,
 and an explicit `private_dir` is ignored (`private_ignored=True`) when the variable
 is unset. A private dir inside the harness repo is refused. Private files use the
-same five filenames; each may hold any subset of the keys. Lists are appended
+same filenames (`FILES`); each may hold any subset of the keys. Lists are appended
 (duplicates dropped), pattern ids must be unique across public and private.
 
 The hash is computed over the parsed content (not file bytes), so line endings
@@ -33,7 +33,7 @@ from duplexbench.storage import canonical_json
 
 PRIVATE_ENV = "DUPLEX_PRIVATE_DIR"
 FILES = ("ycmd_tokens.yaml", "hbc_tokens.yaml", "success_patterns.yaml",
-         "recovery_patterns.yaml", "normalizer_rules.yaml")
+         "recovery_patterns.yaml", "normalizer_rules.yaml", "disclosure_patterns.yaml")
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -60,6 +60,7 @@ class LangPack:
     hbc_tokens: tuple[str, ...]
     success_patterns: tuple[Pattern, ...]
     recovery_patterns: tuple[Pattern, ...]
+    disclosure_patterns: tuple[Pattern, ...]   # refusal / limit disclosure (metrics/task.py, G10)
     normalizer_rules: dict[str, Any]
     hash: str
     public_dir: Path
@@ -99,6 +100,7 @@ class LangPack:
         hbc = _merge_tokens(public, private, "hbc_tokens.yaml", "tokens")
         succ = _merge_patterns(public, private, "success_patterns.yaml")
         reco = _merge_patterns(public, private, "recovery_patterns.yaml")
+        disc = _merge_patterns(public, private, "disclosure_patterns.yaml")
         rules = dict(public["normalizer_rules.yaml"])
         rules.update(private.get("normalizer_rules.yaml") or {})
 
@@ -108,7 +110,8 @@ class LangPack:
         sources = {"public": [str(pub / n) for n in FILES],
                    "private": [str(priv / n) for n in FILES if private.get(n)] if priv else []}
         return cls(lang=lang, ycmd_tokens=ycmd, wait_class=wait, hbc_tokens=hbc,
-                   success_patterns=succ, recovery_patterns=reco, normalizer_rules=rules,
+                   success_patterns=succ, recovery_patterns=reco, disclosure_patterns=disc,
+                   normalizer_rules=rules,
                    hash=full_hash, public_dir=pub, private_dir=priv,
                    private_ignored=ignored, public_hash=pub_hash, sources=sources)
 

@@ -35,14 +35,14 @@ def _one_error(errs: list[str], needle: str) -> None:
 
 
 def test_valid_fixture_loads():
-    pack = load_pack(FIX)
+    pack = load_pack(FIX, check_tools=False)
     assert [s.id for s in pack.scenarios][0] == "sched_001"   # more fixtures sort after it
     assert len(pack.hash) == 64
     assert validate(pack.scenarios[0], th=TH) == []
 
 
 def test_hash_is_stable():
-    assert load_pack(FIX).hash == load_pack(FIX).hash
+    assert load_pack(FIX, check_tools=False).hash == load_pack(FIX, check_tools=False).hash
 
 
 def test_schema_rejects_unknown_class_and_extra_field():
@@ -116,27 +116,27 @@ def _copy_pack(dst: Path) -> Path:
 
 def test_hash_changes_when_clip_byte_changes(tmp_path):
     pack_dir = _copy_pack(tmp_path / "pack")
-    h0 = load_pack(pack_dir).hash
+    h0 = load_pack(pack_dir, check_tools=False).hash
     wav = pack_dir / "audio" / "silence_100ms.wav"
     b = bytearray(wav.read_bytes())
     b[-1] ^= 0x01
     wav.write_bytes(bytes(b))
-    assert load_pack(pack_dir).hash != h0
+    assert load_pack(pack_dir, check_tools=False).hash != h0
 
 
 def test_hash_changes_when_scenario_changes(tmp_path):
     pack_dir = _copy_pack(tmp_path / "pack")
-    h0 = load_pack(pack_dir).hash
+    h0 = load_pack(pack_dir, check_tools=False).hash
     y = pack_dir / "sched_001.yaml"
     y.write_text(y.read_text().replace('version: "1"', 'version: "2"'))
-    assert load_pack(pack_dir).hash != h0
+    assert load_pack(pack_dir, check_tools=False).hash != h0
 
 
 def test_missing_clip_refused(tmp_path):
     pack_dir = _copy_pack(tmp_path / "pack")
     (pack_dir / "audio" / "silence_100ms.wav").unlink()
     with pytest.raises(PackError, match="clip not found"):
-        load_pack(pack_dir)
+        load_pack(pack_dir, check_tools=False)
 
 
 def test_load_pack_refuses_private_under_repo_root(tmp_path):
@@ -145,9 +145,9 @@ def test_load_pack_refuses_private_under_repo_root(tmp_path):
     y = pack_dir / "sched_001.yaml"
     y.write_text(y.read_text().replace("split: public-dev", "split: private-test"))
     with pytest.raises(PackError, match="inside the repo"):
-        load_pack(pack_dir, repo_root=repo)
+        load_pack(pack_dir, repo_root=repo, check_tools=False)
     # the same pack outside the repo root (a mounted private dir) loads
-    load_pack(pack_dir, repo_root=tmp_path / "other-repo")
+    load_pack(pack_dir, repo_root=tmp_path / "other-repo", check_tools=False)
 
 
 def test_private_root_from_env(monkeypatch, tmp_path):
@@ -165,7 +165,7 @@ def test_tooldef_anchor_step_optional_and_validated():
     c = Scenario.model_validate(yaml.safe_load((FIX / "track_c_001.yaml").read_text()))
     ok = c.model_copy(update={"tools": [c.tools[0].model_copy(update={"anchor_step": "s2"}),
                                         *c.tools[1:]]})
-    assert validate(ok, th=TH) == []
+    assert validate(ok, th=TH, check_tools=False) == []
     bad = c.model_copy(update={"tools": [c.tools[0].model_copy(update={"anchor_step": "nope"}),
                                          *c.tools[1:]]})
-    _one_error(validate(bad, th=TH), "anchor_step 'nope' is not a step")
+    _one_error(validate(bad, th=TH, check_tools=False), "anchor_step 'nope' is not a step")

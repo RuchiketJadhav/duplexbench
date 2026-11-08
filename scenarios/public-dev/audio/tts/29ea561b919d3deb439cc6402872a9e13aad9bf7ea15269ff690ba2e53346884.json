@@ -1,0 +1,1 @@
+{"rate":1.1,"sample_rate":24000,"text":"four four one two.","vendor":"fake","voice":"voice-m1","words":[{"end_ms":236,"start_ms":0,"text":"four"},{"end_ms":545,"start_ms":309,"text":"four"},{"end_ms":795,"start_ms":618,"text":"one"},{"end_ms":1104,"start_ms":868,"text":"two."}]}

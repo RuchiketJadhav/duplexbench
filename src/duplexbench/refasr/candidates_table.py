@@ -35,6 +35,8 @@ class Candidate:
     streaming: str
     word_timestamps: str
     rate_8k: str
+    paid: bool = False           # hosted API billed per audio minute: refasr-bench prints the
+                                 # projected cost and the wrapper takes no allow_download
 
 
 _A = "[Assumption] "
@@ -57,6 +59,12 @@ CANDIDATES: tuple[Candidate, ...] = (
     Candidate("moonshine", "moonshine", "MoonshineASR", "moonshine/base",
               _A + "MIT; verify", _A + "~61M params (base), ~27M (tiny)",
               "no (batch; wrapper buffers)", "no", "no (16 kHz input; upsampled)"),
+    # decision B11 (user's instruction, 2026-11-06); facts from docs/providers.md §8, not memory
+    Candidate("deepgram", "deepgram", "DeepgramASR", "nova-3",
+              "proprietary hosted API (no weights); $0.0077/audio min streaming "
+              "(deepgram.com/pricing, 2026-11-06)", "hosted (n/a)",
+              "yes (native WebSocket; wrapper releases is_final words only)", "yes",
+              "yes (linear16 or mulaw at 8 kHz natively)", paid=True),
 )
 
 
@@ -111,7 +119,10 @@ def render(measurements: Mapping[str, Mapping[str, object]] | None = None,
                                         else f"blocked: {why}"))
     lines += ["", "WER is on `tests/fixtures/floor-mini/` (20 TTS read-backs through C0 and C1,",
               "M2-T04); RTF on the laptop CPU; partial p90 only where the wrapper streams with",
-              "partials (every wrapper here buffers until a model is picked).", ""]
+              "partials (only `deepgram` streams; its partial p90 comes from `calibrate`'s",
+              "reference-ASR stage, paced at real time). `deepgram` is a paid hosted API",
+              "(decision B11): refasr-bench prints its projected cost and runs it only with --yes.",
+              ""]
     return "\n".join(lines)
 
 

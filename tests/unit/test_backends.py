@@ -124,7 +124,7 @@ def test_scheduling_double_booking_refused():
     with pytest.raises(PolicyError) as ei:
         b.call("book_appointment", {"slot_id": "S1", "name": "B", "phone": "2"})
     assert ei.value.code == "double_booking"
-    assert list(b.state()["appointments"]) == ["A0001"]
+    assert sorted(b.state()["appointments"]) == ["A0001", "AP-101", "AP-102"]
 
 
 def test_orders_and_outbound_policies():
@@ -172,3 +172,203 @@ def test_registry_has_five_domains():
     assert get_backend("billing") is BillingBackend
     with pytest.raises(KeyError):
         get_backend("pets")
+
+
+# -- G2: billing identity gate (policy require_identity) --------------------------
+def test_billing_verify_identity_tool_shape():
+    b = BillingBackend()
+    t = b.tool("verify_identity")
+    assert t.kind == "read" and t.parameters["required"] == ["customer_id", "dob", "zip"]
+    r = b.call("verify_identity", {"customer_id": "AC-77", "dob": "July 14 1958",
+                                   "zip": "60614"})
+    assert r == {"customer_id": "AC-77", "verified": True, "result_anchors": ["verified"]}
+    bad = BillingBackend().call("verify_identity", {"customer_id": "AC-77",
+                                                    "dob": "1958-07-15", "zip": "60614"})
+    assert bad["verified"] is False and bad["result_anchors"] == ["could not verify"]
+    with pytest.raises(ToolArgError):
+        b.call("verify_identity", {"customer_id": "AC-99", "dob": "1958-07-14", "zip": "1"})
+
+
+def test_billing_gate_off_by_default_writes_without_verify():
+    b = BillingBackend()
+    b.call("make_payment", {"account_id": "AC-77", "amount": "20"})
+    b.call("issue_refund", {"account_id": "AC-77", "amount": "5", "reason": "dup"})
+    assert expected_equals(b.state(), {"payments": {"P0001": {"amount": "20.00"}},
+                                       "refunds": {"F0001": {"amount": "5.00"}}})
+
+
+@pytest.mark.parametrize("tool,args", [
+    ("make_payment", {"account_id": "AC-77", "amount": "20"}),
+    ("issue_refund", {"account_id": "AC-77", "amount": "5", "reason": "dup"}),
+])
+def test_billing_gate_on_refuses_unverified_write(tool, args):
+    b = BillingBackend(policy={"require_identity": True})
+    h0 = b.snapshot_hash()
+    with pytest.raises(PolicyError) as e:
+        b.call(tool, args)
+    assert e.value.code == "auth_required" and b.snapshot_hash() == h0
+    b.call("verify_identity", {"customer_id": "AC-77", "dob": "1958-07-15", "zip": "60614"})
+    with pytest.raises(PolicyError):
+        b.call(tool, args)                         # a failed verify does not authorize
+    b.call("verify_identity", {"customer_id": "AC-77", "dob": "1958-07-14", "zip": "60614"})
+    b.call(tool, args)
+    assert b.snapshot_hash() != h0
+    b.reset()
+    with pytest.raises(PolicyError):
+        b.call(tool, args)                         # reset clears the per-call verified flag
+
+
+def test_billing_gate_checked_before_cap():
+    b = BillingBackend(policy={"require_identity": True, "refund_cap": 10})
+    with pytest.raises(PolicyError) as e:
+        b.call("issue_refund", {"account_id": "AC-77", "amount": "50", "reason": "x"})
+    assert e.value.code == "auth_required"
+
+
+def test_account_gate_stays_always_on():
+    b = AccountBackend(policy={"require_identity": False})
+    with pytest.raises(PolicyError) as e:
+        b.call("update_phone", {"customer_id": "C-100", "phone": "4155550199"})
+    assert e.value.code == "auth_required"
+
+
+def test_billing_seed_overlay_overrides_identity():
+    b = BillingBackend(policy={"require_identity": True},
+                       seed_overlay={"accounts": {"AC-77": {"dob": "1960-01-02",
+                                                            "zip": "10001"}}})
+    assert b.state()["accounts"]["AC-77"]["balance"] == "120.00"      # other fields kept
+    assert not b.call("verify_identity", {"customer_id": "AC-77", "dob": "1958-07-14",
+                                          "zip": "60614"})["verified"]
+    assert b.call("verify_identity", {"customer_id": "AC-77", "dob": "1960-01-02",
+                                      "zip": "10001"})["verified"]
+
+
+def test_billing_verify_on_account_without_identity_fields_is_false():
+    b = BillingBackend(seed_overlay={"accounts": {"AC-5": {"holder": "X", "balance": "1",
+                                                           "paid_total": "1"}}})
+    assert b.call("verify_identity", {"customer_id": "AC-5", "dob": "2000-01-01",
+                                      "zip": "1"})["verified"] is False
+
+
+# -- G5: get_balance carries the refund cap -----------------------------------------
+def test_get_balance_refund_cap_field():
+    r = BillingBackend(policy={"refund_cap": 50}).call("get_balance", {"account_id": "AC-77"})
+    assert r == {"account_id": "AC-77", "balance": "120.00", "refund_cap": "50.00",
+                 "result_anchors": ["120.00"]}
+    r = BillingBackend().call("get_balance", {"account_id": "AC-77"})
+    assert r["refund_cap"] is None
+    assert "refund cap" in BillingBackend().tool("get_balance").description
+    with pytest.raises(PolicyError) as e:
+        BillingBackend(policy={"refund_cap": 50}).call(
+            "issue_refund", {"account_id": "AC-77", "amount": "50.01", "reason": "x"})
+    assert e.value.code == "refund_over_cap"
+
+
+# -- G4: seeded appointments ------------------------------------------------------
+def test_scheduling_seed_appointments_reschedule():
+    b = SchedulingBackend()
+    assert {"AP-101", "AP-102"} <= set(b.state()["appointments"])
+    r = b.call("reschedule_appointment", {"appointment_id": "AP-101", "slot_id": "S2"})
+    assert r["start"] == "2026-11-10T15:00" and r["result_anchors"] == ["3 PM"]
+    assert expected_equals(b.state(), {
+        "slots": {"S2": {"booked_by": "AP-101"}, "S4": {"booked_by": None}},
+        "appointments": {"AP-101": {"slot_id": "S2", "status": "booked"}}})
+
+
+def test_scheduling_seed_appointments_cancel():
+    b = SchedulingBackend()
+    r = b.call("cancel_appointment", {"appointment_id": "AP-102"})
+    assert r == {"appointment_id": "AP-102", "status": "cancelled",
+                 "result_anchors": ["cancelled"]}
+    assert expected_equals(b.state(), {"slots": {"S5": {"booked_by": None}},
+                                       "appointments": {"AP-102": {"status": "cancelled"}}})
+    with pytest.raises(ToolArgError):
+        b.call("reschedule_appointment", {"appointment_id": "AP-102", "slot_id": "S1"})
+
+
+def test_scheduling_seed_does_not_shift_booking_ids():
+    b = SchedulingBackend()
+    assert b.seed_errors() == []
+    assert [s["slot_id"] for s in b.call("find_slots", {})["slots"]] == ["S1", "S2", "S3"]
+    assert b.call("book_appointment", {"slot_id": "S3", "name": "Maya Chen",
+                                       "phone": "202-555-0142"})["appointment_id"] == "A0001"
+    assert b.call("book_appointment", {"slot_id": "S1", "name": "B",
+                                       "phone": "1"})["appointment_id"] == "A0002"
+    with pytest.raises(PolicyError):
+        b.call("book_appointment", {"slot_id": "S4", "name": "C", "phone": "1"})
+
+
+def test_next_id_skips_ids_in_use():
+    b = SchedulingBackend(seed_overlay={"appointments": {"A0002": {}}})
+    assert b._next_id("appointments", "A") == "A0003"     # count 1 -> A0002 taken -> A0003
+    assert SchedulingBackend()._next_id("appointments", "A") == "A0001"
+
+
+def test_scheduling_seed_errors():
+    assert SchedulingBackend().seed_errors() == []
+    bad = SchedulingBackend(seed_overlay={"appointments": {
+        "A0007": {"slot_id": "S1", "name": "X", "phone": "1", "start": "2026-11-10T09:00",
+                  "status": "booked"},
+        "AP-9": {"slot_id": "S99", "name": "X", "phone": "1", "start": "2026-11-10T09:00",
+                 "status": "booked"}}})
+    errs = " | ".join(bad.seed_errors())
+    assert "A0007" in errs and "in-call form" in errs and "S99" in errs
+    assert "booked_by" in errs                      # S1 not marked booked by A0007
+
+
+def test_merge_seed_semantics():
+    from duplexbench.tools.state import merge_seed
+    base = {"t": {"r1": {"a": 1, "b": 2}}, "u": {}}
+    out = merge_seed(base, {"t": {"r1": {"b": 3}, "r2": {"a": 9}}})
+    assert out == {"t": {"r1": {"a": 1, "b": 3}, "r2": {"a": 9}}, "u": {}}
+    assert base == {"t": {"r1": {"a": 1, "b": 2}}, "u": {}}       # base untouched
+
+
+def test_backend_for_scenario_applies_policy_and_seed():
+    from types import SimpleNamespace
+
+    from duplexbench.tools.mock_backends import backend_for_scenario
+    s = SimpleNamespace(domain="billing", policy={"refund_cap": 25},
+                        seed={"accounts": {"AC-77": {"zip": "99999"}}})
+    b = backend_for_scenario(s)
+    assert isinstance(b, BillingBackend) and b.state()["accounts"]["AC-77"]["zip"] == "99999"
+    assert b.call("get_balance", {"account_id": "AC-77"})["refund_cap"] == "25.00"
+
+
+# -- scenario `seed` block validation ------------------------------------------------
+def _scen(domain, seed=None, policy=None):
+    from duplexbench.scenarios.schema import Scenario
+    return Scenario(id="t1", version="1", split="public-dev", domain=domain, track="C",
+                    source="simulated", caller_voice="v", steps=[{"id": "s1", "text": "hi"}],
+                    seed=seed or {}, policy=policy or {})
+
+
+def test_validate_accepts_seed_appointments_and_rejects_bad_seed():
+    from duplexbench.scenarios.loader import validate
+    good = {"slots": {"S9": {"start": "2026-11-20T09:00", "provider": "Dr. Lee",
+                             "booked_by": "AP-200"}},
+            "appointments": {"AP-200": {"slot_id": "S9", "name": "Z", "phone": "1",
+                                        "start": "2026-11-20T09:00", "status": "booked"}}}
+    assert validate(_scen("scheduling", good)) == []
+    errs = validate(_scen("scheduling", {"rooms": {}}))
+    assert len(errs) == 1 and "unknown table 'rooms'" in errs[0]
+    errs = validate(_scen("scheduling", {"appointments": {"A0001": {
+        "slot_id": "S1", "name": "Z", "phone": "1", "start": "x", "status": "booked"}}}))
+    assert any("in-call form" in e for e in errs)
+
+
+def test_validate_billing_identity_policy():
+    from duplexbench.scenarios.loader import validate
+    assert validate(_scen("billing", policy={"require_identity": True})) == []
+    errs = validate(_scen("billing", policy={"require_identity": "yes"}))
+    assert any("require_identity" in e for e in errs)
+    errs = validate(_scen("billing",
+                          {"accounts": {"AC-5": {"balance": "1", "paid_total": "1"}}},
+                          policy={"require_identity": True}))
+    assert any("AC-5" in e and "dob and zip" in e for e in errs)
+
+
+def test_empty_seed_does_not_change_pack_hash_dump():
+    from duplexbench.scenarios.loader import _hash_dump
+    assert "seed" not in _hash_dump(_scen("billing"))
+    assert "seed" in _hash_dump(_scen("billing", {"accounts": {"AC-77": {"zip": "1"}}}))

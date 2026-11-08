@@ -1,0 +1,13 @@
+# Deepgram Nova-3 streaming, the reference ASR (docs/providers.md §8, decision B11).
+# Read by refasr/candidates/deepgram.py (usd_per_audio_min) for the refasr-bench and
+# calibrate cost projections; not a system-under-test price file.
+price_ref: deepgram_nova3
+model: nova-3
+source_url: https://deepgram.com/pricing
+checked: "2026-11-06"
+currency: USD
+unit: per_audio_minute            # [Fact] billed per second of audio
+rates:
+  stream_per_audio_min: 0.0077    # [Fact] pay-as-you-go, monolingual streaming
+  prerecorded_per_audio_min: 0.0043   # [Fact] pay-as-you-go, not used by the harness
+notes: Growth tier is $0.0065 streaming / $0.0036 pre-recorded (not used). 150 concurrent streams on pay-as-you-go; the harness opens one.

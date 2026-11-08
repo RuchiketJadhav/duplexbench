@@ -169,7 +169,7 @@ def test_fixture_track_a_scenario_plays(run_virtual):
 
     from duplexbench.scenarios.loader import load_pack
     fix = Path(__file__).resolve().parents[1] / "fixtures" / "scenarios" / "public-dev"
-    sc = next(s for s in load_pack(fix).scenarios if s.id == "track_a_002")
+    sc = next(s for s in load_pack(fix, check_tools=False).scenarios if s.id == "track_a_002")
     rd = lambda name: sf.read(str(fix / name), dtype="int16")[0]
     clips = {st.id: rd(st.clip) for st in sc.steps}
     clips[resumption_key("s1")] = rd(sc.steps[1].clip)          # any 8 kHz clip stands in

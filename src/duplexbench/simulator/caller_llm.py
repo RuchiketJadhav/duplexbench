@@ -3,8 +3,10 @@
     llm = CallerLLM(client, prompt_path=DEFAULT_PROMPT, config=None)
     text_or_end = await llm.next_utterance(ctx)       # str, or END when the caller hangs up
 
-`client` is injected: an `anthropic.AsyncAnthropic()` in a run, a fake in
-tests (no live call is made anywhere in the test suite). The request is one
+`client` is injected: in a run, `cli_run.build_sim_llm` builds an
+`openai_compat.OpenAICompatClient` from the run config's `simulator.llm`; any client
+exposing Anthropic-shaped `messages.create` works; tests use fakes (no live call is
+made anywhere in the test suite). The request is one
 `messages.create` with the rendered prompt as `system` and the call state as
 the single `user` message, so a reply depends only on (prompt, ctx, config).
 
@@ -15,10 +17,14 @@ Prompts are versioned files under `simulator/prompts/`; `prompt_hash` is the
 sha256 of the file with line endings normalized to LF (so a Windows checkout
 hashes the same as Linux), and `config_hash` covers prompt hash + config.
 
-Model and sampling (to confirm at M4-T13; see docs/decisions.md):
-  * model default "claude-sonnet-5-5" (spec §7 names Claude Sonnet 5.5). TO CONFIRM
-    against configs/simulator.yaml when that file exists.
-  * spec §7 says temperature 0. Claude Sonnet 5.5 rejects non-default sampling
+Model and sampling (see docs/decisions.md B8):
+  * the live model comes from the run config's `simulator.llm` (decision B8: Pipecat's
+    PhoneLLM Alpha 1 on an OpenAI-compatible endpoint, `cli_run.build_sim_llm`), which
+    sets `model`, `temperature`, `send_temperature` and `max_tokens` here. An
+    OpenAI-compatible endpoint accepts temperature 0, so spec §7's temperature 0 is
+    sent there (`send_temperature: true`). DEFAULT_CONFIG's "claude-sonnet-5-5" stays
+    as the default only because fakes and stored hashes depend on it.
+  * For an Anthropic client: spec §7 says temperature 0. Claude Sonnet 5.5 rejects non-default sampling
     values with HTTP 400, and API version 2026-10-21 rejects `temperature` on
     every model, so `temperature` is kept in the config for the record but is
     sent only when `send_temperature` is True. Determinism therefore cannot come
@@ -103,6 +109,7 @@ class CallerLLM:
         self.config_hash = hashlib.sha256(canonical_json(
             {"prompt_hash": self.prompt_hash, "config": self.config}).encode()).hexdigest()
         self.calls = 0
+        self.usage_log: list[dict] = []     # one {input_tokens, output_tokens} per response (fix-28)
         self._pending_end = False
 
     # -- rendering ---------------------------------------------------------------
@@ -148,6 +155,10 @@ class CallerLLM:
         if inspect.isawaitable(resp):
             resp = await resp                 # network wait: not wrapped in clock.idle
         self.calls += 1
+        usage = _get(resp, "usage")
+        if usage:                             # cli_run prices it when simulator.llm.price_ref is set
+            self.usage_log.append({"input_tokens": int(_get(usage, "input_tokens", 0) or 0),
+                                   "output_tokens": int(_get(usage, "output_tokens", 0) or 0)})
         if _get(resp, "stop_reason") == "refusal":
             raise CallerRefusal(str(_get(resp, "stop_details")))
         text = " ".join(_get(b, "text", "") for b in _get(resp, "content", [])

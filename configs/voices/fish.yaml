@@ -1,0 +1,10 @@
+# Harness voice names -> Fish Audio voice ids (`reference_id`), read by
+# stimuli/fish_tts.load_voices and FishTTS.from_config (decision B13).
+# Every scenario `caller_voice` and overlay `voice_id` sent to the fish vendor must
+# appear here (or be a raw 32-hex Fish id, or fall back to the run's `default_voice`).
+# Seeded with the three public EN-US voices named on the Drama 3 page
+# (docs/providers.md §10, checked 2026-11-06).
+voices:
+  adrian: bf322df2096a46f18c579d0baa36f41d   # male
+  delia: c70cfb98867a4bfb9ae20d2401257b92    # female
+  sheila: f3a2b90078d54a65af4b95f63bc7798e   # female

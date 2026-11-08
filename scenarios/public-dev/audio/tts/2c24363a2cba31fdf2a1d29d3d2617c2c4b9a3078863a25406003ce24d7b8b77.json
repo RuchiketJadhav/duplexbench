@@ -1,0 +1,1 @@
+{"rate":1.0,"sample_rate":16000,"text":"What do you have on Tuesday?","vendor":"fish","voice":"voice-f2","words":[{"end_ms":240,"start_ms":0,"text":"What"},{"end_ms":320,"start_ms":240,"text":"do"},{"end_ms":480,"start_ms":320,"text":"you"},{"end_ms":720,"start_ms":480,"text":"have"},{"end_ms":880,"start_ms":720,"text":"on"},{"end_ms":1440,"start_ms":880,"text":"Tuesday"}]}

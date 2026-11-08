@@ -83,6 +83,7 @@ expected_state: {{}}           # Track C end-state the backend must reach (spec 
 required_spoken: []          # confirmations the agent must say, e.g. [{{text: "..."}}]
 entities: []                 # Track D entities, e.g. [{{type: phone, value: "..."}}]
 policy: {{}}                   # Track C policy rules (auth, forbidden actions)
+seed: {{}}                     # Track C rows merged onto the backend SEED, {{table: {{row_id: {{field: v}}}}}}
 conditions: [C0]             # channel conditions to run (spec §5)
 trials: 1                    # trials per condition
 control_twin: false          # true when the scenario has overlays (spec §3.4)

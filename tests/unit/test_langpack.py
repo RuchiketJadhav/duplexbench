@@ -122,11 +122,11 @@ def test_fixture_scenarios_validate_against_langpack():
     from duplexbench.thresholds import Thresholds
     fix = ROOT / "tests" / "fixtures" / "scenarios" / "public-dev"
     lp = LangPack.load(PUB)
-    pack = load_pack(fix, hbc_tokens=lp.hbc_tokens)
+    pack = load_pack(fix, hbc_tokens=lp.hbc_tokens, check_tools=False)
     ids = {s.id for s in pack.scenarios}
     assert {"track_a_002", "track_c_001"} <= ids
     for s in pack.scenarios:
-        assert validate(s, th=Thresholds(), hbc_tokens=lp.hbc_tokens) == []
+        assert validate(s, th=Thresholds(), hbc_tokens=lp.hbc_tokens, check_tools=False) == []
     a = next(s for s in pack.scenarios if s.id == "track_a_002")
     assert {o.cls for o in a.overlays} >= {"Y-INT", "H-BC", "P-PAUSE", "E-END"}
     c = next(s for s in pack.scenarios if s.id == "track_c_001")

@@ -86,8 +86,10 @@
     "counts": {
      "ambiguous_end": 2,
      "contested": 1,
+     "no_refasr": 0,
      "not_injected": 1,
      "slow_caller": 1,
+     "step_not_reached": 0,
      "unmatched_control": 1,
      "unscripted_overlap": 1
     },
@@ -97,8 +99,10 @@
     "counts": {
      "ambiguous_end": 1,
      "contested": 1,
+     "no_refasr": 0,
      "not_injected": 1,
      "slow_caller": 0,
+     "step_not_reached": 0,
      "unmatched_control": 1,
      "unscripted_overlap": 0
     },
@@ -1618,9 +1622,9 @@
     "self_hosted": true
    }
   },
-  "thresholds_hash": "394923c1104b32dd13b94068cc42f8f51f94dc7c87cd433be89c1555abd5a73b"
+  "thresholds_hash": "5e4bcedb53f15679a77d334b364f71a95abda66e13e8696d6678f832f4a7f757"
  },
- "aggregate_sha256": "64f3f684ee18fe2889635e692cb6bb8f79c7ba5dcb595ca32cece35127be9457",
+ "aggregate_sha256": "eadfa4753a8ab1ba100d6ac225d7047a5f304bc61933d0021072167da4d3b063",
  "caveats": [
   "Low n: anchor_offset_in_utt_ms [sysA, C0] n=4; p50, p90, p95 below the minimum (p50 30, p90 100, p95 200); read these percentiles as indicative only.",
   "Low n: anchor_offset_in_utt_ms [sysB, C0] n=4; p50, p90, p95 below the minimum (p50 30, p90 100, p95 200); read these percentiles as indicative only.",
@@ -1652,7 +1656,7 @@
   "unsupported_claim_rate: classifier not validated (kappa not measured, needs >= 0.7); carries the classifier marker and stays out of headline rows.",
   "sysB: no provider cancel event; T_stop_model is absent and the ear hears the full backlog (no flush is invented; see playout penalty)."
  ],
- "index_html_sha256": "6a63a718af65c41cdcfd477b0fc4a9f447760b6af3f2fc56a010cd8059160200",
+ "index_html_sha256": "2e2d0bd5fcaa900329db6ed516edd88af449eb6b1a316e3aa3cec306d5cc4bf1",
  "run_card": {
   "calibration": {
    "loop_lag_p99_ms": 1.1,
@@ -1898,7 +1902,7 @@
    "refasr_partial_p90_ms": {
     "source": "Proposed",
     "spec": "1.4, D4",
-    "value": 300
+    "value": 700
    },
    "refasr_rtf_max": {
     "source": "Proposed",
@@ -2018,7 +2022,7 @@
     "value": 1000
    }
   },
-  "thresholds_hash": "394923c1104b32dd13b94068cc42f8f51f94dc7c87cd433be89c1555abd5a73b",
+  "thresholds_hash": "5e4bcedb53f15679a77d334b364f71a95abda66e13e8696d6678f832f4a7f757",
   "vendors_audio": [
    "vendorA",
    "vendorB"

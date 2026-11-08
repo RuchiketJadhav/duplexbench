@@ -1,14 +1,14 @@
 """TTS stimulus generation with word timestamps (BUILD_PLAN M2-T04; spec §3.5, CLAUDE.md §1).
 
 Approve-first: synthesis is spend. `cli stimuli generate <pack_dir>` prints the
-projected cost (characters x price) and refuses without `--yes`. No real vendor
-client exists yet: the vendor is not chosen (docs/providers.md; CLAUDE.md §6 item 2
-"which third parties may receive audio" is a human decision). Only `FakeTTS`
-(stimuli/fake_tts.py) is wired, for tests and goldens.
+projected cost (characters x price) and refuses without `--yes`. Clients:
+`FakeTTS` (stimuli/fake_tts.py, tests and goldens) and `FishTTS` (stimuli/fish_tts.py,
+decision B13); `stimuli/vendors.build_tts(cfg)` picks one from a config block.
 
     pcm, sr, words = synthesize("hold on", "voice-a", 1.0, client, cache_dir=Path(".tts-cache"))
 
-Results are cached by sha256 of canonical JSON `[vendor, voice, rate, text]`:
+Results are cached by sha256 of canonical JSON `[vendor, voice, rate, text]`, where
+vendor is `client_id(client)` (the client's `version`, e.g. "fish/drama-3", else its `vendor`):
 `<cache_dir>/<key>.wav` (int16 mono) + `<key>.json` (words, sample rate, inputs).
 A cache hit never calls the client.
 """
@@ -50,10 +50,16 @@ def cache_key(vendor: str, voice: str, rate: float, text: str) -> str:
     return hashlib.sha256(canonical_json([vendor, voice, float(rate), text]).encode()).hexdigest()
 
 
+def client_id(client) -> str:
+    """The cache identity of a client: its `version` (e.g. "fish/drama-3") when it has
+    one, so clips from different models of one vendor never share a key; else `vendor`."""
+    return getattr(client, "version", None) or client.vendor
+
+
 def synthesize(text: str, voice: str, rate: float, client: TTSClient,
                cache_dir: Path | str | None = None) -> tuple[np.ndarray, int, list[Word]]:
     """Synthesize through `client`, or return the cached result for the same inputs."""
-    key = cache_key(client.vendor, voice, rate, text)
+    key = cache_key(client_id(client), voice, rate, text)
     if cache_dir is not None:
         d = Path(cache_dir)
         wav, meta = d / f"{key}.wav", d / f"{key}.json"
@@ -86,13 +92,15 @@ class TTSItem:
 
 def pack_items(scenarios) -> list[TTSItem]:
     """Every distinct (voice, rate, text) a scripted pack needs: step text, step
-    resumption text, overlay text (overlay voice_id or the caller voice). Empty
-    texts (P-PAUSE, E-END) are skipped."""
+    resumption text, overlay text and overlay resumption text (overlay voice_id or
+    the caller voice). Empty texts (P-PAUSE, E-END) are skipped."""
     seen: dict[tuple[str, float, str], TTSItem] = {}
     for s in scenarios:
         want = [(s.caller_voice, st.text) for st in s.steps]
         want += [(s.caller_voice, st.resumption_text) for st in s.steps if st.resumption_text]
         want += [(o.voice_id or s.caller_voice, o.text) for o in s.overlays]
+        want += [(o.voice_id or s.caller_voice, o.resumption_text) for o in s.overlays
+                 if o.resumption_text]
         for voice, text in want:
             if text and text.strip():
                 k = (voice, float(s.speaking_rate), text)

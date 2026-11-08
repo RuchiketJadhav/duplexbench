@@ -94,3 +94,37 @@ def test_private_template_refused_inside_repo(monkeypatch):
     r = CliRunner().invoke(_app(), ["scenario", "new", "--domain", "x", "--track", "A",
                                     "--split", "private-test", "--out", str(repo / "scratch_x.yaml")])
     assert r.exit_code == 2 and not (repo / "scratch_x.yaml").exists()
+
+
+PUBLIC_DEV = Path(__file__).resolve().parents[2] / "scenarios" / "public-dev"
+
+
+def test_validate_rejects_misspelt_tool_naming_tool_and_domain(tmp_path):
+    """fix-33: a tool name the domain's mock backend does not have fails validate
+    (it used to pass and fail at run start in ToolServer.register_call)."""
+    data = yaml.safe_load((PUBLIC_DEV / "pd_c_001.yaml").read_text(encoding="utf-8"))
+    data["tools"][0]["name"] = "find_slot"                     # backend has find_slots
+    pack = tmp_path / "pack"
+    pack.mkdir()
+    (pack / "pd_c_001.yaml").write_text(yaml.safe_dump(data), encoding="utf-8")
+    r = CliRunner().invoke(_app(), ["scenario", "validate", str(pack)])
+    assert r.exit_code == 1, r.output
+    [res] = validate_dir(pack)
+    [msg] = [p for p in res.problems if "find_slot'" in p or "tool find_slot:" in p]
+    assert "pd_c_001/tool find_slot: not a tool of the scheduling mock backend" in msg
+    assert "find_slots" in msg                                 # the valid names are listed
+
+
+def test_validate_checks_expectation_tool_refs(tmp_path):
+    data = yaml.safe_load((PUBLIC_DEV / "pd_c_002.yaml").read_text(encoding="utf-8"))
+    data["required_spoken"][0]["after_tool"] = "make_paymnt"
+    data["entities"][0].update({"tool": "make_payment", "arg": "amout"})
+    (tmp_path / "x.yaml").write_text(yaml.safe_dump(data), encoding="utf-8")
+    [res] = validate_dir(tmp_path)
+    assert any("after_tool 'make_paymnt' is not in the scenario's tools" in p for p in res.problems)
+    assert any("tool make_payment has no parameter 'amout'" in p for p in res.problems)
+
+
+def test_public_dev_pack_passes_tool_checks():
+    results = validate_dir(PUBLIC_DEV)
+    assert len(results) == 5 and all(r.ok for r in results), [r.problems for r in results]

@@ -1,21 +1,42 @@
 # Dograh stack, harness-as-carrier (D2; docs/dograh-ingress.md). Which production
 # workflow defines "Dograh stack" is a human decision (CLAUDE.md §6 item 7).
+# Live target (workflow session handoff, decisions B21 + B23, 2026-11-08):
+#   hosted app https://app.dograh.com (REST https://app.dograh.com/api/v1/...; the adapter
+#   appends /api/v1 to `endpoint`, and the WS becomes wss://app.dograh.com/api/v1/telephony/ws/...)
+#   workflow 14735 "DuplexBench Support Line", published version 3, definition_id 42706
+#   telephony_configuration_id 5767 (placeholder Twilio credentials)
+#   agent uuid fb1bce37-a195-4fb0-8309-521087899c00
+#   model gpt-realtime-2.1 (voice alloy, language en) through the v3 override
+#   workflow_configurations.model_configuration_override, provider connection
+#   "full duplex bench" (uuid 64141402-aa1a-4fbe-9aa9-c70f18ca5f66) -> openai_realtime.
+#   The provider key lives only in that Dograh connection, never here.
+# Changing any value here changes this system's config_id, so `cli preregister` must be re-run
+# (preregister hashes every configs/systems/*.yaml).
 system_id: dograh_stack
 adapter: dograh_stack
-model: null                 # resolved by Dograh from org config + workflow_configurations
+model: gpt-realtime-2.1     # B23: the v3 override's settings.model; the pin records it as model_names.model
 reasoning_effort: null
 turn_detection: null        # inside the Dograh workflow; captured via the definition hash
 self_hosted: false
 components_only: false      # FALLBACK B not required (M0-T05)
 cancel_event: true          # Twilio `clear`
-price_ref: null             # sum of components (Deepgram + litellm LLM + TTS + hosting)
+price_ref: openai_realtime  # the realtime minutes are billed to the OpenAI key inside Dograh's provider
+                            # connection (B23), at gpt-realtime-2.1 prices. Dograh hosting itself is not priced.
 params:
-  endpoint: http://127.0.0.1:8000          # Dograh API base (REST); WS derived (http->ws)
+  endpoint: https://app.dograh.com         # Dograh host, without /api/v1 (the adapter adds it); WS derived (https->wss)
   ws_endpoint: null                         # optional override for the telephony WS host
-  workflow_id: TO_SET
-  org_id: TO_SET
+  workflow_id: 14735
+  org_id: 6993
   api_key_env: DOGRAH_API_KEY
   ws_token_secret_env: null                 # set to TELEPHONY_WS_TOKEN_SECRET's env name if enforced
+                                            # (whether the hosted app enforces the WS token is unknown)
   run_name_prefix: DB-
   harness_tool_base: http://<harness-host>:8900   # tool URL = {base}/tools/{{call_id}}/<tool>; keep the port literal
-  org_model_config: null                    # paste the effective org STT/LLM/TTS config; it enters the hash
+  # Placeholder: the tunnel hostname replaces <harness-host> at run time. The 21 tool URLs on
+  # Dograh's side are updated by the workflow session, not by this harness.
+  # Optional manual fallback (fix-36). The adapter fetches the model source itself: the workflow's
+  # model_configuration_override (v3, B23) or model_configuration_v2_override (B21) if set,
+  # else GET /api/v1/user/configurations/user. Workflow 14735 carries the v3 override.
+  # This value is hashed only when that fetch fails (hosted app: 404); the run card then says
+  # model_source: pasted. Leave null unless the hosted app is the target and no override is set.
+  org_model_config: null

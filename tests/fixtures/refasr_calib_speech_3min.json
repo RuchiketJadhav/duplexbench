@@ -1,0 +1,3055 @@
+{
+ "vendor": "fish/s2.1-pro-free",
+ "voice": "delia",
+ "sample_rate": 8000,
+ "pause_ms": 800,
+ "lead_ms": 500,
+ "duration_s": 195,
+ "n_sentences": 42,
+ "utterances": [
+  {
+   "i": 0,
+   "text": "Thank you for calling. Before I make any change, let me read back what I have.",
+   "onset_ms": 500,
+   "end_ms": 4760
+  },
+  {
+   "i": 1,
+   "text": "The phone number on file is four one five, five five five, zero one four two.",
+   "onset_ms": 5560,
+   "end_ms": 10740
+  },
+  {
+   "i": 2,
+   "text": "The appointment is on Tuesday, November eleventh, at ten thirty in the morning, with Doctor Patel.",
+   "onset_ms": 11540,
+   "end_ms": 16720
+  },
+  {
+   "i": 3,
+   "text": "Your account balance is one hundred and twenty dollars, and the refund cap is fifty dollars.",
+   "onset_ms": 17520,
+   "end_ms": 22520
+  },
+  {
+   "i": 4,
+   "text": "The zip code is nine four one zero seven, dash two two one eight.",
+   "onset_ms": 23320,
+   "end_ms": 27640
+  },
+  {
+   "i": 5,
+   "text": "The confirmation code is R T, four four seven one.",
+   "onset_ms": 28440,
+   "end_ms": 32080
+  },
+  {
+   "i": 6,
+   "text": "If anything in that is wrong, please stop me and I will correct it.",
+   "onset_ms": 32880,
+   "end_ms": 36540
+  },
+  {
+   "i": 7,
+   "text": "One moment while I check the system.",
+   "onset_ms": 37340,
+   "end_ms": 39260
+  },
+  {
+   "i": 8,
+   "text": "The payment did not go through, so nothing was charged to your card.",
+   "onset_ms": 40060,
+   "end_ms": 43600
+  },
+  {
+   "i": 9,
+   "text": "I can refund up to the cap today, and a supervisor can approve more.",
+   "onset_ms": 44400,
+   "end_ms": 48200
+  },
+  {
+   "i": 10,
+   "text": "Could you spell your email address for me, one letter at a time?",
+   "onset_ms": 49000,
+   "end_ms": 52340
+  },
+  {
+   "i": 11,
+   "text": "I have updated the address to twelve Market Street, apartment four.",
+   "onset_ms": 53140,
+   "end_ms": 56780
+  },
+  {
+   "i": 12,
+   "text": "Is there anything else I can help you with before we end the call?",
+   "onset_ms": 57580,
+   "end_ms": 60380
+  },
+  {
+   "i": 13,
+   "text": "Thank you, and have a good day.",
+   "onset_ms": 61180,
+   "end_ms": 62760
+  },
+  {
+   "i": 14,
+   "text": "Let me pull up the account ending in seven seven, one moment please.",
+   "onset_ms": 63560,
+   "end_ms": 66780
+  },
+  {
+   "i": 15,
+   "text": "I see two appointments: one with Doctor Lee on Wednesday at eleven, and one with Doctor Patel on Thursday at two.",
+   "onset_ms": 67580,
+   "end_ms": 74660
+  },
+  {
+   "i": 16,
+   "text": "To verify your identity, I need your date of birth and the zip code on the account.",
+   "onset_ms": 75460,
+   "end_ms": 79520
+  },
+  {
+   "i": 17,
+   "text": "I have July fourteenth, nineteen fifty eight, and six zero six one four. Is that right?",
+   "onset_ms": 80320,
+   "end_ms": 85860
+  },
+  {
+   "i": 18,
+   "text": "The last payment of forty two dollars and ten cents posted on November third.",
+   "onset_ms": 86660,
+   "end_ms": 90840
+  },
+  {
+   "i": 19,
+   "text": "I can move the Wednesday visit to Friday at nine fifteen, if that works for you.",
+   "onset_ms": 91640,
+   "end_ms": 95840
+  },
+  {
+   "i": 20,
+   "text": "Your new confirmation number is A P, one zero three.",
+   "onset_ms": 96640,
+   "end_ms": 100100
+  },
+  {
+   "i": 21,
+   "text": "The reference for this call is nine nine two, dash four four one.",
+   "onset_ms": 100900,
+   "end_ms": 104800
+  },
+  {
+   "i": 22,
+   "text": "Please hold for a moment while the system processes the refund.",
+   "onset_ms": 105600,
+   "end_ms": 108540
+  },
+  {
+   "i": 23,
+   "text": "The refund of fifty dollars will reach your card in three to five business days.",
+   "onset_ms": 109340,
+   "end_ms": 113060
+  },
+  {
+   "i": 24,
+   "text": "I am sorry, I did not catch that. Could you repeat the last four digits?",
+   "onset_ms": 113860,
+   "end_ms": 118080
+  },
+  {
+   "i": 25,
+   "text": "I have three one two, five five five, zero one one one as the callback number.",
+   "onset_ms": 118880,
+   "end_ms": 124660
+  },
+  {
+   "i": 26,
+   "text": "The office is at two hundred Main Street, suite three hundred, and parking is behind the building.",
+   "onset_ms": 125460,
+   "end_ms": 130280
+  },
+  {
+   "i": 27,
+   "text": "You can bring a photo ID and your insurance card to the first visit.",
+   "onset_ms": 131080,
+   "end_ms": 134320
+  },
+  {
+   "i": 28,
+   "text": "The co-pay is twenty five dollars, due at check in.",
+   "onset_ms": 135120,
+   "end_ms": 137960
+  },
+  {
+   "i": 29,
+   "text": "I have cancelled the Thursday appointment and kept the Friday one.",
+   "onset_ms": 138760,
+   "end_ms": 141860
+  },
+  {
+   "i": 30,
+   "text": "Would you like a text reminder the day before, or an email?",
+   "onset_ms": 142660,
+   "end_ms": 145820
+  },
+  {
+   "i": 31,
+   "text": "The email on file is leo dot park at example dot com.",
+   "onset_ms": 146620,
+   "end_ms": 150220
+  },
+  {
+   "i": 32,
+   "text": "I will send the summary to that address in the next few minutes.",
+   "onset_ms": 151020,
+   "end_ms": 153680
+  },
+  {
+   "i": 33,
+   "text": "There is a late fee of fifteen dollars on the account, and I can waive it once.",
+   "onset_ms": 154480,
+   "end_ms": 158360
+  },
+  {
+   "i": 34,
+   "text": "The balance after the waiver is one hundred and five dollars.",
+   "onset_ms": 159160,
+   "end_ms": 162300
+  },
+  {
+   "i": 35,
+   "text": "Your account number is A C, dash seven seven.",
+   "onset_ms": 163100,
+   "end_ms": 166200
+  },
+  {
+   "i": 36,
+   "text": "The next statement closes on the twentieth, and payment is due on the fifth.",
+   "onset_ms": 167000,
+   "end_ms": 170620
+  },
+  {
+   "i": 37,
+   "text": "I have noted that you prefer morning appointments.",
+   "onset_ms": 171420,
+   "end_ms": 173660
+  },
+  {
+   "i": 38,
+   "text": "If you need to reach us after hours, the line is open until eight in the evening.",
+   "onset_ms": 174460,
+   "end_ms": 178700
+  },
+  {
+   "i": 39,
+   "text": "Let me repeat the time once more: Friday, November fourteenth, at nine fifteen in the morning.",
+   "onset_ms": 179500,
+   "end_ms": 185000
+  },
+  {
+   "i": 40,
+   "text": "Is there anything in that summary I should change?",
+   "onset_ms": 185800,
+   "end_ms": 188400
+  },
+  {
+   "i": 41,
+   "text": "Thank you for your patience today, and take care.",
+   "onset_ms": 189200,
+   "end_ms": 191440
+  }
+ ],
+ "words": [
+  {
+   "text": "Thank",
+   "start_ms": 420,
+   "end_ms": 740
+  },
+  {
+   "text": "you",
+   "start_ms": 740,
+   "end_ms": 820
+  },
+  {
+   "text": "for",
+   "start_ms": 820,
+   "end_ms": 980
+  },
+  {
+   "text": "calling",
+   "start_ms": 980,
+   "end_ms": 1540
+  },
+  {
+   "text": "Before",
+   "start_ms": 1700,
+   "end_ms": 2020
+  },
+  {
+   "text": "I",
+   "start_ms": 2020,
+   "end_ms": 2180
+  },
+  {
+   "text": "make",
+   "start_ms": 2180,
+   "end_ms": 2420
+  },
+  {
+   "text": "any",
+   "start_ms": 2420,
+   "end_ms": 2660
+  },
+  {
+   "text": "change",
+   "start_ms": 2660,
+   "end_ms": 3140
+  },
+  {
+   "text": "let",
+   "start_ms": 3380,
+   "end_ms": 3540
+  },
+  {
+   "text": "me",
+   "start_ms": 3540,
+   "end_ms": 3620
+  },
+  {
+   "text": "read",
+   "start_ms": 3700,
+   "end_ms": 3940
+  },
+  {
+   "text": "back",
+   "start_ms": 3940,
+   "end_ms": 4180
+  },
+  {
+   "text": "what",
+   "start_ms": 4180,
+   "end_ms": 4260
+  },
+  {
+   "text": "I",
+   "start_ms": 4260,
+   "end_ms": 4420
+  },
+  {
+   "text": "have",
+   "start_ms": 4420,
+   "end_ms": 4740
+  },
+  {
+   "text": "The",
+   "start_ms": 5560,
+   "end_ms": 5640
+  },
+  {
+   "text": "phone",
+   "start_ms": 5640,
+   "end_ms": 5880
+  },
+  {
+   "text": "number",
+   "start_ms": 5880,
+   "end_ms": 6120
+  },
+  {
+   "text": "on",
+   "start_ms": 6120,
+   "end_ms": 6360
+  },
+  {
+   "text": "file",
+   "start_ms": 6360,
+   "end_ms": 6840
+  },
+  {
+   "text": "is",
+   "start_ms": 6840,
+   "end_ms": 7080
+  },
+  {
+   "text": "four",
+   "start_ms": 7080,
+   "end_ms": 7320
+  },
+  {
+   "text": "one",
+   "start_ms": 7320,
+   "end_ms": 7560
+  },
+  {
+   "text": "five",
+   "start_ms": 7560,
+   "end_ms": 8040
+  },
+  {
+   "text": "five",
+   "start_ms": 8200,
+   "end_ms": 8520
+  },
+  {
+   "text": "five",
+   "start_ms": 8520,
+   "end_ms": 8760
+  },
+  {
+   "text": "five",
+   "start_ms": 8760,
+   "end_ms": 9160
+  },
+  {
+   "text": "zero",
+   "start_ms": 9400,
+   "end_ms": 9720
+  },
+  {
+   "text": "one",
+   "start_ms": 9720,
+   "end_ms": 10040
+  },
+  {
+   "text": "four",
+   "start_ms": 10040,
+   "end_ms": 10280
+  },
+  {
+   "text": "two",
+   "start_ms": 10280,
+   "end_ms": 10760
+  },
+  {
+   "text": "The",
+   "start_ms": 11540,
+   "end_ms": 11620
+  },
+  {
+   "text": "appointment",
+   "start_ms": 11700,
+   "end_ms": 12180
+  },
+  {
+   "text": "is",
+   "start_ms": 12180,
+   "end_ms": 12260
+  },
+  {
+   "text": "on",
+   "start_ms": 12260,
+   "end_ms": 12500
+  },
+  {
+   "text": "Tuesday",
+   "start_ms": 12500,
+   "end_ms": 12980
+  },
+  {
+   "text": "November",
+   "start_ms": 12980,
+   "end_ms": 13380
+  },
+  {
+   "text": "eleventh",
+   "start_ms": 13380,
+   "end_ms": 13940
+  },
+  {
+   "text": "at",
+   "start_ms": 14100,
+   "end_ms": 14340
+  },
+  {
+   "text": "ten",
+   "start_ms": 14340,
+   "end_ms": 14580
+  },
+  {
+   "text": "thirty",
+   "start_ms": 14580,
+   "end_ms": 14900
+  },
+  {
+   "text": "in",
+   "start_ms": 14900,
+   "end_ms": 14980
+  },
+  {
+   "text": "the",
+   "start_ms": 14980,
+   "end_ms": 15060
+  },
+  {
+   "text": "morning",
+   "start_ms": 15060,
+   "end_ms": 15460
+  },
+  {
+   "text": "with",
+   "start_ms": 15700,
+   "end_ms": 15860
+  },
+  {
+   "text": "Doctor",
+   "start_ms": 15860,
+   "end_ms": 16180
+  },
+  {
+   "text": "Patel",
+   "start_ms": 16180,
+   "end_ms": 16740
+  },
+  {
+   "text": "Your",
+   "start_ms": 17500,
+   "end_ms": 17740
+  },
+  {
+   "text": "account",
+   "start_ms": 17740,
+   "end_ms": 18060
+  },
+  {
+   "text": "balance",
+   "start_ms": 18060,
+   "end_ms": 18540
+  },
+  {
+   "text": "is",
+   "start_ms": 18540,
+   "end_ms": 18700
+  },
+  {
+   "text": "one",
+   "start_ms": 18700,
+   "end_ms": 18940
+  },
+  {
+   "text": "hundred",
+   "start_ms": 18940,
+   "end_ms": 19340
+  },
+  {
+   "text": "and",
+   "start_ms": 19340,
+   "end_ms": 19420
+  },
+  {
+   "text": "twenty",
+   "start_ms": 19420,
+   "end_ms": 19740
+  },
+  {
+   "text": "dollars",
+   "start_ms": 19740,
+   "end_ms": 20300
+  },
+  {
+   "text": "and",
+   "start_ms": 20540,
+   "end_ms": 20700
+  },
+  {
+   "text": "the",
+   "start_ms": 20700,
+   "end_ms": 20700
+  },
+  {
+   "text": "refund",
+   "start_ms": 20700,
+   "end_ms": 21180
+  },
+  {
+   "text": "cap",
+   "start_ms": 21180,
+   "end_ms": 21580
+  },
+  {
+   "text": "is",
+   "start_ms": 21580,
+   "end_ms": 21740
+  },
+  {
+   "text": "fifty",
+   "start_ms": 21740,
+   "end_ms": 22060
+  },
+  {
+   "text": "dollars",
+   "start_ms": 22060,
+   "end_ms": 22700
+  },
+  {
+   "text": "The",
+   "start_ms": 23280,
+   "end_ms": 23440
+  },
+  {
+   "text": "zip",
+   "start_ms": 23440,
+   "end_ms": 23760
+  },
+  {
+   "text": "code",
+   "start_ms": 23760,
+   "end_ms": 24000
+  },
+  {
+   "text": "is",
+   "start_ms": 24000,
+   "end_ms": 24240
+  },
+  {
+   "text": "nine",
+   "start_ms": 24240,
+   "end_ms": 24640
+  },
+  {
+   "text": "four",
+   "start_ms": 24640,
+   "end_ms": 25040
+  },
+  {
+   "text": "one",
+   "start_ms": 25040,
+   "end_ms": 25280
+  },
+  {
+   "text": "zero",
+   "start_ms": 25280,
+   "end_ms": 25600
+  },
+  {
+   "text": "seven",
+   "start_ms": 25600,
+   "end_ms": 26160
+  },
+  {
+   "text": "dash",
+   "start_ms": 26160,
+   "end_ms": 26560
+  },
+  {
+   "text": "two",
+   "start_ms": 26560,
+   "end_ms": 26800
+  },
+  {
+   "text": "two",
+   "start_ms": 26800,
+   "end_ms": 27120
+  },
+  {
+   "text": "one",
+   "start_ms": 27120,
+   "end_ms": 27360
+  },
+  {
+   "text": "eight",
+   "start_ms": 27360,
+   "end_ms": 27760
+  },
+  {
+   "text": "The",
+   "start_ms": 28440,
+   "end_ms": 28520
+  },
+  {
+   "text": "confirmation",
+   "start_ms": 28520,
+   "end_ms": 29240
+  },
+  {
+   "text": "code",
+   "start_ms": 29240,
+   "end_ms": 29640
+  },
+  {
+   "text": "is",
+   "start_ms": 29640,
+   "end_ms": 29800
+  },
+  {
+   "text": "R",
+   "start_ms": 29880,
+   "end_ms": 30040
+  },
+  {
+   "text": "T",
+   "start_ms": 30040,
+   "end_ms": 30520
+  },
+  {
+   "text": "four",
+   "start_ms": 30600,
+   "end_ms": 30920
+  },
+  {
+   "text": "four",
+   "start_ms": 30920,
+   "end_ms": 31240
+  },
+  {
+   "text": "seven",
+   "start_ms": 31240,
+   "end_ms": 31640
+  },
+  {
+   "text": "one",
+   "start_ms": 31640,
+   "end_ms": 32120
+  },
+  {
+   "text": "If",
+   "start_ms": 32880,
+   "end_ms": 33040
+  },
+  {
+   "text": "anything",
+   "start_ms": 33040,
+   "end_ms": 33520
+  },
+  {
+   "text": "in",
+   "start_ms": 33520,
+   "end_ms": 33680
+  },
+  {
+   "text": "that",
+   "start_ms": 33680,
+   "end_ms": 33840
+  },
+  {
+   "text": "is",
+   "start_ms": 33840,
+   "end_ms": 34000
+  },
+  {
+   "text": "wrong",
+   "start_ms": 34000,
+   "end_ms": 34480
+  },
+  {
+   "text": "please",
+   "start_ms": 34480,
+   "end_ms": 34800
+  },
+  {
+   "text": "stop",
+   "start_ms": 34800,
+   "end_ms": 35200
+  },
+  {
+   "text": "me",
+   "start_ms": 35200,
+   "end_ms": 35520
+  },
+  {
+   "text": "and",
+   "start_ms": 35520,
+   "end_ms": 35680
+  },
+  {
+   "text": "I",
+   "start_ms": 35680,
+   "end_ms": 35840
+  },
+  {
+   "text": "will",
+   "start_ms": 35840,
+   "end_ms": 36000
+  },
+  {
+   "text": "correct",
+   "start_ms": 36000,
+   "end_ms": 36400
+  },
+  {
+   "text": "it",
+   "start_ms": 36400,
+   "end_ms": 36560
+  },
+  {
+   "text": "One",
+   "start_ms": 37340,
+   "end_ms": 37660
+  },
+  {
+   "text": "moment",
+   "start_ms": 37660,
+   "end_ms": 38060
+  },
+  {
+   "text": "while",
+   "start_ms": 38060,
+   "end_ms": 38220
+  },
+  {
+   "text": "I",
+   "start_ms": 38220,
+   "end_ms": 38300
+  },
+  {
+   "text": "check",
+   "start_ms": 38300,
+   "end_ms": 38620
+  },
+  {
+   "text": "the",
+   "start_ms": 38620,
+   "end_ms": 38700
+  },
+  {
+   "text": "system",
+   "start_ms": 38700,
+   "end_ms": 39260
+  },
+  {
+   "text": "The",
+   "start_ms": 40060,
+   "end_ms": 40220
+  },
+  {
+   "text": "payment",
+   "start_ms": 40220,
+   "end_ms": 40620
+  },
+  {
+   "text": "did",
+   "start_ms": 40620,
+   "end_ms": 40780
+  },
+  {
+   "text": "not",
+   "start_ms": 40780,
+   "end_ms": 41020
+  },
+  {
+   "text": "go",
+   "start_ms": 41020,
+   "end_ms": 41180
+  },
+  {
+   "text": "through",
+   "start_ms": 41180,
+   "end_ms": 41660
+  },
+  {
+   "text": "so",
+   "start_ms": 41820,
+   "end_ms": 42060
+  },
+  {
+   "text": "nothing",
+   "start_ms": 42060,
+   "end_ms": 42380
+  },
+  {
+   "text": "was",
+   "start_ms": 42380,
+   "end_ms": 42620
+  },
+  {
+   "text": "charged",
+   "start_ms": 42620,
+   "end_ms": 43020
+  },
+  {
+   "text": "to",
+   "start_ms": 43020,
+   "end_ms": 43020
+  },
+  {
+   "text": "your",
+   "start_ms": 43020,
+   "end_ms": 43180
+  },
+  {
+   "text": "card",
+   "start_ms": 43180,
+   "end_ms": 43580
+  },
+  {
+   "text": "I",
+   "start_ms": 44400,
+   "end_ms": 44560
+  },
+  {
+   "text": "can",
+   "start_ms": 44560,
+   "end_ms": 44720
+  },
+  {
+   "text": "refund",
+   "start_ms": 44720,
+   "end_ms": 45120
+  },
+  {
+   "text": "up",
+   "start_ms": 45200,
+   "end_ms": 45360
+  },
+  {
+   "text": "to",
+   "start_ms": 45360,
+   "end_ms": 45360
+  },
+  {
+   "text": "the",
+   "start_ms": 45360,
+   "end_ms": 45520
+  },
+  {
+   "text": "cap",
+   "start_ms": 45520,
+   "end_ms": 45760
+  },
+  {
+   "text": "today",
+   "start_ms": 45760,
+   "end_ms": 46240
+  },
+  {
+   "text": "and",
+   "start_ms": 46400,
+   "end_ms": 46560
+  },
+  {
+   "text": "a",
+   "start_ms": 46560,
+   "end_ms": 46640
+  },
+  {
+   "text": "supervisor",
+   "start_ms": 46640,
+   "end_ms": 47280
+  },
+  {
+   "text": "can",
+   "start_ms": 47280,
+   "end_ms": 47440
+  },
+  {
+   "text": "approve",
+   "start_ms": 47440,
+   "end_ms": 47760
+  },
+  {
+   "text": "more",
+   "start_ms": 47760,
+   "end_ms": 48240
+  },
+  {
+   "text": "Could",
+   "start_ms": 48940,
+   "end_ms": 49180
+  },
+  {
+   "text": "you",
+   "start_ms": 49180,
+   "end_ms": 49340
+  },
+  {
+   "text": "spell",
+   "start_ms": 49340,
+   "end_ms": 49660
+  },
+  {
+   "text": "your",
+   "start_ms": 49660,
+   "end_ms": 49820
+  },
+  {
+   "text": "email",
+   "start_ms": 49820,
+   "end_ms": 50140
+  },
+  {
+   "text": "address",
+   "start_ms": 50140,
+   "end_ms": 50540
+  },
+  {
+   "text": "for",
+   "start_ms": 50540,
+   "end_ms": 50620
+  },
+  {
+   "text": "me",
+   "start_ms": 50620,
+   "end_ms": 50940
+  },
+  {
+   "text": "one",
+   "start_ms": 51020,
+   "end_ms": 51340
+  },
+  {
+   "text": "letter",
+   "start_ms": 51340,
+   "end_ms": 51660
+  },
+  {
+   "text": "at",
+   "start_ms": 51660,
+   "end_ms": 51820
+  },
+  {
+   "text": "a",
+   "start_ms": 51820,
+   "end_ms": 51820
+  },
+  {
+   "text": "time",
+   "start_ms": 51820,
+   "end_ms": 52380
+  },
+  {
+   "text": "I",
+   "start_ms": 53140,
+   "end_ms": 53300
+  },
+  {
+   "text": "have",
+   "start_ms": 53300,
+   "end_ms": 53460
+  },
+  {
+   "text": "updated",
+   "start_ms": 53460,
+   "end_ms": 53940
+  },
+  {
+   "text": "the",
+   "start_ms": 53940,
+   "end_ms": 54100
+  },
+  {
+   "text": "address",
+   "start_ms": 54100,
+   "end_ms": 54660
+  },
+  {
+   "text": "to",
+   "start_ms": 54660,
+   "end_ms": 54660
+  },
+  {
+   "text": "twelve",
+   "start_ms": 54660,
+   "end_ms": 55060
+  },
+  {
+   "text": "Market",
+   "start_ms": 55060,
+   "end_ms": 55460
+  },
+  {
+   "text": "Street",
+   "start_ms": 55460,
+   "end_ms": 55860
+  },
+  {
+   "text": "apartment",
+   "start_ms": 55860,
+   "end_ms": 56420
+  },
+  {
+   "text": "four",
+   "start_ms": 56420,
+   "end_ms": 56820
+  },
+  {
+   "text": "Is",
+   "start_ms": 57580,
+   "end_ms": 57740
+  },
+  {
+   "text": "there",
+   "start_ms": 57740,
+   "end_ms": 57900
+  },
+  {
+   "text": "anything",
+   "start_ms": 57900,
+   "end_ms": 58300
+  },
+  {
+   "text": "else",
+   "start_ms": 58300,
+   "end_ms": 58620
+  },
+  {
+   "text": "I",
+   "start_ms": 58620,
+   "end_ms": 58700
+  },
+  {
+   "text": "can",
+   "start_ms": 58700,
+   "end_ms": 58780
+  },
+  {
+   "text": "help",
+   "start_ms": 58780,
+   "end_ms": 59020
+  },
+  {
+   "text": "you",
+   "start_ms": 59020,
+   "end_ms": 59100
+  },
+  {
+   "text": "with",
+   "start_ms": 59100,
+   "end_ms": 59340
+  },
+  {
+   "text": "before",
+   "start_ms": 59340,
+   "end_ms": 59660
+  },
+  {
+   "text": "we",
+   "start_ms": 59660,
+   "end_ms": 59820
+  },
+  {
+   "text": "end",
+   "start_ms": 59820,
+   "end_ms": 59900
+  },
+  {
+   "text": "the",
+   "start_ms": 59900,
+   "end_ms": 59980
+  },
+  {
+   "text": "call",
+   "start_ms": 59980,
+   "end_ms": 60540
+  },
+  {
+   "text": "Thank",
+   "start_ms": 61120,
+   "end_ms": 61440
+  },
+  {
+   "text": "you",
+   "start_ms": 61440,
+   "end_ms": 61680
+  },
+  {
+   "text": "and",
+   "start_ms": 61840,
+   "end_ms": 61920
+  },
+  {
+   "text": "have",
+   "start_ms": 61920,
+   "end_ms": 62160
+  },
+  {
+   "text": "a",
+   "start_ms": 62160,
+   "end_ms": 62240
+  },
+  {
+   "text": "good",
+   "start_ms": 62240,
+   "end_ms": 62400
+  },
+  {
+   "text": "day",
+   "start_ms": 62400,
+   "end_ms": 62800
+  },
+  {
+   "text": "Let",
+   "start_ms": 63560,
+   "end_ms": 63640
+  },
+  {
+   "text": "me",
+   "start_ms": 63640,
+   "end_ms": 63800
+  },
+  {
+   "text": "pull",
+   "start_ms": 63800,
+   "end_ms": 63960
+  },
+  {
+   "text": "up",
+   "start_ms": 63960,
+   "end_ms": 64120
+  },
+  {
+   "text": "the",
+   "start_ms": 64120,
+   "end_ms": 64200
+  },
+  {
+   "text": "account",
+   "start_ms": 64200,
+   "end_ms": 64680
+  },
+  {
+   "text": "ending",
+   "start_ms": 64680,
+   "end_ms": 64920
+  },
+  {
+   "text": "in",
+   "start_ms": 64920,
+   "end_ms": 65000
+  },
+  {
+   "text": "seven",
+   "start_ms": 65000,
+   "end_ms": 65400
+  },
+  {
+   "text": "seven",
+   "start_ms": 65400,
+   "end_ms": 65880
+  },
+  {
+   "text": "one",
+   "start_ms": 65880,
+   "end_ms": 66120
+  },
+  {
+   "text": "moment",
+   "start_ms": 66120,
+   "end_ms": 66440
+  },
+  {
+   "text": "please",
+   "start_ms": 66440,
+   "end_ms": 66920
+  },
+  {
+   "text": "I",
+   "start_ms": 67580,
+   "end_ms": 67740
+  },
+  {
+   "text": "see",
+   "start_ms": 67740,
+   "end_ms": 67980
+  },
+  {
+   "text": "two",
+   "start_ms": 67980,
+   "end_ms": 68140
+  },
+  {
+   "text": "appointments",
+   "start_ms": 68220,
+   "end_ms": 68940
+  },
+  {
+   "text": "one",
+   "start_ms": 69100,
+   "end_ms": 69420
+  },
+  {
+   "text": "with",
+   "start_ms": 69420,
+   "end_ms": 69580
+  },
+  {
+   "text": "Doctor",
+   "start_ms": 69660,
+   "end_ms": 69980
+  },
+  {
+   "text": "Lee",
+   "start_ms": 69980,
+   "end_ms": 70300
+  },
+  {
+   "text": "on",
+   "start_ms": 70300,
+   "end_ms": 70460
+  },
+  {
+   "text": "Wednesday",
+   "start_ms": 70460,
+   "end_ms": 71020
+  },
+  {
+   "text": "at",
+   "start_ms": 71020,
+   "end_ms": 71180
+  },
+  {
+   "text": "eleven",
+   "start_ms": 71180,
+   "end_ms": 71740
+  },
+  {
+   "text": "and",
+   "start_ms": 71900,
+   "end_ms": 72140
+  },
+  {
+   "text": "one",
+   "start_ms": 72140,
+   "end_ms": 72380
+  },
+  {
+   "text": "with",
+   "start_ms": 72380,
+   "end_ms": 72540
+  },
+  {
+   "text": "Doctor",
+   "start_ms": 72540,
+   "end_ms": 72860
+  },
+  {
+   "text": "Patel",
+   "start_ms": 72860,
+   "end_ms": 73340
+  },
+  {
+   "text": "on",
+   "start_ms": 73340,
+   "end_ms": 73500
+  },
+  {
+   "text": "Thursday",
+   "start_ms": 73500,
+   "end_ms": 74060
+  },
+  {
+   "text": "at",
+   "start_ms": 74060,
+   "end_ms": 74300
+  },
+  {
+   "text": "two",
+   "start_ms": 74300,
+   "end_ms": 74700
+  },
+  {
+   "text": "To",
+   "start_ms": 75440,
+   "end_ms": 75520
+  },
+  {
+   "text": "verify",
+   "start_ms": 75520,
+   "end_ms": 76000
+  },
+  {
+   "text": "your",
+   "start_ms": 76000,
+   "end_ms": 76160
+  },
+  {
+   "text": "identity",
+   "start_ms": 76160,
+   "end_ms": 76720
+  },
+  {
+   "text": "I",
+   "start_ms": 76800,
+   "end_ms": 76960
+  },
+  {
+   "text": "need",
+   "start_ms": 76960,
+   "end_ms": 77200
+  },
+  {
+   "text": "your",
+   "start_ms": 77200,
+   "end_ms": 77280
+  },
+  {
+   "text": "date",
+   "start_ms": 77280,
+   "end_ms": 77520
+  },
+  {
+   "text": "of",
+   "start_ms": 77520,
+   "end_ms": 77680
+  },
+  {
+   "text": "birth",
+   "start_ms": 77680,
+   "end_ms": 77920
+  },
+  {
+   "text": "and",
+   "start_ms": 78080,
+   "end_ms": 78160
+  },
+  {
+   "text": "the",
+   "start_ms": 78160,
+   "end_ms": 78320
+  },
+  {
+   "text": "zip",
+   "start_ms": 78320,
+   "end_ms": 78560
+  },
+  {
+   "text": "code",
+   "start_ms": 78560,
+   "end_ms": 78800
+  },
+  {
+   "text": "on",
+   "start_ms": 78800,
+   "end_ms": 78960
+  },
+  {
+   "text": "the",
+   "start_ms": 78960,
+   "end_ms": 79040
+  },
+  {
+   "text": "account",
+   "start_ms": 79040,
+   "end_ms": 79600
+  },
+  {
+   "text": "I",
+   "start_ms": 80320,
+   "end_ms": 80480
+  },
+  {
+   "text": "have",
+   "start_ms": 80480,
+   "end_ms": 80640
+  },
+  {
+   "text": "July",
+   "start_ms": 80640,
+   "end_ms": 81040
+  },
+  {
+   "text": "fourteenth",
+   "start_ms": 81040,
+   "end_ms": 81680
+  },
+  {
+   "text": "nineteen",
+   "start_ms": 81840,
+   "end_ms": 82320
+  },
+  {
+   "text": "fifty",
+   "start_ms": 82320,
+   "end_ms": 82640
+  },
+  {
+   "text": "eight",
+   "start_ms": 82640,
+   "end_ms": 82960
+  },
+  {
+   "text": "and",
+   "start_ms": 83040,
+   "end_ms": 83200
+  },
+  {
+   "text": "six",
+   "start_ms": 83200,
+   "end_ms": 83520
+  },
+  {
+   "text": "zero",
+   "start_ms": 83520,
+   "end_ms": 83840
+  },
+  {
+   "text": "six",
+   "start_ms": 83840,
+   "end_ms": 84160
+  },
+  {
+   "text": "one",
+   "start_ms": 84160,
+   "end_ms": 84400
+  },
+  {
+   "text": "four",
+   "start_ms": 84400,
+   "end_ms": 84880
+  },
+  {
+   "text": "Is",
+   "start_ms": 85200,
+   "end_ms": 85360
+  },
+  {
+   "text": "that",
+   "start_ms": 85360,
+   "end_ms": 85600
+  },
+  {
+   "text": "right",
+   "start_ms": 85600,
+   "end_ms": 85920
+  },
+  {
+   "text": "The",
+   "start_ms": 86660,
+   "end_ms": 86740
+  },
+  {
+   "text": "last",
+   "start_ms": 86740,
+   "end_ms": 87140
+  },
+  {
+   "text": "payment",
+   "start_ms": 87140,
+   "end_ms": 87460
+  },
+  {
+   "text": "of",
+   "start_ms": 87460,
+   "end_ms": 87540
+  },
+  {
+   "text": "forty",
+   "start_ms": 87540,
+   "end_ms": 87940
+  },
+  {
+   "text": "two",
+   "start_ms": 87940,
+   "end_ms": 88100
+  },
+  {
+   "text": "dollars",
+   "start_ms": 88100,
+   "end_ms": 88580
+  },
+  {
+   "text": "and",
+   "start_ms": 88580,
+   "end_ms": 88740
+  },
+  {
+   "text": "ten",
+   "start_ms": 88740,
+   "end_ms": 88980
+  },
+  {
+   "text": "cents",
+   "start_ms": 89060,
+   "end_ms": 89380
+  },
+  {
+   "text": "posted",
+   "start_ms": 89380,
+   "end_ms": 89860
+  },
+  {
+   "text": "on",
+   "start_ms": 89860,
+   "end_ms": 90020
+  },
+  {
+   "text": "November",
+   "start_ms": 90020,
+   "end_ms": 90420
+  },
+  {
+   "text": "third",
+   "start_ms": 90420,
+   "end_ms": 90900
+  },
+  {
+   "text": "I",
+   "start_ms": 91620,
+   "end_ms": 91780
+  },
+  {
+   "text": "can",
+   "start_ms": 91780,
+   "end_ms": 91940
+  },
+  {
+   "text": "move",
+   "start_ms": 91940,
+   "end_ms": 92180
+  },
+  {
+   "text": "the",
+   "start_ms": 92180,
+   "end_ms": 92260
+  },
+  {
+   "text": "Wednesday",
+   "start_ms": 92260,
+   "end_ms": 92740
+  },
+  {
+   "text": "visit",
+   "start_ms": 92740,
+   "end_ms": 93140
+  },
+  {
+   "text": "to",
+   "start_ms": 93140,
+   "end_ms": 93220
+  },
+  {
+   "text": "Friday",
+   "start_ms": 93220,
+   "end_ms": 93700
+  },
+  {
+   "text": "at",
+   "start_ms": 93700,
+   "end_ms": 93860
+  },
+  {
+   "text": "nine",
+   "start_ms": 93860,
+   "end_ms": 94100
+  },
+  {
+   "text": "fifteen",
+   "start_ms": 94100,
+   "end_ms": 94740
+  },
+  {
+   "text": "if",
+   "start_ms": 94820,
+   "end_ms": 95060
+  },
+  {
+   "text": "that",
+   "start_ms": 95060,
+   "end_ms": 95220
+  },
+  {
+   "text": "works",
+   "start_ms": 95220,
+   "end_ms": 95460
+  },
+  {
+   "text": "for",
+   "start_ms": 95460,
+   "end_ms": 95540
+  },
+  {
+   "text": "you",
+   "start_ms": 95540,
+   "end_ms": 95860
+  },
+  {
+   "text": "Your",
+   "start_ms": 96640,
+   "end_ms": 96800
+  },
+  {
+   "text": "new",
+   "start_ms": 96800,
+   "end_ms": 96960
+  },
+  {
+   "text": "confirmation",
+   "start_ms": 96960,
+   "end_ms": 97680
+  },
+  {
+   "text": "number",
+   "start_ms": 97680,
+   "end_ms": 98000
+  },
+  {
+   "text": "is",
+   "start_ms": 98000,
+   "end_ms": 98240
+  },
+  {
+   "text": "A",
+   "start_ms": 98320,
+   "end_ms": 98480
+  },
+  {
+   "text": "P",
+   "start_ms": 98560,
+   "end_ms": 98960
+  },
+  {
+   "text": "one",
+   "start_ms": 99040,
+   "end_ms": 99360
+  },
+  {
+   "text": "zero",
+   "start_ms": 99360,
+   "end_ms": 99680
+  },
+  {
+   "text": "three",
+   "start_ms": 99680,
+   "end_ms": 100080
+  },
+  {
+   "text": "The",
+   "start_ms": 100900,
+   "end_ms": 100980
+  },
+  {
+   "text": "reference",
+   "start_ms": 100980,
+   "end_ms": 101460
+  },
+  {
+   "text": "for",
+   "start_ms": 101460,
+   "end_ms": 101540
+  },
+  {
+   "text": "this",
+   "start_ms": 101540,
+   "end_ms": 101700
+  },
+  {
+   "text": "call",
+   "start_ms": 101700,
+   "end_ms": 102100
+  },
+  {
+   "text": "is",
+   "start_ms": 102100,
+   "end_ms": 102340
+  },
+  {
+   "text": "nine",
+   "start_ms": 102340,
+   "end_ms": 102660
+  },
+  {
+   "text": "nine",
+   "start_ms": 102660,
+   "end_ms": 102980
+  },
+  {
+   "text": "two",
+   "start_ms": 102980,
+   "end_ms": 103460
+  },
+  {
+   "text": "dash",
+   "start_ms": 103460,
+   "end_ms": 103860
+  },
+  {
+   "text": "four",
+   "start_ms": 103860,
+   "end_ms": 104100
+  },
+  {
+   "text": "four",
+   "start_ms": 104100,
+   "end_ms": 104420
+  },
+  {
+   "text": "one",
+   "start_ms": 104420,
+   "end_ms": 104820
+  },
+  {
+   "text": "Please",
+   "start_ms": 105600,
+   "end_ms": 105840
+  },
+  {
+   "text": "hold",
+   "start_ms": 105840,
+   "end_ms": 106080
+  },
+  {
+   "text": "for",
+   "start_ms": 106080,
+   "end_ms": 106240
+  },
+  {
+   "text": "a",
+   "start_ms": 106240,
+   "end_ms": 106240
+  },
+  {
+   "text": "moment",
+   "start_ms": 106240,
+   "end_ms": 106720
+  },
+  {
+   "text": "while",
+   "start_ms": 106720,
+   "end_ms": 106880
+  },
+  {
+   "text": "the",
+   "start_ms": 106880,
+   "end_ms": 106960
+  },
+  {
+   "text": "system",
+   "start_ms": 106960,
+   "end_ms": 107360
+  },
+  {
+   "text": "processes",
+   "start_ms": 107360,
+   "end_ms": 108000
+  },
+  {
+   "text": "the",
+   "start_ms": 108000,
+   "end_ms": 108080
+  },
+  {
+   "text": "refund",
+   "start_ms": 108080,
+   "end_ms": 108560
+  },
+  {
+   "text": "The",
+   "start_ms": 109340,
+   "end_ms": 109420
+  },
+  {
+   "text": "refund",
+   "start_ms": 109420,
+   "end_ms": 109820
+  },
+  {
+   "text": "of",
+   "start_ms": 109820,
+   "end_ms": 109900
+  },
+  {
+   "text": "fifty",
+   "start_ms": 109900,
+   "end_ms": 110220
+  },
+  {
+   "text": "dollars",
+   "start_ms": 110220,
+   "end_ms": 110700
+  },
+  {
+   "text": "will",
+   "start_ms": 110700,
+   "end_ms": 110860
+  },
+  {
+   "text": "reach",
+   "start_ms": 110860,
+   "end_ms": 111180
+  },
+  {
+   "text": "your",
+   "start_ms": 111180,
+   "end_ms": 111260
+  },
+  {
+   "text": "card",
+   "start_ms": 111260,
+   "end_ms": 111580
+  },
+  {
+   "text": "in",
+   "start_ms": 111580,
+   "end_ms": 111740
+  },
+  {
+   "text": "three",
+   "start_ms": 111740,
+   "end_ms": 111980
+  },
+  {
+   "text": "to",
+   "start_ms": 111980,
+   "end_ms": 112060
+  },
+  {
+   "text": "five",
+   "start_ms": 112060,
+   "end_ms": 112380
+  },
+  {
+   "text": "business",
+   "start_ms": 112380,
+   "end_ms": 112700
+  },
+  {
+   "text": "days",
+   "start_ms": 112700,
+   "end_ms": 113180
+  },
+  {
+   "text": "I",
+   "start_ms": 113860,
+   "end_ms": 114020
+  },
+  {
+   "text": "am",
+   "start_ms": 114100,
+   "end_ms": 114180
+  },
+  {
+   "text": "sorry",
+   "start_ms": 114180,
+   "end_ms": 114740
+  },
+  {
+   "text": "I",
+   "start_ms": 114740,
+   "end_ms": 114820
+  },
+  {
+   "text": "did",
+   "start_ms": 114820,
+   "end_ms": 114980
+  },
+  {
+   "text": "not",
+   "start_ms": 114980,
+   "end_ms": 115300
+  },
+  {
+   "text": "catch",
+   "start_ms": 115300,
+   "end_ms": 115540
+  },
+  {
+   "text": "that",
+   "start_ms": 115620,
+   "end_ms": 115860
+  },
+  {
+   "text": "Could",
+   "start_ms": 116260,
+   "end_ms": 116500
+  },
+  {
+   "text": "you",
+   "start_ms": 116500,
+   "end_ms": 116580
+  },
+  {
+   "text": "repeat",
+   "start_ms": 116580,
+   "end_ms": 117060
+  },
+  {
+   "text": "the",
+   "start_ms": 117060,
+   "end_ms": 117060
+  },
+  {
+   "text": "last",
+   "start_ms": 117060,
+   "end_ms": 117540
+  },
+  {
+   "text": "four",
+   "start_ms": 117540,
+   "end_ms": 117700
+  },
+  {
+   "text": "digits",
+   "start_ms": 117700,
+   "end_ms": 118340
+  },
+  {
+   "text": "I",
+   "start_ms": 118880,
+   "end_ms": 119040
+  },
+  {
+   "text": "have",
+   "start_ms": 119040,
+   "end_ms": 119360
+  },
+  {
+   "text": "three",
+   "start_ms": 119440,
+   "end_ms": 119840
+  },
+  {
+   "text": "one",
+   "start_ms": 119840,
+   "end_ms": 120160
+  },
+  {
+   "text": "two",
+   "start_ms": 120160,
+   "end_ms": 120640
+  },
+  {
+   "text": "five",
+   "start_ms": 120800,
+   "end_ms": 121120
+  },
+  {
+   "text": "five",
+   "start_ms": 121120,
+   "end_ms": 121520
+  },
+  {
+   "text": "five",
+   "start_ms": 121520,
+   "end_ms": 122000
+  },
+  {
+   "text": "zero",
+   "start_ms": 122160,
+   "end_ms": 122640
+  },
+  {
+   "text": "one",
+   "start_ms": 122640,
+   "end_ms": 122960
+  },
+  {
+   "text": "one",
+   "start_ms": 122960,
+   "end_ms": 123200
+  },
+  {
+   "text": "one",
+   "start_ms": 123200,
+   "end_ms": 123520
+  },
+  {
+   "text": "as",
+   "start_ms": 123520,
+   "end_ms": 123760
+  },
+  {
+   "text": "the",
+   "start_ms": 123760,
+   "end_ms": 123840
+  },
+  {
+   "text": "callback",
+   "start_ms": 123840,
+   "end_ms": 124240
+  },
+  {
+   "text": "number",
+   "start_ms": 124240,
+   "end_ms": 124720
+  },
+  {
+   "text": "The",
+   "start_ms": 125460,
+   "end_ms": 125620
+  },
+  {
+   "text": "office",
+   "start_ms": 125620,
+   "end_ms": 125940
+  },
+  {
+   "text": "is",
+   "start_ms": 125940,
+   "end_ms": 126100
+  },
+  {
+   "text": "at",
+   "start_ms": 126100,
+   "end_ms": 126260
+  },
+  {
+   "text": "two",
+   "start_ms": 126260,
+   "end_ms": 126420
+  },
+  {
+   "text": "hundred",
+   "start_ms": 126420,
+   "end_ms": 126740
+  },
+  {
+   "text": "Main",
+   "start_ms": 126740,
+   "end_ms": 127060
+  },
+  {
+   "text": "Street",
+   "start_ms": 127060,
+   "end_ms": 127460
+  },
+  {
+   "text": "suite",
+   "start_ms": 127460,
+   "end_ms": 127860
+  },
+  {
+   "text": "three",
+   "start_ms": 127860,
+   "end_ms": 128020
+  },
+  {
+   "text": "hundred",
+   "start_ms": 128020,
+   "end_ms": 128500
+  },
+  {
+   "text": "and",
+   "start_ms": 128740,
+   "end_ms": 128900
+  },
+  {
+   "text": "parking",
+   "start_ms": 128900,
+   "end_ms": 129300
+  },
+  {
+   "text": "is",
+   "start_ms": 129300,
+   "end_ms": 129380
+  },
+  {
+   "text": "behind",
+   "start_ms": 129380,
+   "end_ms": 129700
+  },
+  {
+   "text": "the",
+   "start_ms": 129700,
+   "end_ms": 129780
+  },
+  {
+   "text": "building",
+   "start_ms": 129780,
+   "end_ms": 130260
+  },
+  {
+   "text": "You",
+   "start_ms": 131080,
+   "end_ms": 131240
+  },
+  {
+   "text": "can",
+   "start_ms": 131240,
+   "end_ms": 131400
+  },
+  {
+   "text": "bring",
+   "start_ms": 131400,
+   "end_ms": 131560
+  },
+  {
+   "text": "a",
+   "start_ms": 131560,
+   "end_ms": 131640
+  },
+  {
+   "text": "photo",
+   "start_ms": 131640,
+   "end_ms": 131960
+  },
+  {
+   "text": "ID",
+   "start_ms": 131960,
+   "end_ms": 132360
+  },
+  {
+   "text": "and",
+   "start_ms": 132440,
+   "end_ms": 132520
+  },
+  {
+   "text": "your",
+   "start_ms": 132520,
+   "end_ms": 132680
+  },
+  {
+   "text": "insurance",
+   "start_ms": 132680,
+   "end_ms": 133160
+  },
+  {
+   "text": "card",
+   "start_ms": 133160,
+   "end_ms": 133480
+  },
+  {
+   "text": "to",
+   "start_ms": 133480,
+   "end_ms": 133560
+  },
+  {
+   "text": "the",
+   "start_ms": 133560,
+   "end_ms": 133640
+  },
+  {
+   "text": "first",
+   "start_ms": 133640,
+   "end_ms": 133960
+  },
+  {
+   "text": "visit",
+   "start_ms": 133960,
+   "end_ms": 134360
+  },
+  {
+   "text": "The",
+   "start_ms": 135120,
+   "end_ms": 135200
+  },
+  {
+   "text": "co",
+   "start_ms": 135200,
+   "end_ms": 135440
+  },
+  {
+   "text": "pay",
+   "start_ms": 135440,
+   "end_ms": 135760
+  },
+  {
+   "text": "is",
+   "start_ms": 135760,
+   "end_ms": 135920
+  },
+  {
+   "text": "twenty",
+   "start_ms": 135920,
+   "end_ms": 136240
+  },
+  {
+   "text": "five",
+   "start_ms": 136240,
+   "end_ms": 136480
+  },
+  {
+   "text": "dollars",
+   "start_ms": 136480,
+   "end_ms": 136960
+  },
+  {
+   "text": "due",
+   "start_ms": 137120,
+   "end_ms": 137360
+  },
+  {
+   "text": "at",
+   "start_ms": 137360,
+   "end_ms": 137440
+  },
+  {
+   "text": "check",
+   "start_ms": 137440,
+   "end_ms": 137680
+  },
+  {
+   "text": "in",
+   "start_ms": 137680,
+   "end_ms": 138000
+  },
+  {
+   "text": "I",
+   "start_ms": 138760,
+   "end_ms": 138920
+  },
+  {
+   "text": "have",
+   "start_ms": 138920,
+   "end_ms": 139080
+  },
+  {
+   "text": "cancelled",
+   "start_ms": 139080,
+   "end_ms": 139560
+  },
+  {
+   "text": "the",
+   "start_ms": 139560,
+   "end_ms": 139640
+  },
+  {
+   "text": "Thursday",
+   "start_ms": 139640,
+   "end_ms": 140120
+  },
+  {
+   "text": "appointment",
+   "start_ms": 140120,
+   "end_ms": 140680
+  },
+  {
+   "text": "and",
+   "start_ms": 140760,
+   "end_ms": 140840
+  },
+  {
+   "text": "kept",
+   "start_ms": 140840,
+   "end_ms": 141160
+  },
+  {
+   "text": "the",
+   "start_ms": 141160,
+   "end_ms": 141240
+  },
+  {
+   "text": "Friday",
+   "start_ms": 141240,
+   "end_ms": 141640
+  },
+  {
+   "text": "one",
+   "start_ms": 141640,
+   "end_ms": 141880
+  },
+  {
+   "text": "Would",
+   "start_ms": 142660,
+   "end_ms": 142820
+  },
+  {
+   "text": "you",
+   "start_ms": 142820,
+   "end_ms": 142980
+  },
+  {
+   "text": "like",
+   "start_ms": 142980,
+   "end_ms": 143220
+  },
+  {
+   "text": "a",
+   "start_ms": 143220,
+   "end_ms": 143220
+  },
+  {
+   "text": "text",
+   "start_ms": 143220,
+   "end_ms": 143620
+  },
+  {
+   "text": "reminder",
+   "start_ms": 143620,
+   "end_ms": 144100
+  },
+  {
+   "text": "the",
+   "start_ms": 144100,
+   "end_ms": 144180
+  },
+  {
+   "text": "day",
+   "start_ms": 144180,
+   "end_ms": 144340
+  },
+  {
+   "text": "before",
+   "start_ms": 144340,
+   "end_ms": 144900
+  },
+  {
+   "text": "or",
+   "start_ms": 145060,
+   "end_ms": 145220
+  },
+  {
+   "text": "an",
+   "start_ms": 145220,
+   "end_ms": 145300
+  },
+  {
+   "text": "email",
+   "start_ms": 145300,
+   "end_ms": 145860
+  },
+  {
+   "text": "The",
+   "start_ms": 146600,
+   "end_ms": 146680
+  },
+  {
+   "text": "email",
+   "start_ms": 146760,
+   "end_ms": 147080
+  },
+  {
+   "text": "on",
+   "start_ms": 147080,
+   "end_ms": 147240
+  },
+  {
+   "text": "file",
+   "start_ms": 147240,
+   "end_ms": 147720
+  },
+  {
+   "text": "is",
+   "start_ms": 147720,
+   "end_ms": 147880
+  },
+  {
+   "text": "leo",
+   "start_ms": 147880,
+   "end_ms": 148280
+  },
+  {
+   "text": "dot",
+   "start_ms": 148280,
+   "end_ms": 148520
+  },
+  {
+   "text": "park",
+   "start_ms": 148520,
+   "end_ms": 148920
+  },
+  {
+   "text": "at",
+   "start_ms": 149000,
+   "end_ms": 149160
+  },
+  {
+   "text": "example",
+   "start_ms": 149160,
+   "end_ms": 149640
+  },
+  {
+   "text": "dot",
+   "start_ms": 149640,
+   "end_ms": 149880
+  },
+  {
+   "text": "com",
+   "start_ms": 149880,
+   "end_ms": 150280
+  },
+  {
+   "text": "I",
+   "start_ms": 151020,
+   "end_ms": 151100
+  },
+  {
+   "text": "will",
+   "start_ms": 151100,
+   "end_ms": 151260
+  },
+  {
+   "text": "send",
+   "start_ms": 151260,
+   "end_ms": 151500
+  },
+  {
+   "text": "the",
+   "start_ms": 151500,
+   "end_ms": 151580
+  },
+  {
+   "text": "summary",
+   "start_ms": 151580,
+   "end_ms": 152060
+  },
+  {
+   "text": "to",
+   "start_ms": 152060,
+   "end_ms": 152140
+  },
+  {
+   "text": "that",
+   "start_ms": 152140,
+   "end_ms": 152300
+  },
+  {
+   "text": "address",
+   "start_ms": 152300,
+   "end_ms": 152780
+  },
+  {
+   "text": "in",
+   "start_ms": 152780,
+   "end_ms": 152860
+  },
+  {
+   "text": "the",
+   "start_ms": 152860,
+   "end_ms": 152940
+  },
+  {
+   "text": "next",
+   "start_ms": 152940,
+   "end_ms": 153260
+  },
+  {
+   "text": "few",
+   "start_ms": 153260,
+   "end_ms": 153420
+  },
+  {
+   "text": "minutes",
+   "start_ms": 153420,
+   "end_ms": 153900
+  },
+  {
+   "text": "There",
+   "start_ms": 154480,
+   "end_ms": 154640
+  },
+  {
+   "text": "is",
+   "start_ms": 154640,
+   "end_ms": 154800
+  },
+  {
+   "text": "a",
+   "start_ms": 154800,
+   "end_ms": 154800
+  },
+  {
+   "text": "late",
+   "start_ms": 154800,
+   "end_ms": 155120
+  },
+  {
+   "text": "fee",
+   "start_ms": 155120,
+   "end_ms": 155360
+  },
+  {
+   "text": "of",
+   "start_ms": 155360,
+   "end_ms": 155520
+  },
+  {
+   "text": "fifteen",
+   "start_ms": 155520,
+   "end_ms": 155920
+  },
+  {
+   "text": "dollars",
+   "start_ms": 155920,
+   "end_ms": 156320
+  },
+  {
+   "text": "on",
+   "start_ms": 156320,
+   "end_ms": 156480
+  },
+  {
+   "text": "the",
+   "start_ms": 156480,
+   "end_ms": 156640
+  },
+  {
+   "text": "account",
+   "start_ms": 156640,
+   "end_ms": 157120
+  },
+  {
+   "text": "and",
+   "start_ms": 157360,
+   "end_ms": 157440
+  },
+  {
+   "text": "I",
+   "start_ms": 157440,
+   "end_ms": 157520
+  },
+  {
+   "text": "can",
+   "start_ms": 157520,
+   "end_ms": 157760
+  },
+  {
+   "text": "waive",
+   "start_ms": 157760,
+   "end_ms": 158000
+  },
+  {
+   "text": "it",
+   "start_ms": 158000,
+   "end_ms": 158080
+  },
+  {
+   "text": "once",
+   "start_ms": 158080,
+   "end_ms": 158640
+  },
+  {
+   "text": "The",
+   "start_ms": 159160,
+   "end_ms": 159240
+  },
+  {
+   "text": "balance",
+   "start_ms": 159240,
+   "end_ms": 159720
+  },
+  {
+   "text": "after",
+   "start_ms": 159800,
+   "end_ms": 160040
+  },
+  {
+   "text": "the",
+   "start_ms": 160040,
+   "end_ms": 160200
+  },
+  {
+   "text": "waiver",
+   "start_ms": 160200,
+   "end_ms": 160600
+  },
+  {
+   "text": "is",
+   "start_ms": 160600,
+   "end_ms": 160760
+  },
+  {
+   "text": "one",
+   "start_ms": 160760,
+   "end_ms": 161080
+  },
+  {
+   "text": "hundred",
+   "start_ms": 161080,
+   "end_ms": 161480
+  },
+  {
+   "text": "and",
+   "start_ms": 161480,
+   "end_ms": 161560
+  },
+  {
+   "text": "five",
+   "start_ms": 161560,
+   "end_ms": 161880
+  },
+  {
+   "text": "dollars",
+   "start_ms": 161880,
+   "end_ms": 162440
+  },
+  {
+   "text": "Your",
+   "start_ms": 163100,
+   "end_ms": 163260
+  },
+  {
+   "text": "account",
+   "start_ms": 163260,
+   "end_ms": 163660
+  },
+  {
+   "text": "number",
+   "start_ms": 163660,
+   "end_ms": 163900
+  },
+  {
+   "text": "is",
+   "start_ms": 163900,
+   "end_ms": 164140
+  },
+  {
+   "text": "A",
+   "start_ms": 164220,
+   "end_ms": 164380
+  },
+  {
+   "text": "C",
+   "start_ms": 164380,
+   "end_ms": 164860
+  },
+  {
+   "text": "dash",
+   "start_ms": 164940,
+   "end_ms": 165260
+  },
+  {
+   "text": "seven",
+   "start_ms": 165340,
+   "end_ms": 165660
+  },
+  {
+   "text": "seven",
+   "start_ms": 165660,
+   "end_ms": 166220
+  },
+  {
+   "text": "The",
+   "start_ms": 167000,
+   "end_ms": 167160
+  },
+  {
+   "text": "next",
+   "start_ms": 167160,
+   "end_ms": 167480
+  },
+  {
+   "text": "statement",
+   "start_ms": 167480,
+   "end_ms": 167960
+  },
+  {
+   "text": "closes",
+   "start_ms": 167960,
+   "end_ms": 168280
+  },
+  {
+   "text": "on",
+   "start_ms": 168280,
+   "end_ms": 168440
+  },
+  {
+   "text": "the",
+   "start_ms": 168440,
+   "end_ms": 168520
+  },
+  {
+   "text": "twentieth",
+   "start_ms": 168520,
+   "end_ms": 169000
+  },
+  {
+   "text": "and",
+   "start_ms": 169240,
+   "end_ms": 169320
+  },
+  {
+   "text": "payment",
+   "start_ms": 169320,
+   "end_ms": 169720
+  },
+  {
+   "text": "is",
+   "start_ms": 169720,
+   "end_ms": 169880
+  },
+  {
+   "text": "due",
+   "start_ms": 169880,
+   "end_ms": 170120
+  },
+  {
+   "text": "on",
+   "start_ms": 170120,
+   "end_ms": 170280
+  },
+  {
+   "text": "the",
+   "start_ms": 170280,
+   "end_ms": 170360
+  },
+  {
+   "text": "fifth",
+   "start_ms": 170360,
+   "end_ms": 170840
+  },
+  {
+   "text": "I",
+   "start_ms": 171420,
+   "end_ms": 171580
+  },
+  {
+   "text": "have",
+   "start_ms": 171580,
+   "end_ms": 171740
+  },
+  {
+   "text": "noted",
+   "start_ms": 171740,
+   "end_ms": 172220
+  },
+  {
+   "text": "that",
+   "start_ms": 172220,
+   "end_ms": 172300
+  },
+  {
+   "text": "you",
+   "start_ms": 172300,
+   "end_ms": 172460
+  },
+  {
+   "text": "prefer",
+   "start_ms": 172460,
+   "end_ms": 172780
+  },
+  {
+   "text": "morning",
+   "start_ms": 172780,
+   "end_ms": 173180
+  },
+  {
+   "text": "appointments",
+   "start_ms": 173180,
+   "end_ms": 173820
+  },
+  {
+   "text": "If",
+   "start_ms": 174460,
+   "end_ms": 174620
+  },
+  {
+   "text": "you",
+   "start_ms": 174620,
+   "end_ms": 174700
+  },
+  {
+   "text": "need",
+   "start_ms": 174700,
+   "end_ms": 175020
+  },
+  {
+   "text": "to",
+   "start_ms": 175020,
+   "end_ms": 175020
+  },
+  {
+   "text": "reach",
+   "start_ms": 175020,
+   "end_ms": 175260
+  },
+  {
+   "text": "us",
+   "start_ms": 175260,
+   "end_ms": 175420
+  },
+  {
+   "text": "after",
+   "start_ms": 175420,
+   "end_ms": 175740
+  },
+  {
+   "text": "hours",
+   "start_ms": 175740,
+   "end_ms": 176300
+  },
+  {
+   "text": "the",
+   "start_ms": 176540,
+   "end_ms": 176620
+  },
+  {
+   "text": "line",
+   "start_ms": 176620,
+   "end_ms": 176940
+  },
+  {
+   "text": "is",
+   "start_ms": 176940,
+   "end_ms": 177100
+  },
+  {
+   "text": "open",
+   "start_ms": 177100,
+   "end_ms": 177420
+  },
+  {
+   "text": "until",
+   "start_ms": 177420,
+   "end_ms": 177740
+  },
+  {
+   "text": "eight",
+   "start_ms": 177740,
+   "end_ms": 177980
+  },
+  {
+   "text": "in",
+   "start_ms": 177980,
+   "end_ms": 178140
+  },
+  {
+   "text": "the",
+   "start_ms": 178140,
+   "end_ms": 178220
+  },
+  {
+   "text": "evening",
+   "start_ms": 178220,
+   "end_ms": 178700
+  },
+  {
+   "text": "Let",
+   "start_ms": 179500,
+   "end_ms": 179660
+  },
+  {
+   "text": "me",
+   "start_ms": 179660,
+   "end_ms": 179820
+  },
+  {
+   "text": "repeat",
+   "start_ms": 179820,
+   "end_ms": 180140
+  },
+  {
+   "text": "the",
+   "start_ms": 180140,
+   "end_ms": 180220
+  },
+  {
+   "text": "time",
+   "start_ms": 180220,
+   "end_ms": 180620
+  },
+  {
+   "text": "once",
+   "start_ms": 180620,
+   "end_ms": 180940
+  },
+  {
+   "text": "more",
+   "start_ms": 180940,
+   "end_ms": 181340
+  },
+  {
+   "text": "Friday",
+   "start_ms": 181660,
+   "end_ms": 182060
+  },
+  {
+   "text": "November",
+   "start_ms": 182060,
+   "end_ms": 182540
+  },
+  {
+   "text": "fourteenth",
+   "start_ms": 182540,
+   "end_ms": 183260
+  },
+  {
+   "text": "at",
+   "start_ms": 183420,
+   "end_ms": 183500
+  },
+  {
+   "text": "nine",
+   "start_ms": 183500,
+   "end_ms": 183900
+  },
+  {
+   "text": "fifteen",
+   "start_ms": 183900,
+   "end_ms": 184300
+  },
+  {
+   "text": "in",
+   "start_ms": 184300,
+   "end_ms": 184460
+  },
+  {
+   "text": "the",
+   "start_ms": 184460,
+   "end_ms": 184460
+  },
+  {
+   "text": "morning",
+   "start_ms": 184460,
+   "end_ms": 185020
+  },
+  {
+   "text": "Is",
+   "start_ms": 185800,
+   "end_ms": 185960
+  },
+  {
+   "text": "there",
+   "start_ms": 185960,
+   "end_ms": 186120
+  },
+  {
+   "text": "anything",
+   "start_ms": 186120,
+   "end_ms": 186680
+  },
+  {
+   "text": "in",
+   "start_ms": 186680,
+   "end_ms": 186760
+  },
+  {
+   "text": "that",
+   "start_ms": 186760,
+   "end_ms": 187000
+  },
+  {
+   "text": "summary",
+   "start_ms": 187000,
+   "end_ms": 187480
+  },
+  {
+   "text": "I",
+   "start_ms": 187480,
+   "end_ms": 187640
+  },
+  {
+   "text": "should",
+   "start_ms": 187640,
+   "end_ms": 187800
+  },
+  {
+   "text": "change",
+   "start_ms": 187800,
+   "end_ms": 188440
+  },
+  {
+   "text": "Thank",
+   "start_ms": 189140,
+   "end_ms": 189460
+  },
+  {
+   "text": "you",
+   "start_ms": 189460,
+   "end_ms": 189540
+  },
+  {
+   "text": "for",
+   "start_ms": 189540,
+   "end_ms": 189620
+  },
+  {
+   "text": "your",
+   "start_ms": 189620,
+   "end_ms": 189780
+  },
+  {
+   "text": "patience",
+   "start_ms": 189780,
+   "end_ms": 190260
+  },
+  {
+   "text": "today",
+   "start_ms": 190260,
+   "end_ms": 190660
+  },
+  {
+   "text": "and",
+   "start_ms": 190740,
+   "end_ms": 190820
+  },
+  {
+   "text": "take",
+   "start_ms": 190820,
+   "end_ms": 191060
+  },
+  {
+   "text": "care",
+   "start_ms": 191060,
+   "end_ms": 191460
+  }
+ ]
+}

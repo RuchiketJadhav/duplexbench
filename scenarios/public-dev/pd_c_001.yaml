@@ -1,0 +1,65 @@
+# Purpose: first-demo Track C call; a caller books a cleaning, then switches the day mid-sentence.
+# Exercises: 2 s find_slots latency, a successful write, a self-correction (stale-action), a spoken confirmation.
+id: pd_c_001
+version: "1"
+split: public-dev
+domain: scheduling
+track: C
+source: simulated
+speaker_id: null
+caller_voice: "voice-f2"         # placeholder id: TTS vendor and voice list not chosen yet
+speaking_rate: 1.0
+persona: "Friendly office worker calling on a lunch break. Answers in short sentences and changes the day once."
+goal: "Book a teeth cleaning next week. Ask for Tuesday first, then switch to Wednesday before anything is booked, and take the Wednesday slot."
+facts:
+  name: "Maya Chen"
+  phone: "202-555-0142"
+  first_choice: "Tuesday November 10, nine in the morning"
+  final_choice: "Wednesday November 11, any time"
+steps:
+  - id: s1
+    text: "Hi, I'd like to book a teeth cleaning for next week."
+  - id: s2
+    text: "What do you have on Tuesday?"
+  - id: s3_correct
+    text: "Nine on Tuesday is fine, oh wait, no, I can't do Tuesday. Do you have anything Wednesday?"
+  - id: s4
+    text: "Ten thirty works. It's Maya Chen, and my number is two oh two, five five five, zero one four two."
+  - id: s5
+    text: "Great, thanks. That's all."
+overlays: []
+tools:
+  - name: find_slots
+    kind: read
+    latency_ms: 2000
+    failure: none
+    result_anchors: ["10:30", "9"]
+    anchor_step: s2
+  - name: book_appointment
+    kind: write
+    latency_ms: 0
+    failure: none
+    result_anchors: ["10:30"]
+    anchor_step: s4
+  - name: reschedule_appointment     # only a stale-booking agent needs it (books Tuesday, then moves it)
+    kind: write
+    latency_ms: 0
+    failure: none
+    result_anchors: ["10:30"]
+    anchor_step: s4
+expected_state:
+  slots:
+    S1: {booked_by: null}
+    S3: {booked_by: A0001}
+  appointments:
+    A0001: {slot_id: S3, phone: "2025550142", start: "2026-11-11T10:30", status: booked}
+required_spoken:
+  - id: rs1
+    after_tool: book_appointment
+    content: "Wednesday November 11 at 10:30"
+    anchors: ["wednesday", "10:30"]
+entities: []
+policy: {}
+conditions: [C0]
+trials: 1
+control_twin: false

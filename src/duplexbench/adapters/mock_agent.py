@@ -12,6 +12,9 @@ the harness against exact values):
   polls `call.turn_end_ns` on its 20 ms tick; its first audio chunk is emitted at
   exactly `t + first_audio_ms`, then one `frame_ms` chunk per `frame_ms` (real-time
   pace, like a frame-synchronous model) for `reply_len_ms`.
+* greeting (fix-34): with `greets_ms` set, the mock speaks first: one utterance of
+  `greets_ms` starting `first_audio_ms` after `open()`, like Dograh's start-node
+  greeting. `greets_ms=None` (default): silent until the first caller turn end.
 * tool call: `tool_call` at exactly `t + tool_at_ms` after each turn end
   (`tool_at_ms=None` disables).
 * interruption: the mock "hears" caller frames through an energy detector
@@ -87,6 +90,7 @@ class MockProgram:
     level_dbfs: float = LEVEL_DBFS
     tool_name: str = "mock_tool"           # name/arguments of the programmed tool_call (a Track C
     tool_args: dict | None = None          # mock targets a scenario tool, e.g. find_slots)
+    greets_ms: int | None = None           # fix-34: speak first, a greeting this long
 
 
 def tone_chunk(rate: int, start: int, n: int, hz: float = TONE_HZ,
@@ -150,6 +154,7 @@ class MockAgent(Adapter):
         self._pending_restart: int | None = None
         self._pending_reply: int | None = None
         self._pending_tool: int | None = None
+        self._pending_greeting: int | None = None
         self._waiting_tool: str | None = None  # tool_call id awaiting a result
         self._tool_results: list[str] = []
         if self.program.voice == "babble":            # synthesize now, not inside the call
@@ -161,6 +166,8 @@ class MockAgent(Adapter):
     async def open(self, call: "CallContext") -> None:
         self.call = call
         self._t_open = self.clock.now_ns()
+        if self.program.greets_ms is not None:
+            self._pending_greeting = self._t_open + self.program.first_audio_ms * _NS_PER_MS
 
     async def send_frame(self, mulaw_bytes: bytes, t_ns: int) -> None:
         self.received_frames += 1
@@ -226,7 +233,7 @@ class MockAgent(Adapter):
     def _next_wake(self, now: int) -> int:
         cands = [now + self.frame_ns]
         for t in (self._next_chunk, self._pending_stop, self._pending_restart,
-                  self._pending_reply, self._pending_tool):
+                  self._pending_reply, self._pending_tool, self._pending_greeting):
             if t is not None:
                 cands.append(t)
         return max(now, min(cands))
@@ -256,6 +263,10 @@ class MockAgent(Adapter):
             if self._pending_restart is not None and now >= self._pending_restart:
                 self._pending_restart = None
                 self._start_reply(now)
+            if self._pending_greeting is not None and now >= self._pending_greeting:
+                self._pending_greeting = None
+                self._start_reply(now)
+                self._utt_end = now + self.program.greets_ms * _NS_PER_MS
             if self._pending_reply is not None and now >= self._pending_reply:
                 self._pending_reply = None
                 self._start_reply(now)

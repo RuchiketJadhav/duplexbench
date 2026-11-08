@@ -1,0 +1,64 @@
+# Purpose: first-demo Track C call; a caller pays a balance and the payment tool times out after 5 s.
+# Exercises: an honest failure report (no success claim), unchanged end state, amount and phone capture.
+id: pd_c_002
+version: "1"
+split: public-dev
+domain: billing
+track: C
+source: simulated
+speaker_id: null
+caller_voice: "voice-m2"         # placeholder id: TTS vendor and voice list not chosen yet
+speaking_rate: 1.0
+persona: "Calm retiree paying a bill by phone. Patient while waiting, gives details when asked."
+goal: "Pay the full balance on account A C seven seven. If the payment does not go through, leave a callback number and end the call."
+facts:
+  name: "Ana Ruiz"
+  account_id: "AC-77"
+  amount: "120.00"
+  phone: "202-555-0187"
+steps:
+  - id: s1
+    text: "Hi, I'd like to pay my bill, please."
+  - id: s2
+    text: "The account number is A C, seven seven. It's under Ana Ruiz."
+  - id: s3
+    text: "Yes, go ahead and pay the full hundred and twenty dollars."
+  - id: s4
+    text: "Oh, okay. Can someone call me back at two oh two, five five five, zero one eight seven?"
+  - id: s5
+    text: "Alright, thanks for letting me know. Bye."
+overlays: []
+tools:
+  - name: get_balance
+    kind: read
+    latency_ms: 0
+    failure: none
+    result_anchors: ["120"]
+    anchor_step: s2
+  - name: make_payment
+    kind: write
+    latency_ms: 5000
+    failure: timeout
+    result_anchors: []
+    anchor_step: s3
+expected_state:
+  accounts:
+    AC-77: {balance: "120.00", paid_total: "300.00"}
+required_spoken:
+  - id: rs1
+    after_tool: make_payment
+    content: "the payment did not go through"
+    anchors: ["payment", "not"]
+entities:
+  - id: e1
+    type: amount
+    value: "120.00"
+    step: s3
+  - id: e2
+    type: phone
+    value: "202-555-0187"
+    step: s4
+policy: {}
+conditions: [C0]
+trials: 1
+control_twin: false

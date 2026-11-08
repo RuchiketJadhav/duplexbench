@@ -37,6 +37,13 @@ type (no type allows a cut at 2 of 4), "941, 05" is not ZIP 94105, while
 positions are the US formats of spec §4.3 (format facts, not tunable thresholds).
 With no type given only rule (1) applies.
 
+Entity step (fix-32): an entity with `step: <caller step id>` counts only agent words whose
+start_ms >= the end of that caller step on the call clock (the first `caller_turn_end`
+event with that step_id; for simulated calls without such events, metrics/task
+caller_turn_ends over sim_turns). A step that never ended (the caller never said the
+value) gives an invalid observation tagged `step_not_reached`. Without `step` the whole
+transcript counts, as before.
+
 Not here yet (BUILD_PLAN M5-T02 full list): capture_first / capture_final from
 the tool log, CER for IDs and phones, codec_penalty (paired, in stats/).
 """
@@ -58,6 +65,8 @@ if TYPE_CHECKING:
 ENTITY_TYPES = ("phone", "email", "zip", "dob", "name", "amount", "confirmation_code")
 BELOW_FLOOR = "below_floor"
 NO_FLOOR = "no_floor"
+STEP_NOT_REACHED = "step_not_reached"
+_NS_PER_MS = 1_000_000
 
 
 def transcript(words: Iterable["Word"]) -> str:
@@ -130,10 +139,32 @@ def floor_min_of(th: "Thresholds", floor_min: float | None = None) -> float | No
     return v if v is not None else floor_min
 
 
+def step_end_ms(rec: "CallRecord", scenario: "Scenario", step: str) -> float | None:
+    """End of caller step `step` on the call clock (ms), or None when it never ended."""
+    for e in sorted(rec.events, key=lambda e: (e.t_ns, e.seq)):
+        if e.kind == "caller_turn_end" and str(e.payload.get("step_id", "")) == str(step):
+            return e.t_ns / _NS_PER_MS
+    if rec.sim_turns:
+        from duplexbench.metrics.task import caller_turn_ends
+        for sid, end_ns in caller_turn_ends(rec, scenario):
+            if sid == step:
+                return end_ns / _NS_PER_MS
+    return None
+
+
 def score(rec: "CallRecord", scenario: "Scenario", refasr_words: list["Word"],
           floors: Mapping[str, float] | None, th: "Thresholds", *,
           floor_min: float | None = None) -> list[Observation]:
-    norm = normalize_entity(transcript(refasr_words))
+    words = sorted(refasr_words, key=lambda w: (w.start_ms, w.end_ms))
+    norm = normalize_entity(transcript(words))
+    by_step: dict[str, str | None] = {}
+
+    def norm_after(step: str) -> str | None:
+        if step not in by_step:
+            end = step_end_ms(rec, scenario, step)
+            by_step[step] = None if end is None else normalize_entity(
+                transcript(w for w in words if w.start_ms >= end))
+        return by_step[step]
     fmin = floor_min_of(th, floor_min)
     floors = floors or {}
     out: list[Observation] = []
@@ -146,11 +177,16 @@ def score(rec: "CallRecord", scenario: "Scenario", refasr_words: list["Word"],
         if fl is None:
             tags.append(NO_FLOOR)
         below = fl is not None and fmin is not None and fl < fmin
+        step = ent.get("step")
+        text = norm if step is None else norm_after(str(step))
         if below:
             tags.append(BELOW_FLOOR)
             value, valid = None, False
+        elif text is None:
+            tags.append(STEP_NOT_REACHED)
+            value, valid = None, False
         else:
-            value, valid = (0.0 if contains_entity(norm, ent.get("value", ""), t) else 1.0), True
+            value, valid = (0.0 if contains_entity(text, ent.get("value", ""), t) else 1.0), True
         out.append(Observation(metric=Metric.readback_error_rate.value, call_id=rec.call_id,
                                scenario_id=scenario.id, trial=rec.trial, condition=rec.condition,
                                system_id=rec.system_id, event_id=ent.get("id"), value=value,

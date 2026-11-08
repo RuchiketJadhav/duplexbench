@@ -1,0 +1,95 @@
+# Purpose: first-demo Track A floor-control call; a caller books a dental cleaning by phone.
+# Exercises: H-BC "mm-hm", Y-INT question, P-PAUSE before a callback number, wait-class Y-CMD "hold on", E-END.
+id: pd_a_001
+version: "1"
+split: public-dev
+domain: scheduling
+track: A
+source: scripted
+speaker_id: null
+caller_voice: "voice-f1"         # placeholder id: TTS vendor and voice list not chosen yet
+speaking_rate: 1.0
+persona: null
+goal: null
+facts: {}
+steps:
+  - id: s1
+    text: "Hi, I'd like to book a teeth cleaning for sometime next week."
+    clip: audio/tts/419d47b16a73d6b63cf1656b412c92a6d6b5756cb613d3ef9ff932202b41f131.wav
+    speech_onset_ms: 8
+    speech_end_ms: 3153
+  - id: s2
+    text: "Tuesday's good. What times do you have open?"
+    clip: audio/tts/0d00613635fa172569bf5de1e0b783e7305710e30934397e0faa0cbb1afa6683.wav
+    speech_onset_ms: 3
+    speech_end_ms: 2398
+  - id: s3
+    text: "Okay, nine works. Put it under Maya Chen. My callback number is"
+    clip: audio/tts/96930d527e9f8544e427924516c6e01d57b094d7d6c0ead83da4922ddf8a4bfb.wav
+    speech_onset_ms: 0
+    speech_end_ms: 5126
+    pause_ms: 900
+    resumption_text: "two oh two, five five five, zero one four two."
+  - id: s4
+    text: "Can you send me a text reminder the day before?"
+    clip: audio/tts/9a9e5e1fa7d0e46d0c49efa325cf2ad2cd8133188c3fb2218040e8e8aabae0ae.wav
+    speech_onset_ms: 2
+    speech_end_ms: 2213
+  - id: s5
+    text: "Great, that's everything. Thanks so much."
+    clip: audio/tts/7f804b807e75b142ec9c30f6badc9d0be2941045d7fa5edcdd5fb95a712c9969.wav
+    speech_onset_ms: 7
+    speech_end_ms: 2503
+overlays:
+  - id: o1
+    cls: H-BC
+    anchor_step: s1
+    placement: during_agent
+    offset_ms: 500
+    clip: audio/tts/83193135ba50172e1a0c488d5875ff7415c290b0621e9413648406b84a1db407.wav
+    text: "mm-hm"
+    level_db: 0.0
+  - id: o2
+    cls: Y-INT
+    anchor_step: s2
+    placement: during_agent
+    offset_ms: 2000
+    clip: audio/tts/b84ca96c14ec64cb77f771debf8950e579dcec1e99c842f0d59b676f107f0328.wav
+    text: "Do you have anything in the afternoon?"
+    level_db: 0.0
+    response_anchors: ["afternoon", "pm"]
+  - id: o3
+    cls: P-PAUSE
+    anchor_step: s3
+    placement: in_pause            # P-PAUSE is always in_pause: it is the pause on step s3
+    offset_ms: 0
+    clip: null
+    text: ""
+    level_db: 0.0
+  - id: o4
+    cls: Y-CMD
+    anchor_step: s4
+    placement: during_agent
+    offset_ms: 500
+    clip: audio/tts/9b7891ec1ea9a6b2ae28e56c5c48c517958da023c1a09a674c1b4b64eec14399.wav
+    text: "hold on"
+    level_db: 0.0
+    resumption_ms: 4000
+    resumption_text: "Sorry about that. Okay, go ahead."
+  - id: o5
+    cls: E-END
+    anchor_step: s5
+    placement: during_agent
+    offset_ms: 0
+    clip: null
+    text: ""
+    level_db: 0.0
+    resumption_ms: 6000
+tools: []
+expected_state: {}
+required_spoken: []
+entities: []
+policy: {}
+conditions: [C0]
+trials: 1
+control_twin: true

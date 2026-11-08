@@ -1,0 +1,1 @@
+{"rate":1.0,"sample_rate":24000,"text":"What do you have on Tuesday?","vendor":"fake","voice":"voice-f2","words":[{"end_ms":260,"start_ms":0,"text":"What"},{"end_ms":470,"start_ms":340,"text":"do"},{"end_ms":745,"start_ms":550,"text":"you"},{"end_ms":1085,"start_ms":825,"text":"have"},{"end_ms":1295,"start_ms":1165,"text":"on"},{"end_ms":1895,"start_ms":1375,"text":"Tuesday?"}]}

@@ -154,8 +154,14 @@ sim_regen_review_rate:
   value: 0.1
   source: Proposed
   spec: '7'
+# refasr_partial_p90_ms (fix-40, B22): gates the reference-ASR TTFS p90 (Time To Final Segment as pipecat's
+# stt-benchmark defines it: final transcript receipt - speech end, speech end = detector stop - its hold),
+# measured by calibrate.refasr_stage. 700 = sim_eot_ms (spec 7): the final must land before the caller's
+# end of turn. Value set by user decision B22, 2026-11-08 (docs/decisions.md).
+# Includes the 500 ms segmenter hold and the network RTT to the ASR, so it is a statement about the run host.
+# The key name is historical (it gated per-word partial latency before).
 refasr_partial_p90_ms:
-  value: 300
+  value: 700
   source: Proposed
   spec: 1.4, D4
 refasr_rtf_max:

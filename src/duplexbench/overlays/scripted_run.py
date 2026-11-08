@@ -7,6 +7,11 @@
 to 8 kHz int16 PCM. The control twin (spec §3.4) runs the same caller audio with
 `make_twin(scenario)` and `is_control=True`; the engine still runs on it so the
 twin's P-PAUSE / E-END geometry rows exist.
+
+`lead_in="agent_first"` (fix-34; run config `scripted: {lead_in: agent_first}`) holds
+step 1 until the agent's first end of turn (`stimuli.scripted_caller.LeadIn`,
+subscribed to the playout's onset/stop); the twin waits the same way. The default
+`caller_first` builds exactly the call it built before.
 """
 from __future__ import annotations
 
@@ -24,7 +29,7 @@ from duplexbench.playout import Playout
 from duplexbench.recorder import Recorder
 from duplexbench.runner import CallResult, run_call
 from duplexbench.scenarios.control_twin import make_twin
-from duplexbench.stimuli.scripted_caller import ScriptedCaller
+from duplexbench.stimuli.scripted_caller import LeadIn, ScriptedCaller
 
 if TYPE_CHECKING:
     from duplexbench.adapters.base import Adapter
@@ -54,7 +59,8 @@ async def run_scripted_call(clock: "Clock", store: Any, scenario: "Scenario",
                             engine_kw: Mapping[str, Any] | None = None,
                             call_id: str | None = None, tool_token: str = "tok",
                             tools: Any = None, projected_usd: float = 0.0,
-                            back_rate: int | None = None, cond: Any = None) -> CallResult:
+                            back_rate: int | None = None, cond: Any = None,
+                            lead_in: str = "caller_first") -> CallResult:
     """`call_id` / `tool_token` / `tools` / `projected_usd` / `back_rate` / `cond` are for
     `duplexbench run` (cli_run); the defaults reproduce the golden M2 calls exactly.
     `back_rate` builds the return-path resampler for the adapter's output rate before
@@ -64,9 +70,14 @@ async def run_scripted_call(clock: "Clock", store: Any, scenario: "Scenario",
     call_id = call_id or call_id_for(scenario.id, condition, trial, is_control)
     ctx = CallContext(run_id, call_id, sc, trial, cond, system_id, is_control, clock, store,
                       tool_token)
-    caller = caller or ScriptedCaller(sc, clips, clock, th, rate=cond.rate)
+    if lead_in not in ("caller_first", "agent_first"):
+        raise ValueError(f"lead_in must be caller_first or agent_first, got {lead_in!r}")
+    gate = LeadIn(th) if lead_in == "agent_first" else None
+    caller = caller or ScriptedCaller(sc, clips, clock, th, rate=cond.rate, lead_in=gate)
     rec = Recorder(Path(out_dir) / f"{call_id}.wav", cond.rate, origin_ns=clock.now_ns())
     po = Playout(clock, store, rec, th, run_id=run_id, call_id=call_id, rate=cond.rate)
+    if getattr(caller, "lead_in", None) is not None:
+        po.subscribe(caller.lead_in.on_activity)
     chain = ChannelChain(cond, seed_fwd, seed_back)
     if back_rate is not None:
         chain.back_delay_ms(back_rate)

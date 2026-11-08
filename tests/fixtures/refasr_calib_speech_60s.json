@@ -1,0 +1,913 @@
+{
+ "vendor": "fish/s2.1-pro-free",
+ "voice": "delia",
+ "speech_s": 60.0,
+ "words": [
+  {
+   "text": "Thank",
+   "start_ms": 0,
+   "end_ms": 320
+  },
+  {
+   "text": "you",
+   "start_ms": 320,
+   "end_ms": 480
+  },
+  {
+   "text": "for",
+   "start_ms": 480,
+   "end_ms": 560
+  },
+  {
+   "text": "calling",
+   "start_ms": 560,
+   "end_ms": 1120
+  },
+  {
+   "text": "Before",
+   "start_ms": 1360,
+   "end_ms": 1760
+  },
+  {
+   "text": "I",
+   "start_ms": 1760,
+   "end_ms": 1840
+  },
+  {
+   "text": "make",
+   "start_ms": 1840,
+   "end_ms": 2080
+  },
+  {
+   "text": "any",
+   "start_ms": 2080,
+   "end_ms": 2240
+  },
+  {
+   "text": "change",
+   "start_ms": 2240,
+   "end_ms": 2720
+  },
+  {
+   "text": "let",
+   "start_ms": 2800,
+   "end_ms": 3040
+  },
+  {
+   "text": "me",
+   "start_ms": 3040,
+   "end_ms": 3200
+  },
+  {
+   "text": "read",
+   "start_ms": 3200,
+   "end_ms": 3440
+  },
+  {
+   "text": "back",
+   "start_ms": 3440,
+   "end_ms": 3680
+  },
+  {
+   "text": "what",
+   "start_ms": 3680,
+   "end_ms": 3840
+  },
+  {
+   "text": "I",
+   "start_ms": 3840,
+   "end_ms": 3920
+  },
+  {
+   "text": "have",
+   "start_ms": 3920,
+   "end_ms": 4320
+  },
+  {
+   "text": "The",
+   "start_ms": 5120,
+   "end_ms": 5200
+  },
+  {
+   "text": "phone",
+   "start_ms": 5200,
+   "end_ms": 5440
+  },
+  {
+   "text": "number",
+   "start_ms": 5440,
+   "end_ms": 5760
+  },
+  {
+   "text": "on",
+   "start_ms": 5760,
+   "end_ms": 5920
+  },
+  {
+   "text": "file",
+   "start_ms": 5920,
+   "end_ms": 6320
+  },
+  {
+   "text": "is",
+   "start_ms": 6320,
+   "end_ms": 6560
+  },
+  {
+   "text": "four",
+   "start_ms": 6560,
+   "end_ms": 6880
+  },
+  {
+   "text": "one",
+   "start_ms": 6880,
+   "end_ms": 7040
+  },
+  {
+   "text": "five",
+   "start_ms": 7040,
+   "end_ms": 7520
+  },
+  {
+   "text": "five",
+   "start_ms": 7680,
+   "end_ms": 7920
+  },
+  {
+   "text": "five",
+   "start_ms": 7920,
+   "end_ms": 8240
+  },
+  {
+   "text": "five",
+   "start_ms": 8240,
+   "end_ms": 8640
+  },
+  {
+   "text": "zero",
+   "start_ms": 8720,
+   "end_ms": 9040
+  },
+  {
+   "text": "one",
+   "start_ms": 9040,
+   "end_ms": 9280
+  },
+  {
+   "text": "four",
+   "start_ms": 9280,
+   "end_ms": 9520
+  },
+  {
+   "text": "two",
+   "start_ms": 9520,
+   "end_ms": 9920
+  },
+  {
+   "text": "The",
+   "start_ms": 10720,
+   "end_ms": 10880
+  },
+  {
+   "text": "appointment",
+   "start_ms": 10880,
+   "end_ms": 11360
+  },
+  {
+   "text": "is",
+   "start_ms": 11360,
+   "end_ms": 11520
+  },
+  {
+   "text": "on",
+   "start_ms": 11520,
+   "end_ms": 11680
+  },
+  {
+   "text": "Tuesday",
+   "start_ms": 11680,
+   "end_ms": 12240
+  },
+  {
+   "text": "November",
+   "start_ms": 12240,
+   "end_ms": 12720
+  },
+  {
+   "text": "eleventh",
+   "start_ms": 12720,
+   "end_ms": 13280
+  },
+  {
+   "text": "at",
+   "start_ms": 13360,
+   "end_ms": 13600
+  },
+  {
+   "text": "ten",
+   "start_ms": 13600,
+   "end_ms": 13840
+  },
+  {
+   "text": "thirty",
+   "start_ms": 13840,
+   "end_ms": 14080
+  },
+  {
+   "text": "in",
+   "start_ms": 14080,
+   "end_ms": 14240
+  },
+  {
+   "text": "the",
+   "start_ms": 14240,
+   "end_ms": 14240
+  },
+  {
+   "text": "morning",
+   "start_ms": 14240,
+   "end_ms": 14800
+  },
+  {
+   "text": "with",
+   "start_ms": 14800,
+   "end_ms": 15040
+  },
+  {
+   "text": "Doctor",
+   "start_ms": 15040,
+   "end_ms": 15440
+  },
+  {
+   "text": "Patel",
+   "start_ms": 15440,
+   "end_ms": 16000
+  },
+  {
+   "text": "Your",
+   "start_ms": 16800,
+   "end_ms": 16960
+  },
+  {
+   "text": "account",
+   "start_ms": 16960,
+   "end_ms": 17280
+  },
+  {
+   "text": "balance",
+   "start_ms": 17280,
+   "end_ms": 17680
+  },
+  {
+   "text": "is",
+   "start_ms": 17680,
+   "end_ms": 17920
+  },
+  {
+   "text": "one",
+   "start_ms": 17920,
+   "end_ms": 18080
+  },
+  {
+   "text": "hundred",
+   "start_ms": 18080,
+   "end_ms": 18400
+  },
+  {
+   "text": "and",
+   "start_ms": 18400,
+   "end_ms": 18560
+  },
+  {
+   "text": "twenty",
+   "start_ms": 18560,
+   "end_ms": 18800
+  },
+  {
+   "text": "dollars",
+   "start_ms": 18800,
+   "end_ms": 19360
+  },
+  {
+   "text": "and",
+   "start_ms": 19440,
+   "end_ms": 19600
+  },
+  {
+   "text": "the",
+   "start_ms": 19600,
+   "end_ms": 19680
+  },
+  {
+   "text": "refund",
+   "start_ms": 19680,
+   "end_ms": 20160
+  },
+  {
+   "text": "cap",
+   "start_ms": 20160,
+   "end_ms": 20400
+  },
+  {
+   "text": "is",
+   "start_ms": 20400,
+   "end_ms": 20560
+  },
+  {
+   "text": "fifty",
+   "start_ms": 20560,
+   "end_ms": 20880
+  },
+  {
+   "text": "dollars",
+   "start_ms": 20880,
+   "end_ms": 21440
+  },
+  {
+   "text": "The",
+   "start_ms": 22240,
+   "end_ms": 22400
+  },
+  {
+   "text": "zip",
+   "start_ms": 22400,
+   "end_ms": 22640
+  },
+  {
+   "text": "code",
+   "start_ms": 22640,
+   "end_ms": 22880
+  },
+  {
+   "text": "is",
+   "start_ms": 22880,
+   "end_ms": 23120
+  },
+  {
+   "text": "nine",
+   "start_ms": 23120,
+   "end_ms": 23440
+  },
+  {
+   "text": "four",
+   "start_ms": 23440,
+   "end_ms": 23680
+  },
+  {
+   "text": "one",
+   "start_ms": 23760,
+   "end_ms": 24000
+  },
+  {
+   "text": "zero",
+   "start_ms": 24000,
+   "end_ms": 24320
+  },
+  {
+   "text": "seven",
+   "start_ms": 24320,
+   "end_ms": 24880
+  },
+  {
+   "text": "dash",
+   "start_ms": 24960,
+   "end_ms": 25200
+  },
+  {
+   "text": "two",
+   "start_ms": 25200,
+   "end_ms": 25440
+  },
+  {
+   "text": "two",
+   "start_ms": 25440,
+   "end_ms": 25600
+  },
+  {
+   "text": "one",
+   "start_ms": 25600,
+   "end_ms": 25840
+  },
+  {
+   "text": "eight",
+   "start_ms": 25840,
+   "end_ms": 26160
+  },
+  {
+   "text": "The",
+   "start_ms": 26960,
+   "end_ms": 27040
+  },
+  {
+   "text": "confirmation",
+   "start_ms": 27040,
+   "end_ms": 27760
+  },
+  {
+   "text": "code",
+   "start_ms": 27760,
+   "end_ms": 28080
+  },
+  {
+   "text": "is",
+   "start_ms": 28080,
+   "end_ms": 28240
+  },
+  {
+   "text": "R",
+   "start_ms": 28320,
+   "end_ms": 28480
+  },
+  {
+   "text": "T",
+   "start_ms": 28480,
+   "end_ms": 28880
+  },
+  {
+   "text": "four",
+   "start_ms": 28880,
+   "end_ms": 29200
+  },
+  {
+   "text": "four",
+   "start_ms": 29200,
+   "end_ms": 29440
+  },
+  {
+   "text": "seven",
+   "start_ms": 29440,
+   "end_ms": 29840
+  },
+  {
+   "text": "one",
+   "start_ms": 29840,
+   "end_ms": 30160
+  },
+  {
+   "text": "If",
+   "start_ms": 30960,
+   "end_ms": 31120
+  },
+  {
+   "text": "anything",
+   "start_ms": 31120,
+   "end_ms": 31520
+  },
+  {
+   "text": "in",
+   "start_ms": 31520,
+   "end_ms": 31680
+  },
+  {
+   "text": "that",
+   "start_ms": 31680,
+   "end_ms": 31840
+  },
+  {
+   "text": "is",
+   "start_ms": 31840,
+   "end_ms": 31920
+  },
+  {
+   "text": "wrong",
+   "start_ms": 31920,
+   "end_ms": 32320
+  },
+  {
+   "text": "please",
+   "start_ms": 32320,
+   "end_ms": 32640
+  },
+  {
+   "text": "stop",
+   "start_ms": 32640,
+   "end_ms": 32960
+  },
+  {
+   "text": "me",
+   "start_ms": 32960,
+   "end_ms": 33200
+  },
+  {
+   "text": "and",
+   "start_ms": 33280,
+   "end_ms": 33360
+  },
+  {
+   "text": "I",
+   "start_ms": 33360,
+   "end_ms": 33520
+  },
+  {
+   "text": "will",
+   "start_ms": 33520,
+   "end_ms": 33600
+  },
+  {
+   "text": "correct",
+   "start_ms": 33600,
+   "end_ms": 34000
+  },
+  {
+   "text": "it",
+   "start_ms": 34000,
+   "end_ms": 34160
+  },
+  {
+   "text": "One",
+   "start_ms": 34960,
+   "end_ms": 35280
+  },
+  {
+   "text": "moment",
+   "start_ms": 35280,
+   "end_ms": 35600
+  },
+  {
+   "text": "while",
+   "start_ms": 35600,
+   "end_ms": 35760
+  },
+  {
+   "text": "I",
+   "start_ms": 35760,
+   "end_ms": 35840
+  },
+  {
+   "text": "check",
+   "start_ms": 35840,
+   "end_ms": 36080
+  },
+  {
+   "text": "the",
+   "start_ms": 36080,
+   "end_ms": 36160
+  },
+  {
+   "text": "system",
+   "start_ms": 36160,
+   "end_ms": 36720
+  },
+  {
+   "text": "The",
+   "start_ms": 37520,
+   "end_ms": 37600
+  },
+  {
+   "text": "payment",
+   "start_ms": 37600,
+   "end_ms": 38000
+  },
+  {
+   "text": "did",
+   "start_ms": 38000,
+   "end_ms": 38080
+  },
+  {
+   "text": "not",
+   "start_ms": 38080,
+   "end_ms": 38320
+  },
+  {
+   "text": "go",
+   "start_ms": 38320,
+   "end_ms": 38480
+  },
+  {
+   "text": "through",
+   "start_ms": 38480,
+   "end_ms": 38960
+  },
+  {
+   "text": "so",
+   "start_ms": 38960,
+   "end_ms": 39120
+  },
+  {
+   "text": "nothing",
+   "start_ms": 39120,
+   "end_ms": 39440
+  },
+  {
+   "text": "was",
+   "start_ms": 39440,
+   "end_ms": 39600
+  },
+  {
+   "text": "charged",
+   "start_ms": 39600,
+   "end_ms": 40080
+  },
+  {
+   "text": "to",
+   "start_ms": 40080,
+   "end_ms": 40080
+  },
+  {
+   "text": "your",
+   "start_ms": 40080,
+   "end_ms": 40240
+  },
+  {
+   "text": "card",
+   "start_ms": 40240,
+   "end_ms": 40640
+  },
+  {
+   "text": "I",
+   "start_ms": 41440,
+   "end_ms": 41600
+  },
+  {
+   "text": "can",
+   "start_ms": 41600,
+   "end_ms": 41760
+  },
+  {
+   "text": "refund",
+   "start_ms": 41760,
+   "end_ms": 42160
+  },
+  {
+   "text": "up",
+   "start_ms": 42160,
+   "end_ms": 42400
+  },
+  {
+   "text": "to",
+   "start_ms": 42400,
+   "end_ms": 42400
+  },
+  {
+   "text": "the",
+   "start_ms": 42400,
+   "end_ms": 42480
+  },
+  {
+   "text": "cap",
+   "start_ms": 42560,
+   "end_ms": 42800
+  },
+  {
+   "text": "today",
+   "start_ms": 42800,
+   "end_ms": 43280
+  },
+  {
+   "text": "and",
+   "start_ms": 43360,
+   "end_ms": 43440
+  },
+  {
+   "text": "a",
+   "start_ms": 43440,
+   "end_ms": 43520
+  },
+  {
+   "text": "supervisor",
+   "start_ms": 43520,
+   "end_ms": 44240
+  },
+  {
+   "text": "can",
+   "start_ms": 44240,
+   "end_ms": 44400
+  },
+  {
+   "text": "approve",
+   "start_ms": 44400,
+   "end_ms": 44720
+  },
+  {
+   "text": "more",
+   "start_ms": 44720,
+   "end_ms": 45120
+  },
+  {
+   "text": "Could",
+   "start_ms": 45920,
+   "end_ms": 46080
+  },
+  {
+   "text": "you",
+   "start_ms": 46080,
+   "end_ms": 46240
+  },
+  {
+   "text": "spell",
+   "start_ms": 46240,
+   "end_ms": 46400
+  },
+  {
+   "text": "your",
+   "start_ms": 46400,
+   "end_ms": 46560
+  },
+  {
+   "text": "email",
+   "start_ms": 46560,
+   "end_ms": 46880
+  },
+  {
+   "text": "address",
+   "start_ms": 46880,
+   "end_ms": 47200
+  },
+  {
+   "text": "for",
+   "start_ms": 47200,
+   "end_ms": 47360
+  },
+  {
+   "text": "me",
+   "start_ms": 47360,
+   "end_ms": 47680
+  },
+  {
+   "text": "one",
+   "start_ms": 47760,
+   "end_ms": 48000
+  },
+  {
+   "text": "letter",
+   "start_ms": 48000,
+   "end_ms": 48320
+  },
+  {
+   "text": "at",
+   "start_ms": 48320,
+   "end_ms": 48400
+  },
+  {
+   "text": "a",
+   "start_ms": 48400,
+   "end_ms": 48400
+  },
+  {
+   "text": "time",
+   "start_ms": 48400,
+   "end_ms": 48880
+  },
+  {
+   "text": "I",
+   "start_ms": 49680,
+   "end_ms": 49840
+  },
+  {
+   "text": "have",
+   "start_ms": 49840,
+   "end_ms": 49920
+  },
+  {
+   "text": "updated",
+   "start_ms": 49920,
+   "end_ms": 50480
+  },
+  {
+   "text": "the",
+   "start_ms": 50480,
+   "end_ms": 50640
+  },
+  {
+   "text": "address",
+   "start_ms": 50640,
+   "end_ms": 51120
+  },
+  {
+   "text": "to",
+   "start_ms": 51120,
+   "end_ms": 51120
+  },
+  {
+   "text": "twelve",
+   "start_ms": 51120,
+   "end_ms": 51520
+  },
+  {
+   "text": "Market",
+   "start_ms": 51520,
+   "end_ms": 51920
+  },
+  {
+   "text": "Street",
+   "start_ms": 51920,
+   "end_ms": 52320
+  },
+  {
+   "text": "apartment",
+   "start_ms": 52400,
+   "end_ms": 52960
+  },
+  {
+   "text": "four",
+   "start_ms": 52960,
+   "end_ms": 53360
+  },
+  {
+   "text": "Is",
+   "start_ms": 54160,
+   "end_ms": 54320
+  },
+  {
+   "text": "there",
+   "start_ms": 54320,
+   "end_ms": 54480
+  },
+  {
+   "text": "anything",
+   "start_ms": 54480,
+   "end_ms": 54880
+  },
+  {
+   "text": "else",
+   "start_ms": 54880,
+   "end_ms": 55120
+  },
+  {
+   "text": "I",
+   "start_ms": 55120,
+   "end_ms": 55280
+  },
+  {
+   "text": "can",
+   "start_ms": 55280,
+   "end_ms": 55360
+  },
+  {
+   "text": "help",
+   "start_ms": 55360,
+   "end_ms": 55600
+  },
+  {
+   "text": "you",
+   "start_ms": 55600,
+   "end_ms": 55760
+  },
+  {
+   "text": "with",
+   "start_ms": 55760,
+   "end_ms": 56000
+  },
+  {
+   "text": "before",
+   "start_ms": 56000,
+   "end_ms": 56320
+  },
+  {
+   "text": "we",
+   "start_ms": 56320,
+   "end_ms": 56480
+  },
+  {
+   "text": "end",
+   "start_ms": 56480,
+   "end_ms": 56640
+  },
+  {
+   "text": "the",
+   "start_ms": 56640,
+   "end_ms": 56720
+  },
+  {
+   "text": "call",
+   "start_ms": 56720,
+   "end_ms": 57120
+  },
+  {
+   "text": "Thank",
+   "start_ms": 57360,
+   "end_ms": 57600
+  },
+  {
+   "text": "you",
+   "start_ms": 57600,
+   "end_ms": 58000
+  },
+  {
+   "text": "and",
+   "start_ms": 58080,
+   "end_ms": 58240
+  },
+  {
+   "text": "have",
+   "start_ms": 58240,
+   "end_ms": 58400
+  },
+  {
+   "text": "a",
+   "start_ms": 58400,
+   "end_ms": 58480
+  },
+  {
+   "text": "good",
+   "start_ms": 58480,
+   "end_ms": 58640
+  },
+  {
+   "text": "day",
+   "start_ms": 58640,
+   "end_ms": 59040
+  }
+ ],
+ "pauses_widened_to_ms": 800
+}

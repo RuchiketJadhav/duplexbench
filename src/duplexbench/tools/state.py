@@ -168,9 +168,15 @@ class Backend:
     SEED: dict = {}
 
     def __init__(self, seed_state: dict | None = None, policy: dict | None = None,
-                 anchors: dict[str, list[str]] | None = None) -> None:
+                 anchors: dict[str, list[str]] | None = None,
+                 seed_overlay: dict | None = None) -> None:
+        """`seed_state` replaces SEED entirely; `seed_overlay` (a scenario's `seed`
+        block) is merged onto SEED (or onto `seed_state`) by `merge_seed`."""
         self.policy: dict = dict(policy or {})
         self.anchors: dict[str, list[str]] = dict(anchors or {})
+        if seed_overlay:
+            seed_state = merge_seed(seed_state if seed_state is not None else self.SEED,
+                                    seed_overlay)
         self.reset(seed_state)
 
     # -- public contract -------------------------------------------------
@@ -228,4 +234,36 @@ class Backend:
         return row
 
     def _next_id(self, table: str, prefix: str) -> str:
-        return f"{prefix}{len(self._table(table)) + 1:04d}"
+        """`<prefix><4 digits>`, numbered from the count of ids of that same form only, so
+        seeded rows with another id form (e.g. scheduling's `AP-101`) do not shift the
+        in-call numbering (the first booking is still A0001). Skips any id in use."""
+        rows = self._table(table)
+        pat = re.compile(rf"{re.escape(prefix)}\d{{4}}")
+        n = sum(1 for k in rows if pat.fullmatch(str(k))) + 1
+        while f"{prefix}{n:04d}" in rows:
+            n += 1
+        return f"{prefix}{n:04d}"
+
+    def seed_errors(self) -> list[str]:
+        """Consistency errors in the current (seeded) state; [] = consistent. Domains
+        override; `scenarios.loader.validate` reports these for a scenario `seed` block."""
+        return []
+
+
+def merge_seed(base: dict, overlay: dict) -> dict:
+    """A scenario `seed` block merged onto a backend SEED: per table, per row id, the
+    overlay's fields replace or add to the base row's fields; new row ids are added;
+    base rows the overlay does not name stay. A non-dict table value replaces the base.
+    Rows cannot be removed this way (pass a full `seed_state` for that)."""
+    out = copy.deepcopy(base)
+    for table, rows in (overlay or {}).items():
+        if not isinstance(rows, dict) or not isinstance(out.get(table), dict):
+            out[table] = copy.deepcopy(rows)
+            continue
+        dst = out[table]
+        for rid, row in rows.items():
+            if isinstance(row, dict) and isinstance(dst.get(rid), dict):
+                dst[rid] = {**dst[rid], **copy.deepcopy(row)}
+            else:
+                dst[rid] = copy.deepcopy(row)
+    return out

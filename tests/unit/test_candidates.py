@@ -31,7 +31,7 @@ def test_require_and_probe():
         require("duplexbench_no_such_module", "nothing-here")
     for c in ct.CANDIDATES:
         r = ct.probe(c)
-        assert r is None or "pip install" in r
+        assert r is None or "pip install" in r or r == "set DEEPGRAM_API_KEY"
 
 
 def test_upsample_and_buffered_streamer():
@@ -94,7 +94,7 @@ def test_cli_with_yes_writes_table_for_blocked_candidates(tmp_path, monkeypatch)
     out = tmp_path / "t.md"
     res = CliRunner().invoke(app, ["refasr-bench", "--yes", "--out", str(out)])
     assert res.exit_code == 0, res.output
-    assert out.read_text(encoding="utf-8").count("blocked: pip install blocked") == 5
+    assert out.read_text(encoding="utf-8").count("blocked: pip install blocked") == len(ct.CANDIDATES)
 
 
 def test_wer_hand_computed():

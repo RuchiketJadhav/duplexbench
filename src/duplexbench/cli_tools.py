@@ -64,12 +64,21 @@ def register(app: typer.Typer) -> None:
     @app.command("preregister")
     def preregister_cmd(results_dir: Path = typer.Option(None, help="default: results/"),
                         pack_dir: Path = typer.Option(None, help="default: scenarios/public-dev"),
-                        check: bool = typer.Option(False, help="only diff against the latest record")) -> None:
-        """Hash systems, pack, langpack, thresholds, private tree and commit; write a record (M2b-T02)."""
+                        check: bool = typer.Option(False, help="only diff against the latest record"),
+                        run_config: Path = typer.Option(
+                            None, exists=True, dir_okay=False,
+                            help="run config (configs/runs/*.yaml): hash its simulator/scripted "
+                                 "blocks and use its pack, systems_dir, thresholds, results_dir")) -> None:
+        """Hash systems, pack, langpack, thresholds, private tree, commit and the run config's
+        simulator/scripted blocks; write a record (M2b-T02, fix-30)."""
         from duplexbench import preregister as pr
 
-        rd = results_dir or pr.RESULTS_DIR
-        hashes = pr.collect_hashes(pack_dir=pack_dir or pr.PACK_DIR)
+        if run_config is not None:
+            hashes, cfg_rd = pr.collect_for_run_config(run_config, pack_dir=pack_dir)
+            rd = results_dir or cfg_rd
+        else:
+            rd = results_dir or pr.RESULTS_DIR
+            hashes = pr.collect_hashes(pack_dir=pack_dir or pr.PACK_DIR)
         for k, v in hashes.items():
             typer.echo(f"{k}: {pr.show_value(k, v)}")
         diffs = pr.check_against_latest(hashes, rd)

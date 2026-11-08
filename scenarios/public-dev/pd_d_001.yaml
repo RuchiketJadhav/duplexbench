@@ -1,0 +1,66 @@
+# Purpose: first-demo Track D call; a caller gives a phone number, a ZIP+4 and a confirmation code in groups.
+# Exercises: phone, zip and confirmation_code read-back accuracy on the agent's ear-side speech.
+id: pd_d_001
+version: "1"
+split: public-dev
+domain: account
+track: D
+source: scripted
+speaker_id: null
+caller_voice: "voice-f3"         # placeholder id: TTS vendor and voice list not chosen yet
+speaking_rate: 1.0
+persona: null
+goal: null
+facts: {}
+steps:
+  - id: s1
+    text: "Hi, I need to update the contact details on my account."
+    clip: audio/tts/db233a85c3b25bb011d01e2ec3addd1ab6f831a46547eb906eb9ac853137b354.wav
+    speech_onset_ms: 16
+    speech_end_ms: 3453
+  - id: s2
+    text: "The new phone number is two oh two, five five five, zero one six three."
+    clip: audio/tts/3c1329ec6f7e91082b068fbf9c1638eee43c046c4a3afa3d1fc5e08ab04b4e08.wav
+    speech_onset_ms: 60
+    speech_end_ms: 4731
+  - id: s3
+    text: "And the ZIP code is nine four one oh seven, dash, two two one eight."
+    clip: audio/tts/2735f6327f6196eb62206219f72a6ffa3b3aa7a99bf18dca797bf01c9b1bbba3.wav
+    speech_onset_ms: 2
+    speech_end_ms: 4394
+  - id: s4
+    text: "My confirmation code from the email is R T, four four seven one."
+    clip: audio/tts/877306775cce641a40e633a44151d951c91c16bd997594fc2af316222e850158.wav
+    speech_onset_ms: 8
+    speech_end_ms: 4328
+  - id: s5
+    text: "Can you read all of that back to me, just to be sure?"
+    clip: audio/tts/63444c23cafe01752da747a42c1ffd07baaab3eb6385468da1c0d2efd5877d62.wav
+    speech_onset_ms: 3
+    speech_end_ms: 2596
+overlays: []
+tools: []
+expected_state: {}
+required_spoken:
+  - id: rs1
+    after_tool: null
+    type: phone
+    content: "202 555 0163"
+    anchors: []
+entities:
+  - id: e1
+    type: phone
+    value: "202-555-0163"
+    step: s2
+  - id: e2
+    type: zip
+    value: "94107-2218"
+    step: s3
+  - id: e3
+    type: confirmation_code
+    value: "RT-4471"
+    step: s4
+policy: {}
+conditions: [C0]
+trials: 1
+control_twin: false

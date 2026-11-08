@@ -1,0 +1,17 @@
+# Fish Audio text-to-speech (docs/providers.md §10, decision B13): Track A / D stimulus
+# clips and the simulated caller's voice. Read by stimuli/fish_tts.usd_per_1k_chars(model)
+# for the `stimuli generate` projection; not a system-under-test price file.
+price_ref: fish_audio
+source_url: https://docs.fish.audio/developer-guide/models-pricing/pricing-and-rate-limits
+checked: "2026-11-06"
+currency: USD
+unit: per_million_utf8_bytes      # [Fact] billed on input text bytes; 1 ASCII char = 1 byte
+rates:                            # [Fact] USD per 1M UTF-8 bytes of input text, per `model` header value
+  drama-3: 50.0                   # launch price 10.0 until 2026-11-30; the list price is used (over-estimates)
+  s2.1-pro: 15.0
+  s2.1-pro-free: 0.0
+  s2-pro: 15.0
+notes: >-
+  drama-3 launch price $10.00 per 1M bytes until 2026-11-30; projections use the $50.00 list
+  price so the approve-first number never under-estimates. Billing errors (401, 402, 503) are
+  not billed. Starter tier: 5 concurrent requests; the harness sends one at a time.

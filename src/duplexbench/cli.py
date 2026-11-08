@@ -14,6 +14,12 @@ app = typer.Typer(no_args_is_help=True, add_completion=False)
 @app.callback()
 def _main() -> None:
     """Dograh Duplex Bench harness."""
+    # Secrets live in the repo-root `.env` (git-ignored, see .env.example). Loaded once here,
+    # never overriding a variable the shell already set. Every message that says "set X in
+    # .env" relies on this call (fix-38).
+    from dotenv import load_dotenv
+
+    load_dotenv(override=False)
 
 
 @app.command()

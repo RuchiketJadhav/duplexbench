@@ -36,14 +36,14 @@ def test_timeout_has_no_result_and_no_write(run_virtual):
     inj, b = _run(run_virtual, "timeout", latency_ms=5000)
     assert (inj.status, inj.body, inj.failure) == (504, None, "timeout")
     assert inj.result_ns == inj.start_ns + 5000 * MS
-    assert b.state()["appointments"] == {}
+    assert "A0001" not in b.state()["appointments"]
 
 
 def test_error_is_http_500_body(run_virtual):
     inj, b = _run(run_virtual, "error")
     assert inj.status == 500 and inj.body["error"] == "internal_error"
     assert inj.failure == "error" and inj.result_ns == 2100 * MS
-    assert b.state()["appointments"] == {}
+    assert "A0001" not in b.state()["appointments"]
 
 
 def test_partial_drops_one_required_field(run_virtual):

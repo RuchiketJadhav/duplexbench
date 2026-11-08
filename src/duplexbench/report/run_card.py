@@ -75,6 +75,8 @@ def build(store: Any, run_id: str, th: Thresholds, netcheck: dict | None = None)
         "vendors_audio": card.get("vendors_audio"),
         "classifier_validation": card.get("classifier_validation"),
     }
+    if card.get("scripted") is not None:     # fix-34: Track A/D lead-in (per-call
+        out["scripted"] = card["scripted"]   # greeting_end_ms / no_greeting are call flags)
     missing = [f for f in FIELDS if out.get(f) in (None, {}, [])]
     for sid, s in systems.items():
         missing += [f"systems.{sid}.{k}" for k in SYSTEM_FIELDS if s.get(k) is None]

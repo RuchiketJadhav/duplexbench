@@ -7,7 +7,9 @@ Every metric module exposes
 Values are `None` with `valid=False` and a tag when undefined: `not_stopped`,
 `ambiguous_end`, `not_injected`, `unmatched_control`, `contested`,
 `slow_caller`, `unscripted_overlap`, `classifier`, `diagnostic` (spec §3.3,
-§3.4, §4.5, §7, §8).
+§3.4, §4.5, §7, §8), `no_refasr` (no reference-ASR words for the ear audio;
+fix-23) and `step_not_reached` (the caller step carrying an entity never
+ended; fix-32).
 """
 from __future__ import annotations
 
@@ -25,7 +27,8 @@ if TYPE_CHECKING:
     from duplexbench.storage import Store
 
 TAGS = ("not_stopped", "ambiguous_end", "not_injected", "unmatched_control", "contested",
-        "slow_caller", "unscripted_overlap", "classifier", "diagnostic")
+        "slow_caller", "unscripted_overlap", "classifier", "diagnostic",
+        "no_refasr", "step_not_reached")
 
 # One row per played frame (storage `playout` table, BUILD_PLAN §2.4).
 PLAYOUT_DTYPE = np.dtype([("t_ns", "i8"), ("frame_idx", "i8"), ("rms_dbfs", "f8"),

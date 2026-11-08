@@ -65,10 +65,12 @@ def test_preflight_system_resolves_adapter(no_env):
     assert any(DEFAULT_API_KEY_ENV in line for line in preflight_system(_system(GOOD)))
     no_env.setenv(DEFAULT_API_KEY_ENV, "k")
     assert preflight_system(_system(GOOD)) == []
-    # the shipped dograh_stack.yaml still carries TO_SET ids: refused at plan time
+    # fix-43: the shipped dograh_stack.yaml carries the live ids (workflow 14735, org 6993);
+    # only the API key is missing at plan time
+    no_env.delenv(DEFAULT_API_KEY_ENV, raising=False)
     shipped = preflight_system(load_system("dograh_stack"))
-    assert any("workflow_id" in line for line in shipped)
-    assert any("org_id" in line for line in shipped)
+    assert not any("workflow_id" in line or "org_id" in line for line in shipped)
+    assert any(DEFAULT_API_KEY_ENV in line for line in shipped)
 
 
 def test_init_key_rules(no_env):

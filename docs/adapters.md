@@ -20,7 +20,7 @@ Common rules (all adapters, `adapters/ws_adapter.py` on `transport/live_stream.p
 | Harness event | Dograh / Twilio event | Status |
 |---|---|---|
 | run creation | `POST /api/v1/workflow/{wf}/runs` `{"mode":"twilio","name":"DB-<token>"}`, `X-API-Key` | confirmed (source read) |
-| pin + hash | `GET /api/v1/workflow/fetch/{wf}` → `current_definition_id`; `GET /{wf}/versions` → version; sha256 of canonical (`workflow_json`, `workflow_configurations`, `template_context_variables`, `org_model_config` from YAML) | confirmed routes; `/versions` list-vs-object shape UNCONFIRMED; org model config has no known endpoint |
+| pin + hash | `GET /api/v1/workflow/fetch/{wf}` → `current_definition_id`; `GET /{wf}/versions` → version; sha256 of canonical (`workflow_json`, `workflow_configurations`, `template_context_variables`, `org_model_config`, and `tool_definitions` when fetched). fix-35: `GET /api/v1/tools/` rows referenced by any `tool_uuids` in the graph (name, description, category, status, definition; header names only; credential as a presence flag). fix-36: `model_source` = `workflow_override` (v2 override set; nothing fetched) / `org_config` (`GET /api/v1/user/configurations/user`, secrets, test phone, pricing dropped) / `pasted` (YAML fallback after a failed fetch) / `unknown`; failures become run-card disclosures | confirmed routes (Dograh source); `/versions` list-vs-object shape UNCONFIRMED; hosted app 404s on the user-configurations route (G11) |
 | WS URL | `ws(s)://<host>/api/v1/telephony/ws/{wf}/{org}/{run}[/{hmac token}]` | confirmed |
 | handshake | `connected`, then `start{streamSid, callSid=<call tool token>}` | confirmed |
 | session_open | harness, after the handshake | harness rule |
@@ -33,11 +33,14 @@ Common rules (all adapters, `adapters/ws_adapter.py` on `transport/live_stream.p
 Config keys (`params`): `endpoint` (REST base, required), `ws_endpoint` (optional WS host
 override), `workflow_id`, `org_id` (required), `api_key_env` (default `DOGRAH_API_KEY`),
 `ws_token_secret_env` (optional), `run_name_prefix` (default `DB-`), `harness_tool_base`,
-`org_model_config`, `custom_parameters`, `headers`.
+`org_model_config` (optional pasted fallback, fix-36), `custom_parameters`, `headers`.
 
 Run card (`run_card_fields()`): workflow_id, org_id, pinned definition_id, run definition_id,
-`definition_matches_pinned`, config_hash and its scope, ws_token used, disclosures (no concurrency
-slot / quota check; draft definition used if present; Twilio hang-up side effect; no `mark`).
+`definition_matches_pinned`, config_hash and its scope, `model_source`, `model_names` (provider/model only),
+`tool_definitions_hashed`, `tool_uuids_referenced`, ws_token used, disclosures (no concurrency
+slot / quota check; draft definition used if present; Twilio hang-up side effect; no `mark`;
+caller muted during every tool call and, on the realtime path, until the first bot utterance completes;
+plus any pin-time fallback such as "tool definitions not hashed: <reason>").
 
 Live smoke checklist (M6-T02):
 1. Set-up per dograh-ingress.md: Twilio telephony config with placeholders; workflow
@@ -48,7 +51,7 @@ Live smoke checklist (M6-T02):
 5. Barge-in produces `clear`; check `clear` timing vs the last media frame.
 6. A tool call reaches `/tools/<token>/<tool>`; `tool_calls` row present; `customMessage` (if any) recorded.
 7. `/versions` response shape; whether masking is deterministic (hash stable across two pins).
-8. Effective org model configuration: find its endpoint, or paste it into `org_model_config`.
+8. Run card `model_source` is `workflow_override` (B21) or `org_config`; `unknown`/`pasted` means the user-configurations route failed.
 9. With `TELEPHONY_WS_TOKEN_ENFORCE=true`, the minted token is accepted.
 10. The end-of-call api.twilio.com hang-up attempt: confirm it fails harmlessly; note in the run card.
 

@@ -36,7 +36,8 @@ def env(tmp_path, monkeypatch):
 def test_shape_and_record(env):
     tmp, kw = env
     h = pr.collect_hashes(**kw)
-    assert set(h) == {"systems", "pack", "langpack", "thresholds", "private_tree", "harness_commit"}
+    assert set(h) == {"systems", "pack", "langpack", "thresholds", "private_tree", "harness_commit",
+                      "run_config"}   # run_config: fix-30
     assert set(h["systems"]) == {"mock"} and len(h["systems"]["mock"]) == 16
     assert len(h["pack"]) == 64 and len(h["langpack"]) == 64 and len(h["private_tree"]) == 64 and len(h["thresholds"]) == 64
     assert h["harness_commit"] is None or len(h["harness_commit"]) == 40   # sha or null (no commit)

@@ -6,8 +6,8 @@ Every number lives in `src/duplexbench/thresholds.py` (spec defaults) and
 (CLAUDE.md §6 item 4) recorded in `docs/decisions.md`, and changes the thresholds hash,
 so results before and after never aggregate (spec §11).
 
-- spec-default hash: `394923c1104b32dd13b94068cc42f8f51f94dc7c87cd433be89c1555abd5a73b`
-- in-force hash: `394923c1104b32dd13b94068cc42f8f51f94dc7c87cd433be89c1555abd5a73b`
+- spec-default hash: `5e4bcedb53f15679a77d334b364f71a95abda66e13e8696d6678f832f4a7f757`
+- in-force hash: `5e4bcedb53f15679a77d334b364f71a95abda66e13e8696d6678f832f4a7f757`
 
 | name | spec default | in force | source | spec § |
 |---|---|---|---|---|
@@ -45,7 +45,7 @@ so results before and after never aggregate (spec §11).
 | `sim_slow_caller_p90_ms` | 1500 | 1500 | Proposed | 7 |
 | `sim_regen_max` | 2 | 2 | Proposed | 7, D-review |
 | `sim_regen_review_rate` | 0.1 | 0.1 | Proposed | 7 |
-| `refasr_partial_p90_ms` | 300 | 300 | Proposed | 1.4, D4 |
+| `refasr_partial_p90_ms` | 700 | 700 | Proposed | 1.4, D4 |
 | `refasr_rtf_max` | 0.5 | 0.5 | Proposed | 1.4, D4 |
 | `kappa_min` | 0.7 | 0.7 | Proposed | 8 |
 | `flip_rate_max` | 0.02 | 0.02 | Proposed | 8 |

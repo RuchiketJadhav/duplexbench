@@ -22,7 +22,7 @@ def _row(offset_ms=500, onset_ms=1000):
 
 
 def test_make_twin_drops_injected_overlays_keeps_steps():
-    s = next(x for x in load_pack(FIX).scenarios if x.id == "sched_001")
+    s = next(x for x in load_pack(FIX, check_tools=False).scenarios if x.id == "sched_001")
     t = make_twin(s)
     assert [x.cls for x in t.overlays] == ["P-PAUSE", "E-END"]
     assert t.steps == s.steps and t.id == s.id and t.control_twin is False

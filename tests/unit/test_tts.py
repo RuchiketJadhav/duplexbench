@@ -53,7 +53,7 @@ def test_project_usd():
 
 def test_pack_items_dedupes_and_skips_empty():
     from duplexbench.scenarios.loader import load_pack
-    items = pack_items(load_pack(FIX).scenarios)
+    items = pack_items(load_pack(FIX, check_tools=False).scenarios)
     assert items and all(i.text.strip() for i in items)
     assert len({(i.voice, i.rate, i.text) for i in items}) == len(items)
 
@@ -86,7 +86,8 @@ def test_cli_real_vendor_blocked_even_with_yes(tmp_path):
 
 
 def test_cli_fake_vendor_generates_then_caches(tmp_path):
-    args = ["stimuli", "generate", str(FIX), "--vendor", "fake", "--out", str(tmp_path), "--yes"]
+    args = ["stimuli", "generate", str(FIX), "--vendor", "fake", "--out", str(tmp_path), "--yes",
+            "--no-write-back"]                     # never rewrite the checked-in fixtures
     r = CliRunner().invoke(_app(), args)
     assert r.exit_code == 0, r.output
     n = len(list(tmp_path.glob("*.wav")))

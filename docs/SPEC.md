@@ -53,7 +53,7 @@ A mock agent with known behavior runs before every published result and on every
 - Audio-anchored timings (`T_turn_gap_ear`, `T_stop_ear`) within ±1 frame (20 ms) plus the 60 ms buffer of programmed values [Inference: nothing finer exists at 20 ms framing].
 - Event-loop lag p99 < 5 ms and pacing slip p99 < 10 ms, else the run is invalid [Fact: ASR harness thresholds].
 - RMS activity vs the Silero cross-check: segment boundary disagreement > 40 ms on the mock recording fails calibration.
-- Reference-ASR stage [Proposed, eng review D4 2026-11-04]: a 60 s checked-in clip streamed through the pinned reference ASR; any run with a simulated caller is refused when partial-latency p90 > 300 ms or real-time factor > 0.5, so a slow instance is caught before spend rather than through `slow_caller` exclusions after it.
+- Reference-ASR stage [Proposed, eng review D4 2026-11-04]: a 60 s checked-in clip streamed through the pinned reference ASR; any run with a simulated caller is refused when TTFS p90 > 700 ms or real-time factor > 0.5, so a slow instance is caught before spend rather than through `slow_caller` exclusions after it. TTFS (Time To Final Segment, pipecat stt-benchmark definition) = final transcript receipt minus speech end, the segmenter hold included; 700 ms is `sim_eot_ms`, so a passing final lands before the caller's end of turn. *(Corrected 2026-11-08, B22: the earlier "partial-latency p90 > 300 ms" gated per-word interim latency, which no streaming ASR meets and nothing in the harness waits for.)*
 
 ### 1.5 Latency taxonomy (the only names allowed)
 

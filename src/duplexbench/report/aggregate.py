@@ -15,6 +15,8 @@ Observation tag conventions read here (written by `cli score`):
              variant gets its own row under the key `metric@<v>`.
   * `k:v`    a breakdown dimension (e.g. `domain:billing`, `bucket:2000`,
              `type:phone`, `cls:H-BC`); summarised under `breakdowns[k][v]`.
+             A key may repeat on one observation (`code:a`, `code:b` on
+             policy_violation_rate, G10): the row then counts under each value.
   * the exclusion tags of metrics/base.TAGS; `judged` for LLM-judged values.
 
 Control-twin calls (`calls.is_control = 1`) never enter the main rows; they feed
@@ -24,6 +26,10 @@ Runs whose pack / langpack / normalizer / refasr / simulator / thresholds hashes
 differ never aggregate (spec §11): `MixedHashError`. Metric names outside
 `metrics/names.py` raise `UnknownMetricError` (BUILD_PLAN §2.11).
 There is no composite anywhere (spec §10, decision D7).
+
+`simulator_counts` (fix-42, only when non-zero): per system, the simulated caller's
+`speculation_from_provisional` / `provisional_mismatches` / `provisional_replies` summed
+over non-control calls from `calls.flags_json["simulator"]["flags"]`. Counts, not metrics.
 """
 from __future__ import annotations
 
@@ -42,6 +48,9 @@ from duplexbench.stats.wilson import wilson
 from duplexbench.thresholds import Thresholds
 
 SCHEMA_VERSION = "duplexbench.aggregate/1"
+# simulated-caller counters summed per system under "simulator_counts" (fix-42)
+SIMULATOR_COUNTERS = ("speculation_from_provisional", "provisional_mismatches",
+                      "provisional_replies")
 
 HASH_KEYS = ("pack", "langpack", "normalizer", "refasr", "simulator", "thresholds")
 
@@ -79,7 +88,9 @@ TRACK_C_SPLIT = ("pass_at_1", "stale_action_rate", "preemptive_tool_rate",
                  "unsupported_claim_rate", "policy_violation_rate", "auth_bypass_rate")
 # exclusions remove a row from the completion denominator (spec §3.3, §3.4, §7)
 EXCLUDE_TAGS = frozenset({"ambiguous_end", "not_injected", "unmatched_control", "contested",
-                          "slow_caller", "unscripted_overlap"})
+                          "slow_caller", "unscripted_overlap",
+                          # harness-side gaps, not agent failures (fix-23, fix-32)
+                          "no_refasr", "step_not_reached"})
 PERCENTILES = (50, 90, 95)
 P99 = 99
 PASS_POW_K = 3          # spec §4.2: Pass^3, k = 3 [Fact: draft default]
@@ -220,14 +231,15 @@ def _check_hashes(runs: list[dict]) -> dict:
 
 # ---- per-group summaries -------------------------------------------------------
 
-def _parse_tags(tags: Iterable[str]) -> tuple[str | None, dict[str, str], list[str]]:
+def _parse_tags(tags: Iterable[str]) -> tuple[str | None, dict[str, tuple[str, ...]], list[str]]:
     variant, dims, plain = None, {}, []
     for t in tags:
         if t.startswith("@"):
             variant = t[1:]
         elif ":" in t:
             k, v = t.split(":", 1)
-            dims[k] = v
+            if v not in dims.get(k, ()):
+                dims[k] = (*dims.get(k, ()), v)
         else:
             plain.append(t)
     return variant, dims, plain
@@ -298,8 +310,9 @@ def _summary(metric: str, rows: list[dict], th: Thresholds, full: bool = True) -
     if full:
         dims: dict[str, dict[str, list]] = defaultdict(lambda: defaultdict(list))
         for r in rows:
-            for k, v in r["dims"].items():
-                dims[k][v].append(r)
+            for k, vs in r["dims"].items():
+                for v in vs:
+                    dims[k][v].append(r)
         out["breakdowns"] = {
             k: {v: _summary(metric, sub, th, full=False) for v, sub in sorted(vals.items())}
             for k, vals in sorted(dims.items())}
@@ -577,8 +590,21 @@ def aggregate(store: Any, run_id: str | Sequence[str], th: Thresholds) -> dict:
             calls_summary[sid][cond]["outcomes"] = dict(sorted(
                 calls_summary[sid][cond]["outcomes"].items()))
 
+    # simulated-caller speculation counters per system (fix-42), from
+    # calls.flags_json["simulator"]["flags"]; non-control calls; present only when non-zero
+    sim_counts: dict[str, dict[str, int]] = {}
+    for c in data["calls"]:
+        if c.get("is_control"):
+            continue
+        sf = (_loads(c.get("flags_json"), {}).get("simulator") or {}).get("flags") or {}
+        for k in SIMULATOR_COUNTERS:
+            v = int(sf.get(k) or 0)
+            if v:
+                e = sim_counts.setdefault(c["system_id"], {})
+                e[k] = e.get(k, 0) + v
+
     phone = card.get("phone_path") or {}
-    return _sorted({
+    out = {
         "schema": SCHEMA_VERSION,
         "run_ids": run_ids,
         "hashes": hashes,
@@ -595,7 +621,10 @@ def aggregate(store: Any, run_id: str | Sequence[str], th: Thresholds) -> dict:
         "calls": calls_summary,
         "classifiers": classifiers,
         "phone_path": {"disagreements": sorted(phone.get("disagreements") or [])},
-    })
+    }
+    if sim_counts:                  # absent when zero: older aggregates stay byte-identical
+        out["simulator_counts"] = sim_counts
+    return _sorted(out)
 
 
 def _sorted(obj: Any) -> Any:

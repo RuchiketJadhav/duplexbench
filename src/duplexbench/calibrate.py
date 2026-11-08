@@ -13,15 +13,19 @@ measures equals what the mock was programmed to do:
                                                                    + jitter_buffer_ms
     harness health  event-loop lag p99 < loop_lag_p99_ms, pacing slip p99 < pacing_slip_p99_ms
     cross-check     RMS vs Silero segment boundary disagreement < silero_disagree_ms
-    reference ASR   `refasr_stage` (M4-T01, spec §1.4 D4): partial-latency p90 <= refasr_partial_p90_ms
-                    and RTF <= refasr_rtf_max on a 60 s clip; "skipped" when no ASR is configured
+    reference ASR   `refasr_stage` (M4-T01, spec §1.4 D4; fix-40): TTFS p90 <= refasr_partial_p90_ms
+                    and RTF <= refasr_rtf_max on the calibration clip (fix-41: default the 195 s,
+                    42-sentence refasr_calib_speech_3min.wav); "skipped" when no ASR is configured;
+                    on a fail (or --keep-refasr-log) a diagnostics log
+                    calibration-<ts>.refasr_log.json is written beside the JSON
 
 `refasr_stage` streams the clip in 20 ms frames through `asr.stream()` on a
 virtual real-time feed: frame k is due at (k+1)*20 ms of audio, starts at
 max(due, previous frame done), and takes the processing time the clock measured
-for its `push`. A word's partial latency = done time of the push that released
-it - the word's end_ms, so a slow engine accumulates backlog exactly as it would
-live, without the stage sleeping 60 s. RTF = summed processing time / clip duration.
+for its `push`. A word's return time = done time of the push that released it, so a
+slow engine accumulates backlog exactly as it would live, without the stage sleeping
+through the clip. RTF = summed processing time / clip duration. The gated latency is TTFS (Time To
+Final Segment, pipecat stt-benchmark), see `refasr_stage`.
 
 The audio-anchored error includes the jitter-buffer fill by construction: a
 real-time source's third frame arrives two frame periods after its first, so on
@@ -53,10 +57,11 @@ from duplexbench.channel.chain import ChannelChain, load_condition
 from duplexbench.clock import Clock, RealClock, VirtualClock, clock_info
 from duplexbench.context import CallContext
 from duplexbench.metrics import latency as L
-from duplexbench.metrics.activity import segment
+from duplexbench.metrics.activity import Segmenter, frame_rms_dbfs, is_active, segment
 from duplexbench.metrics.base import PLAYOUT_DTYPE, CallRecord, Event, OverlayRow, ToolRow
 from duplexbench.playout import Playout
 from duplexbench.recorder import Recorder
+from duplexbench.refasr.engine import finalize_if_supported, open_stream
 from duplexbench.runner import CallResult, run_call
 from duplexbench.stimuli.caller_source import ToneCaller, tone
 from duplexbench.thresholds import Thresholds
@@ -70,7 +75,14 @@ _P90 = 90
 REFASR_FRAME_MS = 20
 REFASR_RATE = 8_000
 _MS_PER_S = 1_000
-DEFAULT_REFASR_CLIP = ROOT / "tests" / "fixtures" / "refasr_calib_60s.wav"
+# fix-39: real speech with a known transcript (.txt beside it), Fish s2.1-pro-free, 8 kHz.
+# The old tone-burst babble clip (refasr_calib_60s.wav) made a real ASR emit no words.
+# fix-41: the 195 s clip with 42 sentences (800 ms pauses) replaces the 60 s one (13
+# sentences), so one late Deepgram final no longer decides the TTFS p90 on its own. The
+# 60 s clip stays in tests/fixtures (other tests use it).
+DEFAULT_REFASR_CLIP = ROOT / "tests" / "fixtures" / "refasr_calib_speech_3min.wav"
+REFASR_LOG_SUFFIX = ".refasr_log.json"
+REFASR_LOG_SCHEMA = "duplexbench.refasr_log/1"
 
 
 # -- config ------------------------------------------------------------------------
@@ -230,61 +242,335 @@ async def _lag_probe(clock: Clock, lags: list[float], stop: asyncio.Event) -> No
         lags.append((clock.now_ns() - t) / _NS_PER_MS)
 
 
-def refasr_stage(asr: Any, clip_pcm8k: np.ndarray, th: Thresholds, clock: Clock) -> dict:
-    """Reference-ASR calibration stage (BUILD_PLAN M4-T01; spec §1.4 D4).
+def _sleep_until(clock: Clock, t_ns: int) -> None:
+    """Blocking wait until `clock.now_ns() >= t_ns` (refasr_stage is synchronous)."""
+    import time
+    left = t_ns - clock.now_ns()
+    if left > 0:
+        time.sleep(left / _NS_PER_MS / _MS_PER_S)
 
-    Returns {partial_p90_ms, rtf, passed, reason, n_words, version}. `clock` measures
-    the processing time of each `push`/`finish` (RealClock live; a fake clock in tests)."""
+
+def refasr_stage(asr: Any, clip_pcm8k: np.ndarray, th: Thresholds, clock: Clock,
+                 diag: dict | None = None) -> dict:
+    """Reference-ASR calibration stage (BUILD_PLAN M4-T01; spec §1.4 D4; fix-40 TTFS).
+
+    Returns {ttfs_p50_ms, ttfs_p90_ms, n_utterances, n_ttfs, ttfs_ms, partial_p90_ms, rtf,
+    passed, reason, n_words, version, detector, detector_hold_ms, finalize_supported,
+    finalize_count}. `clock` measures the processing time of each push/finalize/finish
+    (RealClock live; a fake clock in tests).
+
+    Feeding. An engine with `realtime_input = True` (a network engine such as Deepgram,
+    whose push() only enqueues and whose words arrive asynchronously) is fed at real
+    time: frame k is pushed when its last sample is due, (k + 1) x 20 ms after the start
+    on `clock`, and a word's return time is the time since the start when push/finish
+    returned it. Other engines run on the virtual real-time feed of the module docstring.
+    Return times are observed at push returns, so they are quantized to the 20 ms frame
+    grid (late by 0-20 ms). RTF = (push + finalize + finish time) / clip length; for a
+    network engine that is mostly the finish wait, not compute.
+
+    Speech-end detector: the playout segmenter's own rule (metrics/activity.Segmenter,
+    the one the simulated caller's stop event comes from), run on the clip's 20 ms
+    frames: active iff frame RMS > rms_active_dbfs; an utterance ends at the first frame
+    of an inactivity run of inactivity_run_ms; the stop is known only when that run is
+    complete, i.e. `detector_hold_ms` = inactivity_run_ms after the speech end. Exactly as
+    live, right after the push of the frame on which the segmenter reports the stop, the
+    stage calls `finalize_if_supported(stream)` (Deepgram: Finalize mid-stream). An
+    utterance still open at the end of the clip ends where `Segmenter.finish` puts it, and
+    finish() (Finalize + CloseStream) settles it.
+
+    TTFS (pipecat stt-benchmark: TTFS = final transcript receipt time - speech_end_time,
+    speech_end_time = VAD stop timestamp - stop_secs). Here speech_end_ms(i) = the first
+    frame of utterance i's ending inactivity run x 20 ms (the detector fire time minus
+    its hold), so the hold is INSIDE TTFS, as pipecat's stop_secs is. Each final word is
+    assigned to the utterance whose span [onset(i), onset(i+1)) holds the word's
+    midpoint (before the first onset: utterance 0), so a word whose end_ms runs a few ms
+    past the RMS end stays with its utterance. TTFS(i) = return time of the final that
+    carries utterance i's last final word (the latest return among its final words: the
+    utterance is complete then; pipecat measures to the last segment) - speech_end_ms(i).
+    It is signed: a final that arrives before the RMS end is negative. Utterances with
+    no final word are counted in n_utterances, not in n_ttfs or the percentiles.
+    Engines without finalize() are measured the same way (their finals come at their own
+    pace), so the number is comparable across engines.
+
+    Gate: ttfs_p90_ms <= th.refasr_partial_p90_ms and rtf <= th.refasr_rtf_max.
+    `partial_p90_ms` (fix-24 per-word first-release latency, provisional words included,
+    see `first_release_latencies`) is kept for disclosure only, not gated.
+    `version` is read after the stream, so it carries the model uuid it reported.
+
+    fix-41: a `RefASRTransportError` from push/finalize/finish (including the finish()
+    timeout) no longer escapes: the stage stops feeding, closes the stream, and returns a
+    failed result built from what arrived so far, with `transport_error` set and the
+    reason starting "transport error:". `RefASRVersionMismatch` still raises (B11).
+    `diag`, when given, is filled with the raw material of the diagnostics log
+    (`build_refasr_log`): stop and Finalize times, released words, the streamer's
+    `messages` (None for an engine without them)."""
     x = np.asarray(clip_pcm8k, dtype=np.int16).ravel()
     flen = REFASR_RATE * REFASR_FRAME_MS // _MS_PER_S          # 160 samples
     clip_ms = len(x) * _MS_PER_S / REFASR_RATE
-    st = asr.stream()
-    lat: list[float] = []
+    paced = bool(getattr(asr, "realtime_input", False))
+    st = open_stream(asr, provisional=True)
+    seg = Segmenter(th)
+    onsets: list[int] = []                         # frame index of each utterance onset
+    ends: list[int] = []                           # frame index of each speech end
+    finalized = 0
+    released: list[tuple[float, Any]] = []         # (return time ms, Word)
     proc_ns_total = 0
     done_ms = 0.0
     n_frames = -(-len(x) // flen)
-    for k in range(n_frames + 1):                   # the extra step is finish()
-        due_ms = min((k + 1) * REFASR_FRAME_MS, clip_ms)
-        t0 = clock.now_ns()
-        words = st.push(x[k * flen:(k + 1) * flen]) if k < n_frames else st.finish()
-        dt = clock.now_ns() - t0
-        proc_ns_total += dt
-        done_ms = max(due_ms, done_ms) + dt / _NS_PER_MS
-        lat += [done_ms - w.end_ms for w in words]
-    p90 = _pct(lat, _P90)
+    stop_at: list[float] = []                      # ms when each speech end was detected
+    finalize_at: list[float | None] = []           # ms Finalize was sent for it (or None)
+    finish_at: float | None = None
+    transport_error: str | None = None
+    origin_ns = clock.now_ns()
+
+    def at_ms(due: float) -> float:                # stage time: clock when paced, else audio
+        return (clock.now_ns() - origin_ns) / _NS_PER_MS if paced else float(due)
+
+    try:
+        for k in range(n_frames + 1):               # the extra step is finish()
+            due_ms = min((k + 1) * REFASR_FRAME_MS, clip_ms)
+            if paced:
+                _sleep_until(clock, origin_ns + int(due_ms * _NS_PER_MS))
+            t0 = clock.now_ns()
+            frame = x[k * flen:(k + 1) * flen]
+            if k == n_frames:
+                finish_at = at_ms(due_ms)
+            words = st.push(frame) if k < n_frames else st.finish()
+            evs = (seg.push(k, is_active(frame_rms_dbfs(frame), th)) if k < n_frames
+                   else seg.finish(n_frames))
+            for ev in evs:
+                if ev.kind == "onset":
+                    onsets.append(ev.frame_idx)
+                    continue
+                ends.append(ev.frame_idx)
+                stop_at.append(at_ms(due_ms))
+                finalize_at.append(None)
+                if k < n_frames and finalize_if_supported(st):    # live: stop -> Finalize
+                    finalized += 1
+                    finalize_at[-1] = at_ms(due_ms)
+            dt = clock.now_ns() - t0
+            proc_ns_total += dt
+            if paced:
+                done_ms = (clock.now_ns() - origin_ns) / _NS_PER_MS
+            else:
+                done_ms = max(due_ms, done_ms) + dt / _NS_PER_MS
+            released += [(done_ms, w) for w in words]
+    except Exception as exc:  # noqa: BLE001 - only transport errors are kept, see below
+        if not _is_transport_error(exc):
+            raise
+        transport_error = str(exc)
+        close = getattr(st, "close", None)
+        if callable(close):
+            try:
+                close()
+            except Exception:  # noqa: BLE001 - already gone
+                pass
+    onset_ms = [i * REFASR_FRAME_MS for i in onsets]
+    end_ms = [i * REFASR_FRAME_MS for i in ends]
+    ttfs = ttfs_per_utterance(released, onset_ms, end_ms)
+    got = [v for v in ttfs if v is not None]
+    lat = first_release_latencies(released)
+    p90_partial = _pct(lat, _P90)
+    p50, p90 = _pct(got, _P50), _pct(got, _P90)
     rtf = (proc_ns_total / _NS_PER_MS) / clip_ms if clip_ms else float("inf")
     reasons = []
-    if p90 is None:
-        reasons.append("no words emitted")
+    if transport_error is not None:
+        reasons.append(f"transport error: {transport_error}")
+    if not end_ms:
+        reasons.append("no speech end detected in the clip")
+    elif p90 is None:
+        reasons.append("no final words within any utterance")
     elif p90 > th.refasr_partial_p90_ms:
-        reasons.append(f"partial p90 {p90:.1f} ms > refasr_partial_p90_ms {th.refasr_partial_p90_ms}")
+        reasons.append(f"TTFS p90 {p90:.1f} ms > refasr_partial_p90_ms {th.refasr_partial_p90_ms}")
     if rtf > th.refasr_rtf_max:
         reasons.append(f"RTF {rtf:.3f} > refasr_rtf_max {th.refasr_rtf_max}")
-    return {"partial_p90_ms": _r(p90), "rtf": _r(rtf, 4), "passed": not reasons,
+    if diag is not None:
+        msgs = getattr(st, "messages", None)
+        offset = None
+        if isinstance(clock, RealClock) and hasattr(st, "t0_ns"):
+            offset = (st.t0_ns - (clock._origin + origin_ns)) / _NS_PER_MS
+        diag.update(clip_ms=clip_ms, paced=paced, onset_ms=onset_ms, end_ms=end_ms,
+                    stop_ms=stop_at, finalize_sent_ms=finalize_at, finish_called_ms=finish_at,
+                    released=released, ttfs=ttfs,
+                    stream_messages=None if msgs is None else list(msgs),
+                    stream_t0_offset_ms=offset)
+    return {"ttfs_p50_ms": _r(p50), "ttfs_p90_ms": _r(p90),
+            "n_utterances": len(end_ms), "n_ttfs": len(got),
+            "ttfs_ms": [_r(v) for v in ttfs],
+            "partial_p90_ms": _r(p90_partial), "rtf": _r(rtf, 4), "passed": not reasons,
             "reason": "; ".join(reasons) or "ok", "n_words": len(lat),
+            "detector": "playout Segmenter (rms_active_dbfs, inactivity_run_ms)",
+            "detector_hold_ms": th.inactivity_run_ms,
+            "finalize_supported": callable(getattr(st, "finalize", None)),
+            "finalize_count": finalized, "transport_error": transport_error,
             "version": f"{getattr(asr, 'name', '?')}:{getattr(asr, 'version', '?')}"}
 
 
-def refasr_result(asr: Any, clip: Path | str | None, th: Thresholds, clock: Clock | None = None) -> dict:
-    """The `refasr` block of the calibration JSON: skipped without an ASR, else pass/fail."""
+def _is_transport_error(exc: BaseException) -> bool:
+    from duplexbench.refasr.candidates.deepgram import RefASRTransportError
+    return isinstance(exc, RefASRTransportError)
+
+
+def utterance_finals(released: list[tuple[float, Any]], onset_ms: list[int],
+                     end_ms: list[int]) -> list[list[tuple[float, Any]]]:
+    """The (return time, Word) final words assigned to each utterance: word midpoint in
+    [onset_ms[i], onset_ms[i+1]) (before the first onset: utterance 0)."""
+    import bisect
+    n = min(len(onset_ms), len(end_ms))
+    out: list[list[tuple[float, Any]]] = [[] for _ in range(n)]
+    for t, w in released:
+        if not getattr(w, "final", True) or n == 0:
+            continue
+        mid = (w.start_ms + w.end_ms) / 2
+        i = min(max(bisect.bisect_right(onset_ms[:n], mid) - 1, 0), n - 1)
+        out[i].append((t, w))
+    return out
+
+
+def ttfs_per_utterance(released: list[tuple[float, Any]], onset_ms: list[int],
+                       end_ms: list[int]) -> list[float | None]:
+    """TTFS per utterance (fix-40; see refasr_stage): latest return time among the final
+    words assigned to utterance i (word midpoint in [onset_ms[i], onset_ms[i+1])) minus
+    end_ms[i]; None for an utterance with no final word."""
+    return [max(t for t, _ in g) - end_ms[i] if g else None
+            for i, g in enumerate(utterance_finals(released, onset_ms, end_ms))]
+
+
+def first_release_latencies(released: list[tuple[float, Any]]) -> list[float]:
+    """One latency per final word (fix-24): earliest return time among the final word and
+    the provisional words overlapping it in time, minus the final word's end_ms."""
+    prov = [(t, w) for t, w in released if not getattr(w, "final", True)]
+    out = []
+    for t, f in released:
+        if not getattr(f, "final", True):
+            continue
+        first = min([t] + [tp for tp, p in prov
+                           if p.start_ms < f.end_ms and f.start_ms < p.end_ms])
+        out.append(first - f.end_ms)
+    return out
+
+
+def refasr_log_path(calibration_json: Path | str) -> Path:
+    """`<calibration json stem>.refasr_log.json` next to the calibration JSON (fix-41)."""
+    p = Path(calibration_json)
+    return p.with_name(p.stem + REFASR_LOG_SUFFIX)
+
+
+def build_refasr_log(res: dict, diag: dict, asr: Any, clip: Path | str | None,
+                     written_because: str) -> dict:
+    """The reference-ASR diagnostics log (fix-41). Times are ms. `stop_ms`,
+    `finalize_sent_ms`, `finish_called_ms` and each utterance's `*_return_ms` are on the
+    stage clock from the stage origin (the real clock for a paced network engine, audio
+    time otherwise); `onset_ms` / `speech_end_ms` are audio time (frame index x 20 ms);
+    a message's `_arrival_ms` is from the streamer's creation, which is
+    `stream_t0_offset_ms` after the stage origin (None when the clock is not real)."""
+    onset, end = diag.get("onset_ms", []), diag.get("end_ms", [])
+    stops, fins = diag.get("stop_ms", []), diag.get("finalize_sent_ms", [])
+    ttfs = diag.get("ttfs", [])
+    groups = utterance_finals(diag.get("released", []), onset, end)
+    utts = []
+    for i, g in enumerate(groups):
+        # latest return time; among words returned together, the latest word
+        last = max(g, key=lambda tw: (tw[0], tw[1].end_ms)) if g else None
+        utts.append({
+            "i": i, "onset_ms": onset[i], "speech_end_ms": end[i],
+            "stop_ms": _r(stops[i]) if i < len(stops) else None,
+            "finalize_sent_ms": _r(fins[i]) if i < len(fins) and fins[i] is not None else None,
+            "n_final_words": len(g),
+            "first_final_return_ms": _r(min(t for t, _ in g)) if g else None,
+            "last_final_return_ms": _r(last[0]) if last else None,
+            "last_final_word": ({"text": last[1].text, "start_ms": last[1].start_ms,
+                                 "end_ms": last[1].end_ms} if last else None),
+            "ttfs_ms": _r(ttfs[i]) if i < len(ttfs) else None})
+    msgs = diag.get("stream_messages")
+    note = None
+    if msgs is None:
+        msgs = []
+        note = (f"engine {getattr(asr, 'name', '?')} exposes no stream.messages; "
+                "server messages not recorded")
+    return {
+        "schema": REFASR_LOG_SCHEMA,
+        "written_because": written_because,
+        "status": "pass" if res.get("passed") else "fail",
+        "reason": res.get("reason"),
+        "transport_error": res.get("transport_error"),
+        "version": res.get("version"),
+        "clip": str(clip or DEFAULT_REFASR_CLIP),
+        "clip_ms": diag.get("clip_ms"),
+        "paced": diag.get("paced"),
+        "frame_ms": REFASR_FRAME_MS,
+        "detector_hold_ms": res.get("detector_hold_ms"),
+        "ttfs_p50_ms": res.get("ttfs_p50_ms"), "ttfs_p90_ms": res.get("ttfs_p90_ms"),
+        "rtf": res.get("rtf"),
+        "stream_t0_offset_ms": _r(diag.get("stream_t0_offset_ms"), 3),
+        "stop_ms": [_r(v) for v in diag.get("stop_ms", [])],
+        "finalize_sent_ms": [_r(v) for v in diag.get("finalize_sent_ms", []) if v is not None],
+        "finish_called_ms": _r(diag.get("finish_called_ms")),
+        "utterances": utts,
+        "messages": msgs,
+        "messages_note": note,
+    }
+
+
+def _scrubbed(obj: Any, scrub: Any) -> Any:
+    """`obj` with `scrub` applied to every string (keys included)."""
+    if isinstance(obj, str):
+        return scrub(obj)
+    if isinstance(obj, dict):
+        return {(scrub(k) if isinstance(k, str) else k): _scrubbed(v, scrub)
+                for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_scrubbed(v, scrub) for v in obj]
+    return obj
+
+
+def write_refasr_log(path: Path | str, log: dict, asr: Any) -> Path:
+    """Write `log` as JSON, every string through `asr.scrub` (the API key never lands on
+    disk) when the engine has one."""
+    scrub = getattr(asr, "scrub", None)
+    if callable(scrub):
+        log = _scrubbed(log, scrub)
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(log, indent=2, default=str), encoding="utf-8")
+    return p
+
+
+def refasr_result(asr: Any, clip: Path | str | None, th: Thresholds, clock: Clock | None = None,
+                  *, log_path: Path | str | None = None, keep_log: bool = False) -> dict:
+    """The `refasr` block of the calibration JSON: skipped without an ASR, else pass/fail.
+
+    fix-41: with `log_path`, the diagnostics log (`build_refasr_log`) is written there when
+    the stage fails (gate or transport error), or on a pass when `keep_log`; the block's
+    `log_path` names it (None when not written)."""
     if asr is None:
         return {"status": "skipped",
                 "reason": "no reference ASR configured (M4-T01: pinned model not chosen yet; "
-                          "partial-latency p90 <= refasr_partial_p90_ms, RTF <= refasr_rtf_max)"}
+                          "TTFS p90 <= refasr_partial_p90_ms, RTF <= refasr_rtf_max)"}
     pcm, sr = sf.read(str(clip or DEFAULT_REFASR_CLIP), dtype="int16")
     if sr != REFASR_RATE:
         raise ValueError(f"refasr calibration clip must be {REFASR_RATE} Hz, got {sr}")
-    res = refasr_stage(asr, pcm, th, clock or RealClock())
-    return {"status": "pass" if res["passed"] else "fail", **res}
+    diag: dict = {}
+    res = refasr_stage(asr, pcm, th, clock or RealClock(), diag=diag)
+    written = None
+    if log_path is not None and (not res["passed"] or keep_log):
+        why = ("transport_error" if res.get("transport_error") else
+               "gate_fail" if not res["passed"] else "keep_refasr_log")
+        written = str(write_refasr_log(log_path, build_refasr_log(res, diag, asr, clip, why),
+                                       asr))
+    return {"status": "pass" if res["passed"] else "fail", **res, "log_path": written}
 
 
 async def calibrate(config: Path | str | CalibConfig | None = None, *, virtual: bool = False,
                     th: Thresholds | None = None, out_dir: Path | None = None,
                     store: Any = None, asr: Any = None,
-                    refasr_clip: Path | str | None = None) -> dict:
+                    refasr_clip: Path | str | None = None,
+                    keep_refasr_log: bool = False) -> dict:
     """Run the calibration; returns the result dict and writes calibration-<ts>.json.
 
-    `asr`: a `RefASR`; when None the reference-ASR stage is reported as skipped."""
+    `asr`: a `RefASR`; when None the reference-ASR stage is reported as skipped.
+    fix-41: a failed reference-ASR stage writes calibration-<ts>.refasr_log.json beside
+    the JSON; `keep_refasr_log` writes it on a pass too."""
     th = th or Thresholds.load()
     cfg = config if isinstance(config, CalibConfig) else CalibConfig.load(config)
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -348,7 +634,9 @@ async def calibrate(config: Path | str | CalibConfig | None = None, *, virtual: 
         ok &= h["pass"]
     bad_calls = sum(o != "completed" for o in outcomes)
     ok &= bad_calls == 0
-    refasr = refasr_result(asr, refasr_clip, th)
+    dest = out_dir / f"calibration-{ts}.json"
+    refasr = refasr_result(asr, refasr_clip, th, log_path=refasr_log_path(dest),
+                           keep_log=keep_refasr_log)
     ok &= refasr["status"] != "fail"
     out = {
         "utc": datetime.now(timezone.utc).isoformat(), "host": socket.gethostname(),
@@ -365,7 +653,6 @@ async def calibrate(config: Path | str | CalibConfig | None = None, *, virtual: 
         "pass": bool(ok),
     }
     out_dir.mkdir(parents=True, exist_ok=True)
-    dest = out_dir / f"calibration-{ts}.json"
     dest.write_text(json.dumps(out, indent=2), encoding="utf-8")
     out["path"] = str(dest)
     return out
@@ -387,8 +674,14 @@ def format_table(res: dict) -> str:
     if ra["status"] == "skipped":
         lines.append(f"{'refasr':<38}{'skipped':>10}  ({ra['reason'][:40]}...)")
     else:
-        lines.append(f"{'refasr partial p90 ms / RTF':<38}{_f(ra['partial_p90_ms']):>10}  "
+        lines.append(f"{'refasr TTFS p90 ms / RTF':<38}{_f(ra['ttfs_p90_ms']):>10}  "
                      f"/ {ra['rtf']}  {'PASS' if ra['passed'] else 'FAIL'}  {ra['reason']}")
+        lines.append(f"{'  TTFS p50 ms, n / utterances':<38}{_f(ra['ttfs_p50_ms']):>10}  "
+                     f"n={ra['n_ttfs']}/{ra['n_utterances']}  finalize sent={ra['finalize_count']}"
+                     f"  hold={ra['detector_hold_ms']} ms  partial p90 (not gated)="
+                     f"{_f(ra['partial_p90_ms'])}")
+        if ra.get("log_path"):
+            lines.append(f"  refasr log: {ra['log_path']}")
     lines.append(f"failed calls: {res['failed_calls']}   RESULT: {'PASS' if res['pass'] else 'FAIL'}")
     return "\n".join(lines)
 

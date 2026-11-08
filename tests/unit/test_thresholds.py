@@ -20,7 +20,7 @@ EXPECTED = {
     "tool_latency_buckets_ms": (0, 2000, 5000), "repeat_prompt_words": 4, "sim_eot_ms": 700,
     "sim_speculate_ms": 300, "sim_floor_delay_ms": (300, 800), "sim_patience_ms": 1500,
     "sim_slow_caller_p90_ms": 1500, "sim_regen_max": 2, "sim_regen_review_rate": 0.10,
-    "refasr_partial_p90_ms": 300, "refasr_rtf_max": 0.5, "kappa_min": 0.7, "flip_rate_max": 0.02,
+    "refasr_partial_p90_ms": 700, "refasr_rtf_max": 0.5, "kappa_min": 0.7, "flip_rate_max": 0.02,
     "bootstrap_resamples": 1000, "p99_min_n": 1000, "holm_max_comparisons": 6,
     "harness_invalid_max": 0.02, "ge_p": 0.0034, "ge_r": 0.1667, "ge_loss_in_bad": 1.0,
     "noise_snr_db": 15, "noise_drift_db": 3, "burst_per_min": 1.0, "burst_len_ms": (150, 400),

@@ -35,7 +35,8 @@ Run config (configs/runs/*.yaml), see `RunConfig`:
     comparisons: []                        # pre-registered, see report/aggregate.py
     baseline_condition: C0
     require_calibration: false
-    simulator: {}                          # Track C (source: simulated): caller_first, refasr
+    simulator: {}                          # Track C (source: simulated): caller_first, refasr, llm
+    scripted: {lead_in: caller_first}      # Track A/D: caller_first | agent_first (fix-34)
     coverage: {}                           # pre-registered coverage n per metric (M8 gate)
 
 Track C (scenarios with `source: simulated`, M4-T12): refused (exit 4, D4) unless the
@@ -58,8 +59,47 @@ thread (`asr_threaded`). Neither given -> Track C refused (exit 2): the caller m
 never hear the provider's own text. A configured engine whose `name:version` differs
 from the latest calibration's `refasr.version` is printed as a warning. Each trial runs under `validation_gate.run_with_regeneration`
 (whole-trial rerun up to th.sim_regen_max, call ids `<id>-r<attempt>`, every attempt
-kept and costed). The simulator LLM is injected (`execute(..., sim_llm=)`); the CLI
-has no paid simulator client wired yet (M4-T13), so it refuses Track C (exit 2).
+kept and costed).
+
+Deepgram Nova-3 (refasr-deepgram, decision B11) is `{candidate: deepgram, kwargs:
+{pinned_model_uuid?, api_key_env?, endpointing?, utterance_end_ms?, ...}}`; its
+`version` reads `nova-3/unpinned` (or `nova-3/<pinned uuid>`) until its first stream
+reports a model_uuid, then `nova-3/<uuid>`. So the pre-run comparison with the
+calibration's `deepgram:nova-3/<uuid>` warns unless the run pins that uuid. After each
+Track C call its flags carry `simulator.refasr` (`name:version` after that call), and
+the run card summary carries `refasr_version_final` (the post-run `name:version`). A
+stream whose uuid differs from `pinned_model_uuid` (RefASRVersionMismatch) stops the
+run (`stopped: refasr_version_mismatch`).
+
+Simulator LLM (sim-llm, decision B8): `run_command(..., sim_llm=)` (tests: fakes), else
+the run config key
+
+    simulator:
+      llm: {kind: openai_compat, base_url | base_url_env, model, api_key_env?,
+            temperature?, send_temperature?, max_tokens?, extra_body?, prompt?}
+
+parsed before `check_plan` (`build_sim_llm`; config only, no network) into a
+`CallerLLM(OpenAICompatClient(...))`. Neither given -> Track C refused (exit 2). The
+endpoint (PhoneLLM Alpha 1 on vLLM / SGLang / Modal) is self-hosted: each Track C call's
+flags carry `simulator.llm` {kind, model, base_url, billing: "external"}.
+
+Simulated-caller costs (fix-28). A Track C call's projection is agent + reference ASR +
+caller LLM (`apply_simulator_costs`, after plan_run, before print_plan; the Budget
+reserves that total per attempt):
+  * reference ASR: when the engine is paid (injected engine's `paid`, else the
+    configured candidate's `Candidate.paid`), CallPlan.minutes (the scripted length
+    `cost.est_call_minutes` that the agent projection also multiplies) x the engine
+    module's `usd_per_audio_min()` (Deepgram: configs/prices/deepgram_nova3.yaml);
+    actual = the call row's ended_ns - started_ns in minutes x the same rate.
+  * caller LLM: only with `simulator.llm.price_ref` (e.g. openai_chat; rates per
+    `model`): projected = (steps + 2) turns x [Assumption] 1,500 in / 60 out tokens
+    (the price file's `projection` block); actual = the call's CallerLLM `usage_log`
+    tokens x the rates. Without price_ref: 0 USD, flags `billing: external`.
+The call row's usd_projected / usd_actual hold the totals; the split is in
+flags_json["cost"] {projected: {agent, refasr, caller_llm}, actual: {...},
+refasr_audio_min, caller_llm_usage}; the run summary carries usd_projected_parts /
+usd_actual_parts. sim_turns has no token column, so usage is per call (flags), not
+per turn. Track A/D calls are unchanged.
 
 `runs.config_json` shape (what report/aggregate.py and report/run_card.py read):
 
@@ -79,7 +119,7 @@ import sqlite3
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 import typer
@@ -92,6 +132,20 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 _NS_PER_MS = 1_000_000
 _MS_PER_MIN = 60_000.0          # threshold-ok: unit conversion
 EXIT_NOT_STARTED, EXIT_BUDGET, EXIT_PREREG, EXIT_CONFIG = 1, 3, 4, 2
+
+
+class ScriptedConfig(BaseModel):
+    """Track A/D scripted caller options (fix-34, WORKFLOW_SPEC gap G1).
+
+    lead_in: caller_first (default; step 1 from the first frame, overlapping a greeting)
+             | agent_first (step 1 after the agent's first end of turn: an utterance,
+               then `eend_silence_ms` of ear silence; no agent onset within `stall_ms`
+               -> call flag `no_greeting` and step 1 starts anyway). Call flags record
+               `lead_in`, `greeting_end_ms`, `step1_start_ms`, `no_greeting`.
+    The Track C counterpart is `simulator.caller_first`."""
+    model_config = ConfigDict(extra="forbid")
+
+    lead_in: Literal["caller_first", "agent_first"] = "caller_first"
 
 
 class RunConfig(BaseModel):
@@ -116,6 +170,7 @@ class RunConfig(BaseModel):
     baseline_condition: str = "C0"
     require_calibration: bool = False
     simulator: dict = Field(default_factory=dict)   # Track C: {caller_first: true}
+    scripted: ScriptedConfig = Field(default_factory=ScriptedConfig)   # Track A/D (fix-34)
     coverage: dict = Field(default_factory=dict)    # pre-registered coverage n (gates.py)
 
     @classmethod
@@ -229,6 +284,7 @@ class CallPlan:
     projected_usd: float
     index: int
     is_control: bool = False            # control twin of the call above it (spec §3.4)
+    usd_parts: dict | None = None       # Track C: {agent, refasr, caller_llm}; sum = projected_usd
 
 
 @dataclass
@@ -248,9 +304,11 @@ class RunPlan:
     preregistered_at: str | None
     calibration: dict
     projection: dict[str, dict] = field(default_factory=dict)
-    sim_llm: Any = None                 # Track C caller LLM (injected; no paid client in the CLI)
+    sim_llm: Any = None                 # Track C caller LLM (injected, or simulator.llm)
+    sim_llm_info: dict | None = None    # {kind, model, base_url, billing} of simulator.llm
     sim_tts: Any = None                 # Track C TTS client (None -> FakeTTS)
     sim_refasr: Any = None              # Track C reference ASR (RefASR; see build_refasr)
+    sim_cost: dict | None = None        # Track C simulator pricing (simulator_costs, fix-28)
 
     @property
     def total_usd(self) -> float:
@@ -314,7 +372,8 @@ def plan_run(cfg: RunConfig, *, results_dir: Path | None = None) -> RunPlan:
             clips[(s.id, cname)] = load_clips(s, pack.paths[s.id], cond.rate)
     res_dir = results_dir or _path(cfg.results_dir, REPO_ROOT / "results")
 
-    hashes = preregister.collect_hashes(systems_dir=systems_dir, pack_dir=pack_dir,
+    # fix-30: the run config's simulator and scripted blocks enter the pre-registration hash
+    hashes = preregister.collect_hashes(systems_dir=systems_dir, pack_dir=pack_dir, run_config=cfg,
                                         thresholds_path=th_path)
     diffs = preregister.check_against_latest(hashes, res_dir)
     latest = preregister.latest_record(res_dir)
@@ -368,7 +427,39 @@ def print_plan(plan: RunPlan, echo=typer.echo) -> None:
             "  [unpriced: free]"
         echo(f"  {sid}: {p['calls']} calls x {p['est_minutes']:.2f} min total x "
              f"{p['usd_per_min']:.4f} USD/min = {p['usd']:.4f} USD{src}")
+    for line in simulator_cost_lines(plan):
+        echo(line)
     echo(f"  total projected: {plan.total_usd:.4f} USD")
+
+
+def simulator_cost_lines(plan: RunPlan) -> list[str]:
+    """The three per-run parts (agent, reference ASR, caller LLM) when Track C calls exist."""
+    sim = [c for c in plan.calls if c.usd_parts is not None]
+    if not sim or not plan.sim_cost:
+        return []
+    sc = plan.sim_cost
+    agent = sum(c.usd_parts["agent"] if c.usd_parts else c.projected_usd for c in plan.calls)
+    ra_usd = sum(c.usd_parts["refasr"] for c in sim)
+    llm_usd = sum(c.usd_parts["caller_llm"] for c in sim)
+    ra, llm = sc["refasr"], sc["caller_llm"]
+    mins = sum(c.minutes for c in sim)
+    if ra["paid"]:
+        src = f" [{ra['source_url']} checked {ra['checked']}]" if ra.get("source_url") else ""
+        ra_d = (f"{ra['name']}: {len(sim)} Track C calls x {mins:.2f} est. min total x "
+                f"{ra['usd_per_audio_min']:.4f} USD/audio min{src}")
+    else:
+        ra_d = f"{ra['name']}: not a paid engine"
+    if llm["billing"] == "per_token":
+        turns = sum(c.usd_parts.get("caller_turns") or 0 for c in sim)
+        llm_d = (f"{llm['model']}: {turns} caller turns x ({llm['input_tokens_per_turn']} in x "
+                 f"{llm['input_per_1m']} + {llm['output_tokens_per_turn']} out x "
+                 f"{llm['output_per_1m']}) USD/1M tokens, token counts [Assumption] "
+                 f"[{llm['source_url']} checked {llm['checked']}]")
+    else:
+        llm_d = f"{llm.get('model') or 'injected client'}: billing external (0 USD in the harness)"
+    return [f"  agent: {agent:.4f} USD (the system lines above)",
+            f"  reference ASR: {ra_usd:.4f} USD  ({ra_d})",
+            f"  caller LLM: {llm_usd:.4f} USD  ({llm_d})"]
 
 
 def check_plan(plan: RunPlan, *, max_usd: float, yes: bool, allow_unregistered: bool) -> None:
@@ -397,8 +488,8 @@ def check_plan(plan: RunPlan, *, max_usd: float, yes: bool, allow_unregistered: 
                          f"{why}); run `duplexbench calibrate` with the pinned reference ASR")
     if sim and plan.sim_llm is None:
         raise RunRefused(EXIT_CONFIG, f"refused: simulated Track C scenarios {sim} need a "
-                         "simulator LLM; the paid simulator client is not wired into the CLI "
-                         "yet (M4-T13), only injected clients (tests) run Track C")
+                         "simulator LLM: set simulator.llm {kind, base_url, model} in the run "
+                         "config (spec §7)")
     if plan.total_usd > max_usd + 1e-12:
         raise RunRefused(EXIT_BUDGET, f"refused: projected {plan.total_usd:.4f} USD > max_usd "
                          f"{max_usd:.4f} USD")
@@ -439,10 +530,77 @@ def run_card(plan: RunPlan, run_id: str, summary: dict | None = None) -> dict:
         "vendors_audio": vendors,
         "instance_type": f"{platform.node()} {platform.platform()}",
         "clock": clock_info(),
-        "refasr": None, "simulator": None, "iteration_counts": None, "network_baseline": None,
+        "refasr": None, "simulator": simulator_card(plan, summary),     # fix-27
+        "iteration_counts": None, "network_baseline": None,
+        "scripted": {"lead_in": plan.cfg.scripted.lead_in},     # fix-34 disclosure
         "preregister_diffs": plan.prereg_diffs,
         "summary": summary,
     }
+
+
+def _tts_info(tts: Any) -> dict:
+    """vendor / model / version / default_voice of a TTS client (None -> FakeTTS, as
+    simulated_call uses)."""
+    if tts is None:
+        return {"vendor": "fake"}
+    out = {k: getattr(tts, k, None) for k in ("vendor", "model", "version", "default_voice")}
+    return {k: v for k, v in out.items() if v is not None} or {"vendor": type(tts).__name__}
+
+
+def _stimulus_tts(plan: RunPlan) -> dict:
+    """TTS of the scripted callers' clips: vendor / voice from each clip's `.json` sidecar
+    (stimuli generate writes {vendor, voice, rate, ...}; no model is stored there)."""
+    from duplexbench.scenarios.loader import clip_sources
+    vendors: set[str] = set()
+    voices: set[str] = set()
+    paths = getattr(plan.pack, "paths", None) or {}
+    for s in plan.scenarios:
+        if is_simulated(s) or s.id not in paths:
+            continue
+        req, opt = clip_sources(s, Path(paths[s.id]).parent)
+        for p in [*req.values(), *opt.values()]:
+            side = p.with_suffix(".json")
+            try:
+                meta = json.loads(side.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            if meta.get("vendor"):
+                vendors.add(str(meta["vendor"]))
+            if meta.get("voice"):
+                voices.add(str(meta["voice"]))
+    return {"source": "stimulus_clips", "vendors": sorted(vendors), "voices": sorted(voices)}
+
+
+def simulator_card(plan: RunPlan, summary: dict | None = None) -> dict:
+    """Run card `simulator` block (fix-27; spec §7, §10 item 1).
+
+    Scripted scenarios (Track A/D) give `scripted` {lead_in, tts (clip sidecars)}.
+    Simulated scenarios (Track C) add `simulated` {caller_first, llm {kind, model,
+    base_url, billing, price_ref?, prompt_sha256}, refasr `name:version` (the post-run
+    one, `refasr_version_final`, once the summary exists), tts {vendor, model, version,
+    voices}}. prompt_sha256 is the CallerLLM's prompt hash, else the pre-registration
+    record's `run_config` field `simulator.llm.prompt_sha256` (fix-30)."""
+    out: dict[str, Any] = {}
+    sim_scen = [s for s in plan.scenarios if is_simulated(s)]
+    if len(sim_scen) < len(plan.scenarios):
+        out["scripted"] = {"lead_in": plan.cfg.scripted.lead_in, "tts": _stimulus_tts(plan)}
+    if not sim_scen:
+        return out
+    fields = ((plan.hashes or {}).get("run_config") or {}).get("fields") or {}
+    info = dict(plan.sim_llm_info or getattr(plan.sim_llm, "endpoint_info", None) or {})
+    llm = {k: info.get(k) for k in ("kind", "model", "base_url", "billing")}
+    if info.get("price_ref"):
+        llm["price_ref"] = info["price_ref"]
+    llm["prompt_sha256"] = (getattr(plan.sim_llm, "prompt_hash", None)
+                            or fields.get("simulator.llm.prompt_sha256"))
+    refasr = (summary or {}).get("refasr_version_final")
+    if refasr is None and plan.sim_refasr is not None:
+        refasr = refasr_id(plan.sim_refasr)
+    tts = _tts_info(plan.sim_tts)
+    tts["voices"] = sorted({s.caller_voice for s in sim_scen})
+    out["simulated"] = {"caller_first": bool((plan.cfg.simulator or {}).get("caller_first", True)),
+                        "llm": llm, "refasr": refasr, "tts": tts}
+    return out
 
 
 def _call_row(db: Path, call_id: str) -> dict | None:
@@ -484,7 +642,8 @@ async def _one_call(plan: RunPlan, cp: CallPlan, store: Any, run_id: str, out_di
                 run_id=run_id, condition=cp.condition, trial=cp.trial,
                 is_control=cp.is_control, system_id=cp.system_id, seed_fwd=seed_fwd,
                 seed_back=seed_back, call_id=cp.call_id, tool_token=cp.call_id, tools=tools,
-                projected_usd=cp.projected_usd, back_rate=adapter_rate(adapter, cond), cond=cond)
+                projected_usd=cp.projected_usd, back_rate=adapter_rate(adapter, cond), cond=cond,
+                lead_in=plan.cfg.scripted.lead_in)
             return res, adapter
         finally:
             if tools is not None:
@@ -507,7 +666,8 @@ def _register_tools(plan: RunPlan, cp: CallPlan, tool_server: Any, store: Any, c
 
 def _make_backend(cls: Any, s: Any, seed: int | None) -> Any:
     import inspect
-    kw: dict[str, Any] = {"policy": s.policy}
+    # the scenario `seed` block is merged onto the backend SEED (B15/B16, spec gaps G2/G4)
+    kw: dict[str, Any] = {"policy": s.policy, "seed_overlay": getattr(s, "seed", None) or None}
     if seed is not None and "seed" in inspect.signature(cls).parameters:
         kw["seed"] = seed
     return cls(**kw)
@@ -533,6 +693,162 @@ def build_refasr(sim_cfg: dict) -> Any:
                          f"{sorted(by_name)}")
     mod = importlib.import_module(f"duplexbench.refasr.candidates.{c.module}")
     return getattr(mod, c.cls)(**dict(spec.get("kwargs") or {}))
+
+
+SIM_LLM_KINDS = ("openai_compat",)
+
+
+def build_sim_llm(sim_cfg: dict) -> Any:
+    """The caller LLM named by `simulator.llm`, or None when the key is absent.
+
+    Config parsing only (no network call). Raises ValueError with a one-line reason for
+    an unknown kind, a missing base_url (and base_url_env unset/empty), a base_url that
+    is not http(s)://, a missing model, or an api_key_env whose variable is unset/empty.
+    model / temperature / send_temperature / max_tokens go into CallerLLM's config (so
+    they enter config_hash); effort stays None (Anthropic-only)."""
+    import os
+
+    from duplexbench.simulator.caller_llm import DEFAULT_PROMPT, PROMPTS_DIR, CallerLLM
+    from duplexbench.simulator.openai_compat import OpenAICompatClient
+    spec = (sim_cfg or {}).get("llm")
+    if spec is None:
+        return None
+    if not isinstance(spec, dict):
+        raise ValueError("must be a mapping {kind, base_url, model, ...}")
+    kind = spec.get("kind")
+    if kind not in SIM_LLM_KINDS:
+        raise ValueError(f"unknown kind {kind!r} (known: {list(SIM_LLM_KINDS)})")
+    base_url = str(spec.get("base_url") or "").strip()
+    if not base_url and spec.get("base_url_env"):
+        base_url = os.environ.get(str(spec["base_url_env"]), "").strip()
+        if not base_url:
+            raise ValueError(f"base_url_env {spec['base_url_env']} is unset or empty")
+    if not base_url:
+        raise ValueError("missing base_url (or base_url_env)")
+    if not base_url.startswith(("http://", "https://")):
+        raise ValueError(f"base_url {base_url!r} must start with http:// or https://")
+    model = str(spec.get("model") or "").strip()
+    if not model:
+        raise ValueError("missing model")
+    api_key = None
+    if spec.get("api_key_env"):
+        api_key = os.environ.get(str(spec["api_key_env"]), "").strip()
+        if not api_key:
+            raise ValueError(f"api_key_env {spec['api_key_env']} is unset or empty")
+    extra = spec.get("extra_body") or {}
+    if not isinstance(extra, dict):
+        raise ValueError("extra_body must be a mapping")
+    client = OpenAICompatClient(base_url, model=model, api_key=api_key, extra_body=extra,
+                                timeout_s=float(spec.get("timeout_s", 60.0)))
+    config: dict[str, Any] = {"model": model, "effort": None}
+    for k in ("temperature", "send_temperature", "max_tokens"):
+        if k in spec:
+            config[k] = spec[k]
+    prompt = PROMPTS_DIR / spec["prompt"] if spec.get("prompt") else DEFAULT_PROMPT
+    if not prompt.is_file():
+        raise ValueError(f"prompt {spec.get('prompt')!r} not found in {PROMPTS_DIR}")
+    llm = CallerLLM(client, prompt_path=prompt, config=config)
+    # self-hosted endpoint: GPU time billed outside the harness, so the cost projection
+    # adds 0 USD for it and the run card must disclose that (billing: external)
+    llm.endpoint_info = {"kind": kind, "model": model, "base_url": client.base_url,
+                         "billing": "external"}
+    if spec.get("price_ref"):           # per-token API (fix-28): priced from the price file
+        llm.endpoint_info.update(billing="per_token", price_ref=str(spec["price_ref"]))
+    return llm
+
+
+def _refasr_rate(engine_or_module: Any) -> tuple[float, str | None]:
+    """(usd_per_audio_min, price_ref) of a paid engine: its own `usd_per_audio_min()`,
+    else its module's (refasr/candidates/deepgram.py). ValueError when neither exists."""
+    fn = getattr(engine_or_module, "usd_per_audio_min", None)
+    mod = engine_or_module
+    if not callable(fn):
+        mod = sys.modules.get(type(engine_or_module).__module__)
+        fn = getattr(mod, "usd_per_audio_min", None)
+    if not callable(fn):
+        raise ValueError(f"paid reference ASR {getattr(engine_or_module, 'name', '?')} has no "
+                         "usd_per_audio_min() price")
+    return float(fn()), (getattr(engine_or_module, "PRICE_REF", None)
+                         or getattr(mod, "PRICE_REF", None))
+
+
+def simulator_costs(sim_cfg: dict, sim_refasr: Any = None) -> dict:
+    """Pricing of the Track C simulator (fix-28); config only, no engine is built.
+
+    refasr: the injected engine's `paid` attribute, else the configured candidate's
+    `Candidate.paid`; a paid engine's rate comes from its module's usd_per_audio_min().
+    caller_llm: `simulator.llm.price_ref` -> the price file's rates for `model` plus its
+    [Assumption] projection block; absent -> billing external, 0 USD.
+    Raises ValueError / SystemError_ on a bad price file or an unpriced model."""
+    import importlib
+
+    from duplexbench.metrics import cost
+    from duplexbench.refasr.candidates_table import CANDIDATES
+    from duplexbench.systems import load_prices
+    sim_cfg = sim_cfg or {}
+    ra: dict[str, Any] = {"paid": False, "usd_per_audio_min": 0.0, "name": "none"}
+    if sim_refasr is not None:
+        ra["name"] = refasr_id(sim_refasr)
+        if getattr(sim_refasr, "paid", False):
+            ra["paid"] = True
+            ra["usd_per_audio_min"], ra["price_ref"] = _refasr_rate(sim_refasr)
+    elif isinstance(sim_cfg.get("refasr"), dict):
+        name = sim_cfg["refasr"].get("candidate")
+        c = {c.name: c for c in CANDIDATES}.get(name)
+        ra["name"] = str(name)
+        if c is not None and c.paid:
+            mod = importlib.import_module(f"duplexbench.refasr.candidates.{c.module}")
+            ra["paid"] = True
+            ra["usd_per_audio_min"], ra["price_ref"] = _refasr_rate(mod)
+    if ra.get("price_ref"):
+        pr = load_prices(ra["price_ref"]) or {}
+        ra.update(source_url=pr.get("source_url"), checked=pr.get("checked"))
+    spec = sim_cfg.get("llm") if isinstance(sim_cfg.get("llm"), dict) else {}
+    model = spec.get("model")
+    llm: dict[str, Any] = {"billing": "external", "model": model, "price_ref": None}
+    if spec.get("price_ref"):
+        prices = load_prices(str(spec["price_ref"]))
+        r = cost.chat_rates(prices, model)
+        p = cost._chat_projection(prices)
+        llm.update(billing="per_token", price_ref=prices["price_ref"], prices=prices,
+                   input_per_1m=float(r["input_per_1m"]), output_per_1m=float(r["output_per_1m"]),
+                   input_tokens_per_turn=p["input_tokens_per_turn"],
+                   output_tokens_per_turn=p["output_tokens_per_turn"],
+                   extra_turns_per_call=p["extra_turns_per_call"],
+                   source_url=prices["source_url"], checked=prices["checked"])
+    return {"refasr": ra, "caller_llm": llm}
+
+
+def apply_simulator_costs(plan: RunPlan, sim_refasr: Any = None) -> None:
+    """Add reference-ASR and caller-LLM projections to every simulated call (fix-28).
+
+    projected_usd becomes agent + refasr + caller_llm (the Budget reserves it); the parts
+    go to CallPlan.usd_parts and the per-system projection (usd stays the agent part).
+    Idempotent: the agent part is kept in usd_parts on the first application."""
+    from duplexbench.metrics import cost
+    sim = [c for c in plan.calls if is_simulated(c.scenario)]
+    if not sim:
+        return
+    sc = plan.sim_cost = simulator_costs(plan.cfg.simulator, sim_refasr)
+    ra, llm = sc["refasr"], sc["caller_llm"]
+    priced = llm["billing"] == "per_token"
+    for c in sim:
+        agent = c.usd_parts["agent"] if c.usd_parts else c.projected_usd
+        n_steps = len(c.scenario.steps)
+        ra_usd = cost.refasr_call_usd(c.minutes, ra["usd_per_audio_min"]) if ra["paid"] else 0.0
+        llm_usd = cost.caller_llm_projected_usd(n_steps, llm["prices"], llm["model"]) \
+            if priced else 0.0
+        c.usd_parts = {"agent": agent, "refasr": ra_usd, "caller_llm": llm_usd,
+                       "caller_turns": cost.caller_llm_turns(n_steps, llm["prices"])
+                       if priced else None}
+        c.projected_usd = agent + ra_usd + llm_usd
+    for sid, p in plan.projection.items():
+        mine = [c for c in sim if c.system_id == sid]
+        if mine:
+            p["usd_refasr"] = round(sum(c.usd_parts["refasr"] for c in mine), 6)
+            p["usd_caller_llm"] = round(sum(c.usd_parts["caller_llm"] for c in mine), 6)
+            p["usd_total"] = round(sum(c.projected_usd for c in plan.calls
+                                       if c.system_id == sid), 6)
 
 
 def refasr_id(engine: Any) -> str:
@@ -591,6 +907,8 @@ async def _simulated_call(plan: RunPlan, cp: CallPlan, store: Any, run_id: str, 
 
     th, cond, s = plan.th, plan.conditions[cp.condition], cp.scenario
     sim_cfg = dict(plan.cfg.simulator or {})
+    usage_log = getattr(plan.sim_llm, "usage_log", None)     # shared CallerLLM: slice per call
+    usage_n0 = len(usage_log) if isinstance(usage_log, list) else 0
     tts = plan.sim_tts
     if tts is None:
         from duplexbench.stimuli.fake_tts import FakeTTS
@@ -623,7 +941,11 @@ async def _simulated_call(plan: RunPlan, cp: CallPlan, store: Any, run_id: str, 
                              projected_usd=cp.projected_usd)
     finally:
         caller.close()
-        await caller.finish_ear()
+        try:
+            await caller.finish_ear()
+        except Exception as e:  # noqa: BLE001 - reference-ASR finish failed: kept, not raised
+            if caller.error is None:
+                caller.error = e
     store.put("events", {"run_id": run_id, "call_id": cp.call_id, "t_ns": clock.now_ns(),
                          "seq": playout.next_seq(), "kind": "mishearing", "src": "harness",
                          "payload_json": canonical_json({
@@ -638,8 +960,15 @@ async def _simulated_call(plan: RunPlan, cp: CallPlan, store: Any, run_id: str, 
         "caller_turns": [t for who, t in caller.transcript if who == "caller"],
         "audio_ok": bool(spoken) and caller.error is None,
         "flags": dict(caller.flags),
-        "error": repr(caller.error) if caller.error is not None else None}
+        "error": repr(caller.error) if caller.error is not None else None,
+        "refasr_version_mismatch": _is_version_mismatch(caller.error),
+        "llm_usage": list(usage_log[usage_n0:]) if isinstance(usage_log, list) else []}
     return res, inner
+
+
+def _is_version_mismatch(err: BaseException | None) -> bool:
+    from duplexbench.refasr.candidates.deepgram import RefASRVersionMismatch
+    return isinstance(err, RefASRVersionMismatch)
 
 
 async def execute(plan: RunPlan, *, max_usd: float, echo=typer.echo) -> dict:
@@ -672,6 +1001,7 @@ async def execute(plan: RunPlan, *, max_usd: float, echo=typer.echo) -> dict:
     budget = Budget(max_usd)
     outcomes: dict[str, int] = {}
     usd_total, results = 0.0, []
+    parts_total = {"agent": 0.0, "refasr": 0.0, "caller_llm": 0.0}
     state = {"stopped": None}
     echo(f"run_id {run_id} -> {out_dir}")
 
@@ -713,6 +1043,23 @@ async def execute(plan: RunPlan, *, max_usd: float, echo=typer.echo) -> dict:
         has_usage = hasattr(adapter, "usage_log")
         actual = (cost.price_per_call(usage if has_usage else None, prices, minutes=minutes)
                   if prices else 0.0)
+        sim = getattr(adapter, "sim_result", None)
+        cost_flags = None
+        if cp.usd_parts is not None and plan.sim_cost:    # Track C: + reference ASR + caller LLM
+            ra, llm = plan.sim_cost["refasr"], plan.sim_cost["caller_llm"]
+            llm_usage = list((sim or {}).get("llm_usage") or [])
+            ra_usd = cost.refasr_call_usd(minutes, ra["usd_per_audio_min"]) if ra["paid"] else 0.0
+            llm_usd = (cost.caller_llm_actual_usd(llm_usage, llm["prices"], llm["model"])
+                       if llm["billing"] == "per_token" else 0.0)
+            parts = {"agent": actual, "refasr": ra_usd, "caller_llm": llm_usd}
+            cost_flags = {"projected": {k: cp.usd_parts[k] for k in parts}, "actual": parts,
+                          "refasr_audio_min": round(minutes, 6),
+                          "refasr_billed": bool(ra["paid"]),
+                          "caller_llm_billing": llm["billing"],
+                          "caller_llm_usage": cost.sum_chat_usage(llm_usage)}
+            for k, v in parts.items():
+                parts_total[k] += v or 0.0
+            actual = None if actual is None else actual + ra_usd + llm_usd
         # A dropped call may have been billed for a response whose usage never arrived:
         # its actual is a lower bound, so the budget is charged the projection instead.
         lower_bound = res.outcome == "transport_error" and prices is not None
@@ -733,9 +1080,25 @@ async def execute(plan: RunPlan, *, max_usd: float, echo=typer.echo) -> dict:
                 if callable(getattr(stream, "stats", None)):
                     flags["stream"] = stream.stats()
                     break
-            sim = getattr(adapter, "sim_result", None)
+            if cost_flags is not None:
+                flags["cost"] = cost_flags
             if sim:
-                flags["simulator"] = {k: v for k, v in sim.items() if k != "caller_turns"}
+                flags["simulator"] = {k: v for k, v in sim.items()
+                                      if k not in ("caller_turns", "llm_usage")}
+                if plan.sim_llm_info:
+                    # billing "external": self-hosted GPU time, outside the harness's
+                    # cost projection (0 USD added); the run card must disclose it
+                    flags["simulator"]["llm"] = dict(plan.sim_llm_info)
+                if plan.sim_refasr is not None:
+                    # post-call `name:version` (a streaming engine learns its uuid in-call)
+                    flags["simulator"]["refasr"] = refasr_id(plan.sim_refasr)
+                tts_ = plan.sim_tts
+                flags["simulator"]["tts"] = (getattr(tts_, "version", None)
+                                             or getattr(tts_, "vendor", None) or "fake")
+                if sim.get("refasr_version_mismatch"):
+                    echo(f"{cp.call_id}: reference ASR version mismatch ({sim.get('error')}); "
+                         "run stopped")
+                    state["stopped"] = "refasr_version_mismatch"
             row.update(usd_actual=actual, flags_json=canonical_json(flags),
                        is_control=int(cp.is_control))
             store.put("calls", row)
@@ -795,6 +1158,14 @@ async def execute(plan: RunPlan, *, max_usd: float, echo=typer.echo) -> dict:
         summary = {"outcomes": outcomes, "usd_actual_total": round(usd_total, 6),
                    "usd_projected_total": round(plan.total_usd, 6), "stopped": stopped,
                    "calls_run": len(results)}
+        if plan.sim_refasr is not None:
+            summary["refasr_version_final"] = refasr_id(plan.sim_refasr)
+        if any(c.usd_parts is not None for c in plan.calls):
+            summary["usd_projected_parts"] = {
+                k: round(sum((c.usd_parts or {"agent": c.projected_usd}).get(k) or 0.0
+                             for c in plan.calls), 6)
+                for k in ("agent", "refasr", "caller_llm")}
+            summary["usd_actual_parts"] = {k: round(v, 6) for k, v in parts_total.items()}
         runs_row["run_card_json"] = canonical_json(run_card(plan, run_id, summary))
         store.put("runs", runs_row)
         await store.flush()
@@ -822,10 +1193,31 @@ def _resolve_refasr(cfg: RunConfig) -> Any:
     return engine
 
 
+def _resolve_sim_llm(cfg: RunConfig) -> Any:
+    """`simulator.llm` -> CallerLLM, or None (check_plan then refuses Track C)."""
+    try:
+        return build_sim_llm(cfg.simulator)
+    except ValueError as e:
+        raise RunRefused(EXIT_CONFIG, f"config error: simulator.llm: {e}") from e
+
+
+def _resolve_sim_tts(cfg: RunConfig) -> Any:
+    """`simulator.tts` -> a TTSClient (stimuli.vendors.build_tts), or None (-> FakeTTS).
+
+    Config parsing only: building the client sends no request (tts-fish, decision B13).
+    A missing key, an unknown vendor or an unknown field is refused before any call."""
+    from duplexbench.stimuli.vendors import build_tts
+    try:
+        return build_tts((cfg.simulator or {}).get("tts"))
+    except (ValueError, RuntimeError) as e:          # RuntimeError: TTSUnavailable (no key)
+        raise RunRefused(EXIT_CONFIG, f"config error: simulator.tts: {e}") from e
+
+
 def run_command(config: Path, *, yes: bool, max_usd: float | None, allow_unregistered: bool,
                 results_dir: Path | None = None, echo=typer.echo, sim_llm: Any = None,
                 sim_tts: Any = None, sim_refasr: Any = None) -> dict:
-    """`sim_llm` / `sim_tts` / `sim_refasr`: Track C simulator clients (tests inject fakes)."""
+    """`sim_llm` / `sim_tts` / `sim_refasr`: Track C simulator clients (tests inject fakes;
+    otherwise simulator.llm / FakeTTS / simulator.refasr)."""
     from duplexbench import _loop
     from duplexbench.scenarios.loader import PackError
     from duplexbench.systems import SystemError_
@@ -835,6 +1227,17 @@ def run_command(config: Path, *, yes: bool, max_usd: float | None, allow_unregis
     except (PackError, SystemError_, ValueError, FileNotFoundError) as e:
         raise RunRefused(EXIT_CONFIG, f"config error: {e}") from e
     plan.sim_llm, plan.sim_tts = sim_llm, sim_tts
+    if plan.sim_tts is None and any(is_simulated(s) for s in plan.scenarios):
+        plan.sim_tts = _resolve_sim_tts(cfg)        # None -> FakeTTS in _simulated_call
+    if plan.sim_llm is None and any(is_simulated(s) for s in plan.scenarios):
+        plan.sim_llm = _resolve_sim_llm(cfg)        # config parsing only, no network
+        plan.sim_llm_info = getattr(plan.sim_llm, "endpoint_info", None)
+    if any(is_simulated(s) for s in plan.scenarios):
+        from duplexbench.systems import SystemError_ as _SysErr
+        try:                                  # fix-28: + reference ASR + caller LLM per call
+            apply_simulator_costs(plan, sim_refasr)
+        except (ValueError, _SysErr) as e:
+            raise RunRefused(EXIT_CONFIG, f"config error: simulator cost: {e}") from e
     print_plan(plan, echo)
     limit = cfg.max_usd if max_usd is None else max_usd
     check_plan(plan, max_usd=limit, yes=yes, allow_unregistered=allow_unregistered)
@@ -842,8 +1245,12 @@ def run_command(config: Path, *, yes: bool, max_usd: float | None, allow_unregis
         plan.sim_refasr = sim_refasr if sim_refasr is not None else _resolve_refasr(cfg)
         cal = (plan.calibration.get("refasr") or {}).get("version")
         if cal and cal != refasr_id(plan.sim_refasr):
-            echo(f"warning: simulator reference ASR {refasr_id(plan.sim_refasr)} differs from "
-                 f"the calibrated one {cal}")
+            rid = refasr_id(plan.sim_refasr)
+            hint = (" (its model version is unknown until the first stream; set "
+                    "kwargs.pinned_model_uuid to the calibrated uuid to make the run refuse "
+                    "any other model)") if rid.endswith("/unpinned") else ""
+            echo(f"warning: simulator reference ASR {rid} differs from the calibrated one "
+                 f"{cal}{hint}")
     return _loop.run(execute(plan, max_usd=limit, echo=echo))
 
 

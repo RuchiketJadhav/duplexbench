@@ -1,0 +1,1 @@
+{"rate":1.1,"sample_rate":16000,"text":"four four one two.","vendor":"fish","voice":"voice-m1","words":[{"end_ms":400,"start_ms":160,"text":"four"},{"end_ms":800,"start_ms":400,"text":"four"},{"end_ms":1200,"start_ms":800,"text":"one"},{"end_ms":1600,"start_ms":1200,"text":"two"}]}

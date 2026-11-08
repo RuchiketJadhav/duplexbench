@@ -66,3 +66,35 @@ def test_no_caveats_on_clean_aggregate():
     agg = {"metrics": {}, "exclusions": {"x": {"units": 3, "counts": {}}}, "classifiers": {},
            "systems": {"x": {"cancel_event": True}}, "phone_path": {"disagreements": []}}
     assert lines(agg, TH) == []
+
+
+@pytest.mark.parametrize("tag", ["no_refasr", "step_not_reached"])
+def test_harness_gap_tag_excluded_and_listed(tmp_path, tag):
+    """fix-23 / fix-32 tags: an invalid observation carrying the tag is out of the rate's n,
+    out of the completion denominator, counted per system and listed in the caveats."""
+    from _report_fixture import _obs, cid
+    from duplexbench.metrics.base import TAGS
+    from duplexbench.report.aggregate import EXCLUDE_TAGS
+    from duplexbench.storage import Store
+
+    assert tag in TAGS and tag in EXCLUDE_TAGS
+    p = build(tmp_path / "e.sqlite")
+    base = aggregate(p, "r1", TH)
+    store = Store(p)
+    c = cid("sysA", "C0", "s1", 9)
+    _obs(store, c, "pass_at_1", "s1", 9, "C0", "sysA", None, valid=False, tags=(tag,))
+    _obs(store, c, "t_turn_gap_ear", "s1", 9, "C0", "sysA", None, valid=False, tags=(tag,),
+         event="s9")
+    store.close()
+    agg = aggregate(p, "r1", TH)
+    rate, old = agg["metrics"]["pass_at_1"]["sysA"]["C0"], base["metrics"]["pass_at_1"]["sysA"]["C0"]
+    assert (rate["n"], rate["k"], rate["value"]) == (old["n"], old["k"], old["value"]) == (12, 7, 0.583333)
+    assert rate["n_rows"] == old["n_rows"] + 1
+    gap = agg["metrics"]["t_turn_gap_ear"]["sysA"]["C0"]
+    assert gap["n"] == 10 and gap["completion_rate"] == 1.0    # excluded, not incomplete
+    assert agg["exclusions"]["sysA"]["counts"][tag] == 2
+    assert base["exclusions"]["sysA"]["counts"][tag] == 0
+    texts = [t for k, t in caveats(agg, TH) if k == "exclusion"]
+    assert any(t.startswith(f"sysA: 2 of ") and f"tagged {tag}:" in t and "not an agent failure" in t
+               for t in texts), texts
+    assert not any(f"tagged {tag}" in t for _, t in caveats(base, TH))

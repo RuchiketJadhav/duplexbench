@@ -26,6 +26,7 @@ The calling coroutine supervises on the frame grid and ends the call on the firs
                                  active for `eend_silence_ms`
     call_timeout_ms           -> timeout
     stall_ms                  -> stalled: neither channel active for `stall_ms`, outside a tool wait
+                                 and outside a scripted caller's agent_first lead-in (fix-34)
     any exception in any task -> transport_error
 
 Budget refusal at admission (`budget.reserve` before `adapter.open`) returns
@@ -258,6 +259,8 @@ class _Runner:
             s.last_activity = max(s.last_activity, self.playout.last_active_ns)
         if s.tools_pending > 0:
             s.last_activity = now
+        if getattr(self.caller, "waiting_lead_in", False):   # fix-34: the lead-in has its own guard
+            s.last_activity = now
         if s.error is not None:
             return "transport_error"
         if s.adapter_closed:
@@ -342,6 +345,9 @@ async def run_call(ctx: "CallContext", adapter: "Adapter", caller: "CallerSource
     flags["wav_sha256"] = wav_sha
     flags["frames_sent"] = s.frames_sent
     flags["frames_played"] = playout.frames_played
+    lead_in = getattr(caller, "lead_in", None)
+    if lead_in is not None:                 # fix-34 agent_first: greeting disclosure
+        flags.update(lead_in.flags(s.start))
     if s.slips_ns:
         flags["pacing_slip_p99_ms"] = float(np.percentile(s.slips_ns, _P99)) / _NS_PER_MS
     if overlays is None:

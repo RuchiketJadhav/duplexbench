@@ -4,7 +4,10 @@ One line per condition found in the aggregate (report/aggregate.py):
 
   low_n            percentiles below the spec §9.2 minimum n
   exclusion        ambiguous_end / not_injected / unmatched_control / contested counts
-  simulator        slow_caller and unscripted_overlap counts; mishearing and regeneration rates
+  exclusion        no_refasr / step_not_reached counts (harness-side gaps; fix-23, fix-32)
+  simulator        slow_caller and unscripted_overlap counts; mishearing and regeneration rates;
+                   speculation_from_provisional / provisional_mismatches / provisional_replies
+                   counts per system (fix-42; aggregate "simulator_counts", one line each)
   phone_path       metrics whose paired-difference sign disagrees with live stream
   classifier       classifier validation status (spec §8)
   cancel           systems with no provider cancel event (T_stop_model absent; spec §1.3)
@@ -13,12 +16,28 @@ One line per condition found in the aggregate (report/aggregate.py):
 """
 from __future__ import annotations
 
-from duplexbench.report.aggregate import PERCENTILES
+from duplexbench.report.aggregate import PERCENTILES, SIMULATOR_COUNTERS
 from duplexbench.stats.planner import percentile_min_n
 from duplexbench.thresholds import Thresholds
 
 EXCLUSION_ORDER = ("ambiguous_end", "not_injected", "unmatched_control", "contested")
 SIMULATOR_TAGS = ("slow_caller", "unscripted_overlap")
+# harness-side gaps (fix-23, fix-32): the observation could not be scored, so it is out of n
+# fix-42: simulated-caller speculation counters (aggregate "simulator_counts")
+SIMULATOR_COUNTER_TEXT = {
+    "speculation_from_provisional": "speculative replies started from provisional "
+                                    "(not yet final) reference-ASR words",
+    "provisional_mismatches": "provisional-word speculations discarded because the final "
+                              "words differed (one extra caller-LLM call each)",
+    "provisional_replies": "caller replies spoken before the reference-ASR final words of "
+                           "the agent turn arrived (generated from provisional words)",
+}
+HARNESS_GAP_TAGS = {
+    "no_refasr": "no reference-ASR words for the ear audio (cli score without a reference "
+                 "ASR); excluded from the word-dependent metrics, not an agent failure.",
+    "step_not_reached": "the caller step carrying the entity never ended; excluded from the "
+                        "entity metrics, not an agent failure.",
+}
 
 
 def _fmt(x: float | None) -> str:
@@ -49,12 +68,24 @@ def caveats(agg: dict, th: Thresholds) -> list[tuple[str, str]]:
                             f"{sid}: {c} of {e['units']} scored events tagged {tag}; "
                             "excluded from the metrics they are invalid for "
                             "(an expected outcome, reported per system)."))
+        for tag, why in HARNESS_GAP_TAGS.items():
+            c = e["counts"].get(tag, 0)
+            if c:
+                out.append(("exclusion", f"{sid}: {c} of {e['units']} scored events tagged "
+                                         f"{tag}: {why}"))
         for tag in SIMULATOR_TAGS:
             c = e["counts"].get(tag, 0)
             if c:
                 out.append(("simulator",
                             f"{sid}: {c} of {e['units']} scored events tagged {tag} "
                             "(simulated-caller artefact; excluded from latency / Track A metrics)."))
+
+    for sid in sorted(agg.get("simulator_counts", {})):
+        sc = agg["simulator_counts"][sid]
+        for k in SIMULATOR_COUNTERS:
+            if sc.get(k):
+                out.append(("simulator", f"{sid}: {sc[k]} {SIMULATOR_COUNTER_TEXT[k]} "
+                                         f"({k})."))
 
     for key, label in (("mishearing_rate", "simulator mishearing rate"),
                        ("regeneration_rate", "simulator regeneration rate")):

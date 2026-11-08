@@ -38,7 +38,7 @@ def test_backchannel_rule():
 
 
 def test_observe_tags_and_refasr_gap():
-    sc = next(x for x in load_pack(FIX).scenarios if x.id == "sched_001")
+    sc = next(x for x in load_pack(FIX, check_tools=False).scenarios if x.id == "sched_001")
     rows = [OverlayRow("o1", "Y-INT", 1, 1, 1, 2), OverlayRow("o2", "H-BC", 1, 1, 1, 2),
             OverlayRow("o3", "P-PAUSE", 1, 1, 1, 2),
             OverlayRow("o4", "E-END", 1, 1, 1, 2, ("not_injected",))]
