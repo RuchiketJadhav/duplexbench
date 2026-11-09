@@ -28,8 +28,7 @@ params:
   workflow_id: 14735
   org_id: 6993
   api_key_env: DOGRAH_API_KEY
-  ws_token_secret_env: null                 # set to TELEPHONY_WS_TOKEN_SECRET's env name if enforced
-                                            # (whether the hosted app enforces the WS token is unknown)
+  ws_token_secret_env: TELEPHONY_WS_TOKEN_SECRET   # hosted enforces the WS token (4401 without it); value lives in .env only
   run_name_prefix: DB-
   harness_tool_base: http://98.84.60.36:8900   # tool URL = {base}/tools/{{call_id}}/<tool>; keep the port literal
   # 98.84.60.36 = the EC2 box's Elastic IP (us-east-1, c7i.xlarge, 2026-11-08). The 21 tool URLs on

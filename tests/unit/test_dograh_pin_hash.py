@@ -363,6 +363,6 @@ def test_shipped_yaml_targets_the_live_workflow():
     assert s.model == "gpt-realtime-2.1"
     assert s.params["endpoint"] == "https://app.dograh.com"
     assert (s.params["workflow_id"], s.params["org_id"]) == (14735, 6993)
-    assert s.params["api_key_env"] == "DOGRAH_API_KEY" and s.params["ws_token_secret_env"] is None
+    assert s.params["api_key_env"] == "DOGRAH_API_KEY" and s.params["ws_token_secret_env"] == "TELEPHONY_WS_TOKEN_SECRET"
     c = DograhClient(s.params["endpoint"], "k")
     assert str(c._http.base_url).rstrip("/") + "/api/v1" + "/workflow/fetch/14735" ==         "https://app.dograh.com/api/v1/workflow/fetch/14735"
